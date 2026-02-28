@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import TestScopeSelector from '@/components/student/TestScopeSelector';
+import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
 import { Word, User } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Coins, LogOut, Loader2 } from 'lucide-react';
+import { Coins, LogOut, Loader2, BookOpen, Zap } from 'lucide-react';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<Word[]>([]);
-  const [testWords, setTestWords] = useState<Word[] | null>(null);
+  // 학생 플로우 상태: dashboard → study → test
+  const [mode, setMode] = useState<'dashboard' | 'study' | 'test'>('dashboard');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +73,6 @@ export default function Home() {
     if (!confirmExchange) return;
 
     try {
-      // 1. 교환 요청 생성
       const { error: requestError } = await supabase
         .from('exchange_requests')
         .insert([{
@@ -84,7 +84,6 @@ export default function Home() {
 
       if (requestError) throw requestError;
 
-      // 2. 유저 토큰 0으로 초기화
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')
         .update({ tokens: 0 })
@@ -103,7 +102,13 @@ export default function Home() {
     }
   };
 
-  // 로그인 화면
+  const refreshUser = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('users').select('*').eq('id', user.id).single();
+    if (data) setUser(data as User);
+  };
+
+  // ─── 로그인 화면 ───
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
@@ -143,25 +148,35 @@ export default function Home() {
     );
   }
 
-  // 퀴즈 화면
-  if (testWords) {
+  // ─── 학습 모드 화면 ───
+  if (mode === 'study') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <WordStudy
+          words={words}
+          onFinishStudy={() => setMode('test')}
+        />
+      </div>
+    );
+  }
+
+  // ─── 퀴즈(테스트) 화면 ───
+  if (mode === 'test') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <QuizViewer
-          words={testWords}
+          words={words}
           userId={user.id}
           onFinish={() => {
-            setTestWords(null);
-            supabase.from('users').select('*').eq('id', user.id).single().then(({ data }) => {
-              if (data) setUser(data as User);
-            });
+            setMode('dashboard');
+            refreshUser();
           }}
         />
       </div>
     );
   }
 
-  // 메인 대시보드 화면
+  // ─── 메인 대시보드 화면 ───
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -199,7 +214,39 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             {words.length > 0 ? (
-              <TestScopeSelector words={words} onStartTest={setTestWords} />
+              <div className="space-y-4">
+                {/* 단어 학습 버튼 */}
+                <button
+                  onClick={() => setMode('study')}
+                  className="w-full bg-white rounded-3xl shadow-sm border-4 border-indigo-200 p-8 text-left hover:shadow-lg hover:border-indigo-300 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <BookOpen className="w-8 h-8 text-indigo-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-800">📖 단어 학습하기</h3>
+                      <p className="text-slate-500 font-medium mt-1">카드를 넘기면서 {words.length}개의 단어를 먼저 공부해 봐!</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* 바로 테스트 버튼 */}
+                <button
+                  onClick={() => setMode('test')}
+                  className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl shadow-lg shadow-orange-500/20 p-8 text-left hover:shadow-xl transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Zap className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white">⚡ 바로 테스트 시작!</h3>
+                      <p className="text-orange-100 font-medium mt-1">학습 없이 바로 실력을 테스트해 봐! 맞추면 토큰 획득!</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
             ) : (
               <div className="bg-white p-10 rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">
                 <div className="text-6xl mb-4 grayscale opacity-50">📭</div>
@@ -225,7 +272,6 @@ export default function Home() {
                 용돈으로 교환 신청하기 💸
               </button>
             </div>
-
           </div>
         </div>
       </div>
