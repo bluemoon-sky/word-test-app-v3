@@ -151,8 +151,8 @@ export default function Home() {
   // ─── 로그인 화면 ───
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-blue-200 p-6 sm:p-8 animate-in zoom-in-95 duration-500">
+      <div className="min-h-[100dvh] bg-slate-50 flex flex-col p-4 text-center">
+        <div className="m-auto max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-blue-200 p-6 sm:p-8 animate-in zoom-in-95 duration-500">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-inner text-3xl sm:text-4xl">
             🚀
           </div>
@@ -191,7 +191,7 @@ export default function Home() {
   // ─── 학습 모드 화면 ───
   if (mode === 'study') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <WordStudy
           words={words}
           onFinishStudy={() => {
@@ -209,8 +209,8 @@ export default function Home() {
     const isApproved = testRequest?.status === 'approved';
 
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-3 sm:p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl border-4 border-amber-200 p-5 sm:p-8 text-center">
+      <div className="min-h-[100dvh] bg-slate-50 flex flex-col p-3 sm:p-4">
+        <div className="m-auto max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl border-4 border-amber-200 p-5 sm:p-8 text-center">
           {isApproved ? (
             <>
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-3xl sm:text-4xl">
@@ -258,7 +258,7 @@ export default function Home() {
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <QuizViewer
           words={words}
           userId={user.id}
@@ -279,7 +279,7 @@ export default function Home() {
 
   // ─── 메인 대시보드 화면 ───
   return (
-    <div className="min-h-screen bg-slate-50 p-3 sm:p-4 md:p-8">
+    <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-4 md:p-8 pb-12">
       <div className="max-w-5xl mx-auto space-y-5 sm:space-y-8">
 
         {/* 헤더 섹션 */}
