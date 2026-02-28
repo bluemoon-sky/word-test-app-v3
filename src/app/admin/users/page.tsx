@@ -46,7 +46,6 @@ export default function AdminUsersPage() {
 
         setIsAdding(true);
         try {
-            // 중복 닉네임 체크
             const { data: existing } = await supabase
                 .from('users')
                 .select('id')
@@ -122,21 +121,21 @@ export default function AdminUsersPage() {
         <div className="min-h-screen bg-slate-50">
             <AdminNav />
 
-            <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="p-3 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-4 sm:space-y-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <h1 className="text-3xl font-black text-slate-800">사용자 관리</h1>
-                        <p className="text-slate-500 mt-1">학생들을 추가하고 토큰 정보를 관리하세요.</p>
+                        <h1 className="text-xl sm:text-3xl font-black text-slate-800">사용자 관리</h1>
+                        <p className="text-xs sm:text-base text-slate-500 mt-1">학생들을 추가하고 토큰 정보를 관리하세요.</p>
                     </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-3 text-sm font-bold text-blue-800">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-bold text-blue-800">
                         총 {users.length}명 등록됨
                     </div>
                 </div>
 
                 {/* 사용자 추가 폼 */}
-                <form onSubmit={handleAddUser} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-end">
+                <form onSubmit={handleAddUser} className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-3 sm:gap-4 items-end">
                     <div className="flex-1 w-full">
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">
                             <UserPlus className="w-4 h-4 inline mr-1" /> 새 사용자 추가
                         </label>
                         <input
@@ -144,14 +143,14 @@ export default function AdminUsersPage() {
                             value={newNickname}
                             onChange={(e) => setNewNickname(e.target.value)}
                             placeholder="학생 이름(닉네임) 입력..."
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm sm:text-base"
                             required
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={isAdding}
-                        className="px-8 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70 whitespace-nowrap"
+                        className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-70 whitespace-nowrap text-sm sm:text-base"
                     >
                         {isAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Plus className="w-5 h-5" /> 추가하기</>}
                     </button>
@@ -161,71 +160,117 @@ export default function AdminUsersPage() {
                 {loading ? (
                     <div className="p-8 text-center text-slate-500">데이터를 불러오는 중...</div>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50 border-b border-slate-100">
-                                    <tr>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600">이름(닉네임)</th>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600">역할</th>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600">보유 토큰</th>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600">환산 용돈</th>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600">가입일</th>
-                                        <th className="px-6 py-4 text-sm font-bold text-slate-600 text-right">관리</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {users.length === 0 ? (
+                    <>
+                        {/* 모바일 카드 레이아웃 */}
+                        <div className="block sm:hidden space-y-3">
+                            {users.length === 0 ? (
+                                <div className="bg-white rounded-xl p-6 text-center text-slate-500 border border-slate-200">
+                                    등록된 사용자가 없습니다. 위에서 학생을 추가해 보세요!
+                                </div>
+                            ) : (
+                                users.map((user) => (
+                                    <div key={user.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-slate-800">{user.nickname}</span>
+                                                {user.role === 'admin' ? (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-800">관리자</span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-100 text-sky-800">학생</span>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteUser(user.id, user.nickname)}
+                                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <button
+                                                onClick={() => handleAdjustTokens(user.id, user.tokens)}
+                                                className="flex items-center gap-1 text-yellow-700 font-bold hover:bg-yellow-50 px-2 py-1 rounded-lg transition-colors"
+                                            >
+                                                <Coins className="w-3.5 h-3.5 text-yellow-500" />
+                                                {user.tokens.toLocaleString()} T
+                                            </button>
+                                            <span className="text-emerald-600 font-semibold text-xs">₩ {(user.tokens * 10).toLocaleString()}</span>
+                                            <span className="text-slate-400 text-xs">
+                                                {new Date(user.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* 데스크톱 테이블 레이아웃 */}
+                        <div className="hidden sm:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50 border-b border-slate-100">
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                                등록된 사용자가 없습니다. 위에서 학생을 추가해 보세요!
-                                            </td>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">이름(닉네임)</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">역할</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">보유 토큰</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">환산 용돈</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">가입일</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600 text-right">관리</th>
                                         </tr>
-                                    ) : (
-                                        users.map((user) => (
-                                            <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-slate-800 text-base">{user.nickname}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {user.role === 'admin' ? (
-                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">관리자</span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">학생</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <button
-                                                        onClick={() => handleAdjustTokens(user.id, user.tokens)}
-                                                        className="flex items-center gap-1.5 text-yellow-700 font-bold hover:bg-yellow-50 px-3 py-1.5 rounded-lg transition-colors"
-                                                        title="클릭하여 토큰 수 조정"
-                                                    >
-                                                        <Coins className="w-4 h-4 text-yellow-500" />
-                                                        {user.tokens.toLocaleString()} T
-                                                    </button>
-                                                </td>
-                                                <td className="px-6 py-4 text-emerald-600 font-semibold">
-                                                    ₩ {(user.tokens * 10).toLocaleString()}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-slate-500">
-                                                    {new Date(user.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => handleDeleteUser(user.id, user.nickname)}
-                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="사용자 삭제"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {users.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                                    등록된 사용자가 없습니다. 위에서 학생을 추가해 보세요!
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                        ) : (
+                                            users.map((user) => (
+                                                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="font-bold text-slate-800 text-base">{user.nickname}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        {user.role === 'admin' ? (
+                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">관리자</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">학생</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={() => handleAdjustTokens(user.id, user.tokens)}
+                                                            className="flex items-center gap-1.5 text-yellow-700 font-bold hover:bg-yellow-50 px-3 py-1.5 rounded-lg transition-colors"
+                                                            title="클릭하여 토큰 수 조정"
+                                                        >
+                                                            <Coins className="w-4 h-4 text-yellow-500" />
+                                                            {user.tokens.toLocaleString()} T
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-emerald-600 font-semibold">
+                                                        ₩ {(user.tokens * 10).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-500">
+                                                        {new Date(user.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            onClick={() => handleDeleteUser(user.id, user.nickname)}
+                                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="사용자 삭제"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>

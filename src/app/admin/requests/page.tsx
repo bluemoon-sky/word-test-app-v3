@@ -23,7 +23,6 @@ export default function AdminRequestsPage() {
     const fetchRequests = async () => {
         try {
             setLoading(true);
-            // users 테이블과 조인하여 학생 이름(nickname)을 가져옴
             const { data, error } = await supabase
                 .from('exchange_requests')
                 .select(`
@@ -53,7 +52,6 @@ export default function AdminRequestsPage() {
 
             if (error) throw error;
 
-            // Update local state
             setRequests((prev) =>
                 prev.map((req) =>
                     req.id === id ? { ...req, status: 'completed', updated_at: new Date().toISOString() } : req
@@ -70,10 +68,56 @@ export default function AdminRequestsPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             <AdminNav />
-            <div className="p-8 max-w-5xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-slate-800">용돈 정산 관리</h1>
+            <div className="p-3 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-8">
+                <h1 className="text-xl sm:text-3xl font-bold text-slate-800">용돈 정산 관리</h1>
 
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                {/* 모바일 카드 레이아웃 */}
+                <div className="block sm:hidden space-y-3">
+                    {requests.length === 0 ? (
+                        <div className="bg-white rounded-xl p-6 text-center text-slate-500 border border-slate-200">
+                            정산 요청 내역이 없습니다.
+                        </div>
+                    ) : (
+                        requests.map((req) => (
+                            <div key={req.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="font-bold text-slate-800">{req.users?.nickname || '알 수 없음'}</span>
+                                    {req.status === 'completed' ? (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <CheckCircle className="w-3 h-3 mr-0.5" /> 지급 완료
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <Clock className="w-3 h-3 mr-0.5" /> 대기 중
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center justify-between text-sm mb-2">
+                                    <span className="text-orange-600 font-semibold">{req.tokens_deducted} T</span>
+                                    <span className="text-green-600 font-bold">{req.amount.toLocaleString()} 원</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-slate-400">
+                                        {new Date(req.created_at).toLocaleDateString('ko-KR', {
+                                            month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                                        })}
+                                    </span>
+                                    {req.status === 'pending' && (
+                                        <button
+                                            onClick={() => handleApprove(req.id)}
+                                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+                                        >
+                                            지급 완료 처리
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* 데스크톱 테이블 레이아웃 */}
+                <div className="hidden sm:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200">
