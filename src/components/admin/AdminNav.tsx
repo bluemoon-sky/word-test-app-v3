@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Users, Receipt, LogOut } from 'lucide-react';
+import { BookOpen, Users, Receipt, LogOut, ClipboardCheck } from 'lucide-react';
 
 // 관리자 페이지 공통 내비게이션 바
 export default function AdminNav() {
@@ -10,9 +10,10 @@ export default function AdminNav() {
     const router = useRouter();
 
     const navItems = [
-        { href: '/admin/words', label: '단어장 관리', icon: BookOpen },
-        { href: '/admin/users', label: '사용자 관리', icon: Users },
-        { href: '/admin/requests', label: '정산 관리', icon: Receipt },
+        { href: '/admin/words', label: '단어장', icon: BookOpen },
+        { href: '/admin/users', label: '사용자', icon: Users },
+        { href: '/admin/tests', label: '시험 승인', icon: ClipboardCheck },
+        { href: '/admin/requests', label: '정산', icon: Receipt },
     ];
 
     const handleLogout = () => {
@@ -32,8 +33,8 @@ export default function AdminNav() {
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${isActive
-                                        ? 'bg-slate-800 text-white'
-                                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                                    ? 'bg-slate-800 text-white'
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                                     }`}
                             >
                                 <item.icon className="w-4 h-4" />

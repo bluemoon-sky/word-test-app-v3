@@ -1,19 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
-import { Word, User } from '@/types';
+import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Coins, LogOut, Loader2, BookOpen, Zap } from 'lucide-react';
+import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle } from 'lucide-react';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<Word[]>([]);
-  // 학생 플로우 상태: dashboard → study → test
-  const [mode, setMode] = useState<'dashboard' | 'study' | 'test'>('dashboard');
+  // 학생 플로우: dashboard → study → request_sent → test
+  const [mode, setMode] = useState<'dashboard' | 'study' | 'request_sent' | 'test'>('dashboard');
+  const [studyCompleted, setStudyCompleted] = useState(false);
+  const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
+  const [checkingRequest, setCheckingRequest] = useState(false);
+
+  // 시험 요청 상태 확인하는 함수
+  const checkTestRequest = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('test_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (data) {
+      setTestRequest(data as TestRequest);
+      if (data.status === 'approved') {
+        setStudyCompleted(true);
+      }
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +42,6 @@ export default function Home() {
 
     setLoading(true);
     try {
-      // 닉네임으로 유저 찾기
       let { data: existingUser, error: findError } = await supabase
         .from('users')
         .select('*')
@@ -32,28 +52,28 @@ export default function Home() {
         throw findError;
       }
 
-      // 유저가 없으면 새로 생성 (기본 학생)
       if (!existingUser) {
         const { data: newUser, error: createError } = await supabase
           .from('users')
           .insert([{ nickname: nickname.trim(), role: 'kid' }])
           .select()
           .single();
-
         if (createError) throw createError;
         existingUser = newUser;
       }
 
       setUser(existingUser as User);
 
-      // 공통 단어 + 해당 학생 전용 단어 가져오기
+      // 단어 가져오기
       const { data: wordsData, error: wordsError } = await supabase
         .from('words')
         .select('*')
         .or(`user_id.is.null,user_id.eq.${existingUser.id}`);
-
       if (wordsError) throw wordsError;
       setWords(wordsData as Word[]);
+
+      // 기존 시험 요청 확인
+      await checkTestRequest(existingUser.id);
 
     } catch (error) {
       console.error('Error logging in:', error);
@@ -63,25 +83,52 @@ export default function Home() {
     }
   };
 
+  // 시험 요청 보내기
+  const handleRequestTest = async () => {
+    if (!user) return;
+
+    try {
+      // 기존 pending 요청이 있으면 사용
+      if (testRequest && testRequest.status === 'pending') {
+        setMode('request_sent');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('test_requests')
+        .insert([{ user_id: user.id, status: 'pending' }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setTestRequest(data as TestRequest);
+      setMode('request_sent');
+    } catch (error) {
+      console.error('Error requesting test:', error);
+      alert('시험 요청 중 오류가 발생했어요.');
+    }
+  };
+
+  // 승인 여부 새로고침
+  const handleRefreshStatus = async () => {
+    if (!user) return;
+    setCheckingRequest(true);
+    await checkTestRequest(user.id);
+    setCheckingRequest(false);
+  };
+
   const handleExchange = async () => {
     if (!user || user.tokens <= 0) {
       alert('교환할 토큰이 없어요!');
       return;
     }
-
     const confirmExchange = window.confirm(`현재 ${user.tokens} 토큰을 용돈 ${(user.tokens * 10).toLocaleString()}원으로 교환 신청할까요?`);
     if (!confirmExchange) return;
 
     try {
       const { error: requestError } = await supabase
         .from('exchange_requests')
-        .insert([{
-          user_id: user.id,
-          tokens_deducted: user.tokens,
-          amount: user.tokens * 10,
-          status: 'pending'
-        }]);
-
+        .insert([{ user_id: user.id, tokens_deducted: user.tokens, amount: user.tokens * 10, status: 'pending' }]);
       if (requestError) throw requestError;
 
       const { data: updatedUser, error: updateError } = await supabase
@@ -90,12 +137,10 @@ export default function Home() {
         .eq('id', user.id)
         .select()
         .single();
-
       if (updateError) throw updateError;
 
       setUser(updatedUser as User);
       alert('용돈 교환 신청이 완료되었어요! 부모님/선생님을 기다려 주세요.');
-
     } catch (error) {
       console.error('Error exchanging tokens:', error);
       alert('교환 신청 중 오류가 발생했어요.');
@@ -154,8 +199,62 @@ export default function Home() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <WordStudy
           words={words}
-          onFinishStudy={() => setMode('test')}
+          onFinishStudy={() => {
+            setStudyCompleted(true);
+            setMode('dashboard');
+          }}
         />
+      </div>
+    );
+  }
+
+  // ─── 시험 요청 대기 화면 ───
+  if (mode === 'request_sent') {
+    const isApproved = testRequest?.status === 'approved';
+
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-8 text-center">
+          {isApproved ? (
+            <>
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                ✅
+              </div>
+              <h2 className="text-2xl font-black text-emerald-700 mb-2">시험이 승인되었어요!</h2>
+              <p className="text-slate-500 font-medium mb-8">부모님/선생님이 시험을 허락해 주셨어! 시작해 볼까?</p>
+              <button
+                onClick={() => setMode('test')}
+                className="w-full py-4 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-black text-xl rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-500 hover:to-amber-600 transition-all"
+              >
+                🚀 시험 시작하기!
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-pulse">
+                ⏳
+              </div>
+              <h2 className="text-2xl font-black text-amber-700 mb-2">승인 대기 중...</h2>
+              <p className="text-slate-500 font-medium mb-2">부모님/선생님의 승인을 기다리고 있어요!</p>
+              <p className="text-slate-400 text-sm mb-8">승인이 완료되면 아래 버튼을 눌러서 확인해 봐.</p>
+
+              <button
+                onClick={handleRefreshStatus}
+                disabled={checkingRequest}
+                className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70 mb-4"
+              >
+                {checkingRequest ? <Loader2 className="w-5 h-5 animate-spin" /> : '🔄 승인 여부 확인하기'}
+              </button>
+
+              <button
+                onClick={() => setMode('dashboard')}
+                className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors"
+              >
+                돌아가기
+              </button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -167,8 +266,14 @@ export default function Home() {
         <QuizViewer
           words={words}
           userId={user.id}
-          onFinish={() => {
+          onFinish={async () => {
             setMode('dashboard');
+            setStudyCompleted(false);
+            setTestRequest(null);
+            // 시험 완료 후 사용한 요청 삭제/리셋 (다음 번 학습→신청 사이클을 위해)
+            if (testRequest) {
+              await supabase.from('test_requests').delete().eq('id', testRequest.id);
+            }
             refreshUser();
           }}
         />
@@ -204,7 +309,7 @@ export default function Home() {
               </div>
             </div>
 
-            <button onClick={() => setUser(null)} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
+            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('dashboard'); }} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -215,37 +320,97 @@ export default function Home() {
           <div className="lg:col-span-2">
             {words.length > 0 ? (
               <div className="space-y-4">
-                {/* 단어 학습 버튼 */}
+                {/* 1단계: 단어 학습 */}
                 <button
                   onClick={() => setMode('study')}
-                  className="w-full bg-white rounded-3xl shadow-sm border-4 border-indigo-200 p-8 text-left hover:shadow-lg hover:border-indigo-300 transition-all group"
+                  className={`w-full bg-white rounded-3xl shadow-sm border-4 p-8 text-left transition-all group ${studyCompleted
+                      ? 'border-emerald-200 opacity-80'
+                      : 'border-indigo-200 hover:shadow-lg hover:border-indigo-300'
+                    }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <BookOpen className="w-8 h-8 text-indigo-500" />
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${studyCompleted ? 'bg-emerald-100' : 'bg-indigo-100'
+                      }`}>
+                      {studyCompleted ? (
+                        <CheckCircle className="w-8 h-8 text-emerald-500" />
+                      ) : (
+                        <BookOpen className="w-8 h-8 text-indigo-500" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-slate-800">📖 단어 학습하기</h3>
-                      <p className="text-slate-500 font-medium mt-1">카드를 넘기면서 {words.length}개의 단어를 먼저 공부해 봐!</p>
+                      <h3 className="text-xl font-black text-slate-800">
+                        {studyCompleted ? '✅ 학습 완료!' : '📖 1단계: 단어 학습하기'}
+                      </h3>
+                      <p className="text-slate-500 font-medium mt-1">
+                        {studyCompleted
+                          ? '잘했어! 다시 학습하려면 눌러봐.'
+                          : `카드를 넘기며 ${words.length}개의 단어를 공부해 봐!`
+                        }
+                      </p>
                     </div>
                   </div>
                 </button>
 
-                {/* 바로 테스트 버튼 */}
-                <button
-                  onClick={() => setMode('test')}
-                  className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl shadow-lg shadow-orange-500/20 p-8 text-left hover:shadow-xl transition-all group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Zap className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-white">⚡ 바로 테스트 시작!</h3>
-                      <p className="text-orange-100 font-medium mt-1">학습 없이 바로 실력을 테스트해 봐! 맞추면 토큰 획득!</p>
-                    </div>
+                {/* 2단계: 시험 요청/시험 보기 */}
+                {studyCompleted && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    {testRequest?.status === 'approved' ? (
+                      // 승인됨 → 시험 가능
+                      <button
+                        onClick={() => setMode('test')}
+                        className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl shadow-lg shadow-orange-500/20 p-8 text-left hover:shadow-xl transition-all group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-3xl">
+                            🚀
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black text-white">⚡ 2단계: 시험 시작!</h3>
+                            <p className="text-orange-100 font-medium mt-1">승인이 완료되었어! 시험을 봐서 토큰을 획득해 봐!</p>
+                          </div>
+                        </div>
+                      </button>
+                    ) : testRequest?.status === 'pending' ? (
+                      // 대기 중
+                      <button
+                        onClick={() => setMode('request_sent')}
+                        className="w-full bg-white rounded-3xl shadow-sm border-4 border-amber-200 p-8 text-left hover:shadow-lg transition-all group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Clock className="w-8 h-8 text-amber-500" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black text-amber-700">⏳ 시험 승인 대기 중...</h3>
+                            <p className="text-slate-500 font-medium mt-1">부모님/선생님의 승인을 기다리고 있어. 여기를 눌러 확인해 봐!</p>
+                          </div>
+                        </div>
+                      </button>
+                    ) : (
+                      // 아직 요청 안 함
+                      <button
+                        onClick={handleRequestTest}
+                        className="w-full bg-white rounded-3xl shadow-sm border-4 border-blue-200 p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-3xl">
+                            📝
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black text-slate-800">📝 2단계: 시험 요청하기</h3>
+                            <p className="text-slate-500 font-medium mt-1">학습을 마쳤어! 부모님/선생님에게 시험 승인을 요청해 봐!</p>
+                          </div>
+                        </div>
+                      </button>
+                    )}
                   </div>
-                </button>
+                )}
+
+                {!studyCompleted && (
+                  <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center">
+                    <p className="text-slate-400 font-bold">🔒 먼저 단어를 학습해야 시험을 볼 수 있어!</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-white p-10 rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">

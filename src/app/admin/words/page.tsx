@@ -17,6 +17,7 @@ export default function AdminWordsPage() {
     const [newWord, setNewWord] = useState('');
     const [newMeaning, setNewMeaning] = useState('');
     const [newPronun, setNewPronun] = useState('');
+    const [newKoreanPronun, setNewKoreanPronun] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState<string>('all'); // 'all' 이면 공통 단어
     const [isAdding, setIsAdding] = useState(false);
 
@@ -74,6 +75,7 @@ export default function AdminWordsPage() {
                     word: newWord.trim(),
                     meaning: newMeaning.trim(),
                     pronunciation: newPronun.trim() || null,
+                    korean_pronunciation: newKoreanPronun.trim() || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
                 }])
                 .select()
@@ -87,6 +89,7 @@ export default function AdminWordsPage() {
             setNewWord('');
             setNewMeaning('');
             setNewPronun('');
+            setNewKoreanPronun('');
         } catch (error) {
             console.error('단어 추가 에러:', error);
             alert('단어 추가에 실패했습니다.');
@@ -193,6 +196,18 @@ export default function AdminWordsPage() {
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                                         placeholder="예: [æpl]"
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">한국어 발음 *</label>
+                                    <input
+                                        type="text"
+                                        value={newKoreanPronun}
+                                        onChange={(e) => setNewKoreanPronun(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
+                                        placeholder="예: 애플"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1 ml-1">영단어의 한국어 발음을 입력해 주세요.</p>
                                 </div>
 
                                 <div>
