@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase';
 import { Word, User } from '@/types';
 import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
-import { englishToKoreanPronunciation } from '@/lib/pronunciation';
 
 export default function AdminWordsPage() {
     const [words, setWords] = useState<Word[]>([]);
@@ -172,12 +171,7 @@ export default function AdminWordsPage() {
                                     <input
                                         type="text"
                                         value={newWord}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setNewWord(val);
-                                            // 새 단어 입력 시 한국어 발음 자동 완성 (기존 입력값이 아예 없거나, 자동 완성된 값과 같을 때만 덮어씀)
-                                            setNewKoreanPronun(englishToKoreanPronunciation(val));
-                                        }}
+                                        onChange={(e) => setNewWord(e.target.value)}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
                                         placeholder="예: apple"
                                         required
@@ -280,13 +274,7 @@ export default function AdminWordsPage() {
                                                                 <input
                                                                     type="text"
                                                                     value={editWord}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
-                                                                        setEditWord(val);
-                                                                        if (!editKoreanPronun) {
-                                                                            setEditKoreanPronun(englishToKoreanPronunciation(val));
-                                                                        }
-                                                                    }}
+                                                                    onChange={(e) => setEditWord(e.target.value)}
                                                                     className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                                                 />
                                                                 <input
