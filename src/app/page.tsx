@@ -53,13 +53,8 @@ export default function Home() {
       }
 
       if (!existingUser) {
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert([{ nickname: nickname.trim(), role: 'kid' }])
-          .select()
-          .single();
-        if (createError) throw createError;
-        existingUser = newUser;
+        alert('등록되지 않은 이름이에요! 부모님이나 선생님께 여쭤보세요.');
+        return;
       }
 
       setUser(existingUser as User);
@@ -203,6 +198,7 @@ export default function Home() {
             setStudyCompleted(true);
             setMode('dashboard');
           }}
+          onBack={() => setMode('dashboard')}
         />
       </div>
     );
@@ -324,8 +320,8 @@ export default function Home() {
                 <button
                   onClick={() => setMode('study')}
                   className={`w-full bg-white rounded-3xl shadow-sm border-4 p-8 text-left transition-all group ${studyCompleted
-                      ? 'border-emerald-200 opacity-80'
-                      : 'border-indigo-200 hover:shadow-lg hover:border-indigo-300'
+                    ? 'border-emerald-200 opacity-80'
+                    : 'border-indigo-200 hover:shadow-lg hover:border-indigo-300'
                     }`}
                 >
                   <div className="flex items-center gap-4">
