@@ -152,12 +152,12 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-blue-200 p-8 animate-in zoom-in-95 duration-500">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner text-4xl">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-blue-200 p-6 sm:p-8 animate-in zoom-in-95 duration-500">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-inner text-3xl sm:text-4xl">
             🚀
           </div>
-          <h1 className="text-3xl font-black text-slate-800 mb-2">영단어 마스터!</h1>
-          <p className="text-slate-500 font-medium mb-8">내 이름을 입력하고 단어 시험을 시작해 봐!</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">영단어 마스터!</h1>
+          <p className="text-sm sm:text-base text-slate-500 font-medium mb-6 sm:mb-8">내 이름을 입력하고 단어 시험을 시작해 봐!</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -165,13 +165,13 @@ export default function Home() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="여기에 이름 입력..."
-              className="w-full text-center text-xl font-bold py-4 px-6 bg-slate-50 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:bg-white focus:outline-none transition-all"
+              className="w-full text-center text-lg sm:text-xl font-bold py-3 sm:py-4 px-4 sm:px-6 bg-slate-50 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:bg-white focus:outline-none transition-all"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold text-xl rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70"
+              className="w-full py-3 sm:py-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70"
             >
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : '접속하기!'}
             </button>
@@ -279,65 +279,65 @@ export default function Home() {
 
   // ─── 메인 대시보드 화면 ───
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 p-3 sm:p-4 md:p-8">
+      <div className="max-w-5xl mx-auto space-y-5 sm:space-y-8">
 
         {/* 헤더 섹션 */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-100">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 text-3xl">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border-2 border-slate-100">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 text-2xl sm:text-3xl">
               😎
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-800">안녕, <span className="text-blue-600">{user.nickname}</span>!</h1>
-              <p className="text-slate-500 font-medium">오늘도 단어 마스터가 되어볼까?</p>
+              <h1 className="text-lg sm:text-2xl font-black text-slate-800">안녕, <span className="text-blue-600">{user.nickname}</span>!</h1>
+              <p className="text-xs sm:text-base text-slate-500 font-medium">오늘도 단어 마스터가 되어볼까?</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="bg-yellow-50 flex items-center p-1 pr-6 rounded-2xl border-2 border-yellow-200">
-              <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center shadow-inner mr-3 text-yellow-900">
-                <Coins className="w-6 h-6" />
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="bg-yellow-50 flex items-center p-1 pr-4 sm:pr-6 rounded-xl sm:rounded-2xl border-2 border-yellow-200 flex-1 sm:flex-auto">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-400 rounded-lg sm:rounded-xl flex items-center justify-center shadow-inner mr-2 sm:mr-3 text-yellow-900">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-yellow-600 mb-0.5">보유 토큰</p>
-                <p className="text-xl font-black text-yellow-700 leading-none">{user.tokens.toLocaleString()}</p>
+                <p className="text-[10px] sm:text-xs font-bold text-yellow-600 mb-0.5">보유 토큰</p>
+                <p className="text-lg sm:text-xl font-black text-yellow-700 leading-none">{user.tokens.toLocaleString()}</p>
               </div>
             </div>
 
-            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('dashboard'); }} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
-              <LogOut className="w-5 h-5" />
+            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('dashboard'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* 액션 섹션 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-2">
             {words.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* 1단계: 단어 학습 */}
                 <button
                   onClick={() => setMode('study')}
-                  className={`w-full bg-white rounded-3xl shadow-sm border-4 p-8 text-left transition-all group ${studyCompleted
+                  className={`w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 p-5 sm:p-8 text-left transition-all group ${studyCompleted
                     ? 'border-emerald-200 opacity-80'
                     : 'border-indigo-200 hover:shadow-lg hover:border-indigo-300'
                     }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform ${studyCompleted ? 'bg-emerald-100' : 'bg-indigo-100'
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${studyCompleted ? 'bg-emerald-100' : 'bg-indigo-100'
                       }`}>
                       {studyCompleted ? (
-                        <CheckCircle className="w-8 h-8 text-emerald-500" />
+                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" />
                       ) : (
-                        <BookOpen className="w-8 h-8 text-indigo-500" />
+                        <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500" />
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-black text-slate-800">
+                    <div className="min-w-0">
+                      <h3 className="text-base sm:text-xl font-black text-slate-800">
                         {studyCompleted ? '✅ 학습 완료!' : '📖 1단계: 단어 학습하기'}
                       </h3>
-                      <p className="text-slate-500 font-medium mt-1">
+                      <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
                         {studyCompleted
                           ? '잘했어! 다시 학습하려면 눌러봐.'
                           : `카드를 넘기며 ${words.length}개의 단어를 공부해 봐!`
@@ -354,15 +354,15 @@ export default function Home() {
                       // 승인됨 → 시험 가능
                       <button
                         onClick={() => setMode('test')}
-                        className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl shadow-lg shadow-orange-500/20 p-8 text-left hover:shadow-xl transition-all group"
+                        className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-2xl sm:rounded-3xl shadow-lg shadow-orange-500/20 p-5 sm:p-8 text-left hover:shadow-xl transition-all group"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-3xl">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">
                             🚀
                           </div>
-                          <div>
-                            <h3 className="text-xl font-black text-white">⚡ 2단계: 시험 시작!</h3>
-                            <p className="text-orange-100 font-medium mt-1">승인이 완료되었어! 시험을 봐서 토큰을 획득해 봐!</p>
+                          <div className="min-w-0">
+                            <h3 className="text-base sm:text-xl font-black text-white">⚡ 2단계: 시험 시작!</h3>
+                            <p className="text-xs sm:text-base text-orange-100 font-medium mt-0.5 sm:mt-1">승인이 완료되었어! 시험을 봐서 토큰을 획득해 봐!</p>
                           </div>
                         </div>
                       </button>
@@ -370,15 +370,15 @@ export default function Home() {
                       // 대기 중
                       <button
                         onClick={() => setMode('request_sent')}
-                        className="w-full bg-white rounded-3xl shadow-sm border-4 border-amber-200 p-8 text-left hover:shadow-lg transition-all group"
+                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-amber-200 p-5 sm:p-8 text-left hover:shadow-lg transition-all group"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Clock className="w-8 h-8 text-amber-500" />
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
                           </div>
-                          <div>
-                            <h3 className="text-xl font-black text-amber-700">⏳ 시험 승인 대기 중...</h3>
-                            <p className="text-slate-500 font-medium mt-1">부모님/선생님의 승인을 기다리고 있어. 여기를 눌러 확인해 봐!</p>
+                          <div className="min-w-0">
+                            <h3 className="text-base sm:text-xl font-black text-amber-700">⏳ 시험 승인 대기 중...</h3>
+                            <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">부모님/선생님의 승인을 기다리고 있어. 여기를 눌러 확인해 봐!</p>
                           </div>
                         </div>
                       </button>
@@ -386,15 +386,15 @@ export default function Home() {
                       // 아직 요청 안 함
                       <button
                         onClick={handleRequestTest}
-                        className="w-full bg-white rounded-3xl shadow-sm border-4 border-blue-200 p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group"
+                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-3xl">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">
                             📝
                           </div>
-                          <div>
-                            <h3 className="text-xl font-black text-slate-800">📝 2단계: 시험 요청하기</h3>
-                            <p className="text-slate-500 font-medium mt-1">학습을 마쳤어! 부모님/선생님에게 시험 승인을 요청해 봐!</p>
+                          <div className="min-w-0">
+                            <h3 className="text-base sm:text-xl font-black text-slate-800">📝 2단계: 시험 요청하기</h3>
+                            <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">학습을 마쳤어! 부모님/선생님에게 시험 승인을 요청해 봐!</p>
                           </div>
                         </div>
                       </button>
@@ -417,18 +417,18 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex flex-col gap-6">
-            <div className="bg-gradient-to-b from-emerald-400 to-teal-500 rounded-3xl p-6 text-white shadow-lg shadow-teal-500/30">
-              <div className="mb-6">
-                <h3 className="font-bold text-teal-100 mb-2">현재 교환 가능한 용돈</h3>
-                <p className="text-4xl font-black">₩ {(user.tokens * 10).toLocaleString()}</p>
-                <p className="text-sm text-teal-100 mt-2 font-medium bg-black/10 inline-block px-3 py-1 rounded-full">1 토큰당 10원으로 계산됨</p>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="bg-gradient-to-b from-emerald-400 to-teal-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-lg shadow-teal-500/30">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="font-bold text-teal-100 mb-1 sm:mb-2 text-sm sm:text-base">현재 교환 가능한 용돈</h3>
+                <p className="text-2xl sm:text-4xl font-black">₩ {(user.tokens * 10).toLocaleString()}</p>
+                <p className="text-xs sm:text-sm text-teal-100 mt-1.5 sm:mt-2 font-medium bg-black/10 inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">1 토큰당 10원으로 계산됨</p>
               </div>
 
               <button
                 onClick={handleExchange}
                 disabled={user.tokens <= 0}
-                className="w-full py-4 bg-white text-teal-700 font-bold text-lg rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                className="w-full py-3 sm:py-4 bg-white text-teal-700 font-bold text-base sm:text-lg rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
               >
                 용돈으로 교환 신청하기 💸
               </button>
