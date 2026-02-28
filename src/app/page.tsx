@@ -191,7 +191,7 @@ export default function Home() {
   // ─── 학습 모드 화면 ───
   if (mode === 'study') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4">
         <WordStudy
           words={words}
           onFinishStudy={() => {
@@ -209,35 +209,35 @@ export default function Home() {
     const isApproved = testRequest?.status === 'approved';
 
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-8 text-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-3 sm:p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl border-4 border-amber-200 p-5 sm:p-8 text-center">
           {isApproved ? (
             <>
-              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-3xl sm:text-4xl">
                 ✅
               </div>
-              <h2 className="text-2xl font-black text-emerald-700 mb-2">시험이 승인되었어요!</h2>
-              <p className="text-slate-500 font-medium mb-8">부모님/선생님이 시험을 허락해 주셨어! 시작해 볼까?</p>
+              <h2 className="text-xl sm:text-2xl font-black text-emerald-700 mb-1.5 sm:mb-2">시험이 승인되었어요!</h2>
+              <p className="text-xs sm:text-base text-slate-500 font-medium mb-5 sm:mb-8">부모님/선생님이 시험을 허락해 주셨어! 시작해 볼까?</p>
               <button
                 onClick={() => setMode('test')}
-                className="w-full py-4 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-black text-xl rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-500 hover:to-amber-600 transition-all"
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-black text-lg sm:text-xl rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-500 hover:to-amber-600 transition-all"
               >
                 🚀 시험 시작하기!
               </button>
             </>
           ) : (
             <>
-              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-pulse">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-3xl sm:text-4xl animate-pulse">
                 ⏳
               </div>
-              <h2 className="text-2xl font-black text-amber-700 mb-2">승인 대기 중...</h2>
-              <p className="text-slate-500 font-medium mb-2">부모님/선생님의 승인을 기다리고 있어요!</p>
-              <p className="text-slate-400 text-sm mb-8">승인이 완료되면 아래 버튼을 눌러서 확인해 봐.</p>
+              <h2 className="text-xl sm:text-2xl font-black text-amber-700 mb-1.5 sm:mb-2">승인 대기 중...</h2>
+              <p className="text-xs sm:text-base text-slate-500 font-medium mb-1.5 sm:mb-2">부모님/선생님의 승인을 기다리고 있어요!</p>
+              <p className="text-slate-400 text-xs sm:text-sm mb-5 sm:mb-8">승인이 완료되면 아래 버튼을 눌러서 확인해 봐.</p>
 
               <button
                 onClick={handleRefreshStatus}
                 disabled={checkingRequest}
-                className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70 mb-4"
+                className="w-full py-3 sm:py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-base sm:text-lg rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70 mb-3 sm:mb-4"
               >
                 {checkingRequest ? <Loader2 className="w-5 h-5 animate-spin" /> : '🔄 승인 여부 확인하기'}
               </button>
@@ -258,7 +258,7 @@ export default function Home() {
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4">
         <QuizViewer
           words={words}
           userId={user.id}
@@ -403,16 +403,16 @@ export default function Home() {
                 )}
 
                 {!studyCompleted && (
-                  <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center">
-                    <p className="text-slate-400 font-bold">🔒 먼저 단어를 학습해야 시험을 볼 수 있어!</p>
+                  <div className="bg-slate-50 rounded-xl sm:rounded-2xl border-2 border-dashed border-slate-200 p-4 sm:p-6 text-center">
+                    <p className="text-xs sm:text-base text-slate-400 font-bold">🔒 먼저 단어를 학습해야 시험을 볼 수 있어!</p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="bg-white p-10 rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">
-                <div className="text-6xl mb-4 grayscale opacity-50">📭</div>
-                <h3 className="text-xl font-bold text-slate-700 mb-2">아직 외울 단어가 없어!</h3>
-                <p className="text-slate-500 font-medium">선생님이나 부모님이 단어를 추가해 줄 때까지 기다려 줘.</p>
+              <div className="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">
+                <div className="text-4xl sm:text-6xl mb-3 sm:mb-4 grayscale opacity-50">📭</div>
+                <h3 className="text-base sm:text-xl font-bold text-slate-700 mb-1.5 sm:mb-2">아직 외울 단어가 없어!</h3>
+                <p className="text-xs sm:text-base text-slate-500 font-medium">선생님이나 부모님이 단어를 추가해 줄 때까지 기다려 줘.</p>
               </div>
             )}
           </div>
