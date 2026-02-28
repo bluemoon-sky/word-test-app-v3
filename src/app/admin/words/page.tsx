@@ -25,6 +25,7 @@ export default function AdminWordsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editWord, setEditWord] = useState('');
     const [editMeaning, setEditMeaning] = useState('');
+    const [editKoreanPronun, setEditKoreanPronun] = useState('');
 
     useEffect(() => {
         if (typeof window !== 'undefined' && localStorage.getItem('isAdmin') !== 'true') {
@@ -115,6 +116,7 @@ export default function AdminWordsPage() {
         setEditingId(word.id);
         setEditWord(word.word);
         setEditMeaning(word.meaning);
+        setEditKoreanPronun(word.korean_pronunciation || '');
     };
 
     const handleUpdate = async () => {
@@ -126,6 +128,7 @@ export default function AdminWordsPage() {
                 .update({
                     word: editWord.trim(),
                     meaning: editMeaning.trim(),
+                    korean_pronunciation: editKoreanPronun.trim() || null,
                 })
                 .eq('id', editingId)
                 .select()
@@ -267,15 +270,25 @@ export default function AdminWordsPage() {
 
                                                     <td className="px-6 py-4">
                                                         {editingId === word.id ? (
-                                                            <input
-                                                                type="text"
-                                                                value={editWord}
-                                                                onChange={(e) => setEditWord(e.target.value)}
-                                                                className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                            />
+                                                            <div className="space-y-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={editWord}
+                                                                    onChange={(e) => setEditWord(e.target.value)}
+                                                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    value={editKoreanPronun}
+                                                                    onChange={(e) => setEditKoreanPronun(e.target.value)}
+                                                                    placeholder="한국어 발음"
+                                                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                                />
+                                                            </div>
                                                         ) : (
                                                             <div className="font-bold text-slate-800">
                                                                 {word.word}
+                                                                {word.korean_pronunciation && <span className="ml-2 text-xs font-bold text-blue-500">[{word.korean_pronunciation}]</span>}
                                                                 {word.pronunciation && <span className="ml-2 text-xs font-normal text-slate-400">{word.pronunciation}</span>}
                                                             </div>
                                                         )}
