@@ -145,7 +145,7 @@ export default function AdminWordsPage() {
     if (loading) return <div className="p-8 text-center text-slate-500">데이터를 불러오는 중...</div>;
 
     // 할당 대상 배지 컴포넌트
-    const AssignBadge = ({ userId }: { userId: string | null }) => {
+    const AssignBadge = ({ userId }: { userId: string | null | undefined }) => {
         if (userId) {
             return (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-purple-100 text-purple-800">
