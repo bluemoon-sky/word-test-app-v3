@@ -219,12 +219,12 @@ export default function Home() {
               </button>
             </div>
 
-            {user.role === 'admin' && (
-              <a href="/admin/requests" className="bg-slate-800 text-white p-6 rounded-3xl font-bold text-lg flex items-center justify-between hover:bg-slate-700 transition-colors shadow-lg">
-                <span>관리자 대시보드</span>
+            <div>
+              <a href="/admin" className="bg-slate-800 text-white p-6 rounded-3xl font-bold text-lg flex items-center justify-between hover:bg-slate-700 transition-colors shadow-lg mt-2">
+                <span>관리자 메뉴 (부모님/선생님) 🔒</span>
                 <span className="bg-white/20 p-2 rounded-xl">👉</span>
               </a>
-            )}
+            </div>
           </div>
         </div>
       </div>

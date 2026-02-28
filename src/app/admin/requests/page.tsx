@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { ExchangeRequest } from '@/types';
 import { CheckCircle, Clock } from 'lucide-react';
@@ -8,10 +9,15 @@ import { CheckCircle, Clock } from 'lucide-react';
 export default function AdminRequestsPage() {
     const [requests, setRequests] = useState<ExchangeRequest[]>([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && localStorage.getItem('isAdmin') !== 'true') {
+            router.push('/admin');
+            return;
+        }
         fetchRequests();
-    }, []);
+    }, [router]);
 
     const fetchRequests = async () => {
         try {

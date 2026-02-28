@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Word, User } from '@/types';
 import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
@@ -10,6 +11,7 @@ export default function AdminWordsPage() {
     const [words, setWords] = useState<Word[]>([]);
     const [students, setStudents] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     // 새 단어 폼 상태
     const [newWord, setNewWord] = useState('');
@@ -24,8 +26,12 @@ export default function AdminWordsPage() {
     const [editMeaning, setEditMeaning] = useState('');
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && localStorage.getItem('isAdmin') !== 'true') {
+            router.push('/admin');
+            return;
+        }
         fetchData();
-    }, []);
+    }, [router]);
 
     const fetchData = async () => {
         try {
