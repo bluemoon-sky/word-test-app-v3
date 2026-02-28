@@ -180,7 +180,7 @@ export default function Home() {
           <div className="mt-8 pt-6 border-t border-slate-100 flex justify-center">
             <a href="/admin" className="text-sm font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
               <LogOut className="w-4 h-4" />
-              부모님/선생님 메뉴
+              관리자 메뉴
             </a>
           </div>
         </div>
