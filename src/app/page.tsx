@@ -131,6 +131,13 @@ export default function Home() {
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : '접속하기!'}
             </button>
           </form>
+
+          <div className="mt-8 pt-6 border-t border-slate-100 flex justify-center">
+            <a href="/admin" className="text-sm font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors">
+              <LogOut className="w-4 h-4" />
+              부모님/선생님 메뉴
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -219,12 +226,6 @@ export default function Home() {
               </button>
             </div>
 
-            <div>
-              <a href="/admin" className="bg-slate-800 text-white p-6 rounded-3xl font-bold text-lg flex items-center justify-between hover:bg-slate-700 transition-colors shadow-lg mt-2">
-                <span>관리자 메뉴 (부모님/선생님) 🔒</span>
-                <span className="bg-white/20 p-2 rounded-xl">👉</span>
-              </a>
-            </div>
           </div>
         </div>
       </div>
