@@ -11,6 +11,7 @@ export type User = {
     current_unlocked_day?: number;
     current_streak?: number;
     last_study_date?: string;
+    last_roulette_date?: string;
     created_at: string;
 };
 

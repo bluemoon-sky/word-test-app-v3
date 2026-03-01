@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Word } from '@/types';
-import { Check, X, ArrowRight, Coins, Star, RotateCcw, Volume2 } from 'lucide-react';
+import { Check, X, ArrowRight, Coins, Star, RotateCcw, Volume2, Zap } from 'lucide-react';
 import { speakWord } from '@/lib/tts';
+import confetti from 'canvas-confetti';
 
 type Props = {
     words: Word[];
@@ -29,6 +30,8 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
     const [earnedTokens, setEarnedTokens] = useState(0);
     const [wrongWordIds, setWrongWordIds] = useState<string[]>([]);
     const [isMounted, setIsMounted] = useState(false);
+    const [combo, setCombo] = useState(0);
+    const [showComboAlert, setShowComboAlert] = useState(false);
 
     useEffect(() => {
         const shuffled = [...words].sort(() => Math.random() - 0.5);
@@ -63,8 +66,28 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
             setStatus('correct');
             setScore(s => s + 1);
             setEarnedTokens(t => t + 1);
+            const newCombo = combo + 1;
+            setCombo(newCombo);
+
+            // 정답 폭죽
+            confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#22c55e', '#3b82f6', '#f59e0b'] });
+
+            // 10콤보 달성!
+            if (newCombo > 0 && newCombo % 10 === 0) {
+                setShowComboAlert(true);
+                // 화려한 대형 폭죽
+                const end = Date.now() + 1500;
+                const frame = () => {
+                    confetti({ particleCount: 8, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#f43f5e', '#8b5cf6', '#06b6d4', '#f59e0b'] });
+                    confetti({ particleCount: 8, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#22c55e', '#3b82f6', '#ec4899', '#eab308'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                };
+                frame();
+                setTimeout(() => setShowComboAlert(false), 2500);
+            }
         } else {
             setStatus('wrong');
+            setCombo(0);
             if (!wrongWordIds.includes(currentQ.word.id)) {
                 setWrongWordIds(prev => [...prev, currentQ.word.id]);
             }
@@ -144,93 +167,115 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
     }
 
     return (
-        <div className="max-w-md w-full mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-blue-200">
-            <div className="p-4 sm:p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <span className="font-bold text-blue-800 text-sm sm:text-base">문제 {currentIndex + 1} / {questions.length}</span>
-                    {isReviewMode && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">복습</span>
-                    )}
+        <div className="relative">
+            {/* 10콤보 달성 오버레이 */}
+            {showComboAlert && (
+                <div className="fixed inset-0 z-[99] flex items-center justify-center pointer-events-none">
+                    <div className="text-center animate-in zoom-in-50 duration-500">
+                        <p className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-purple-500 drop-shadow-lg">
+                            🔥 {combo} COMBO!
+                        </p>
+                        <p className="text-lg sm:text-xl font-black text-white drop-shadow-md mt-2 animate-bounce">
+                            콤보 달성! 멋져요! 🎉
+                        </p>
+                    </div>
                 </div>
-                <span className="font-bold text-yellow-600 flex items-center bg-white px-2.5 sm:px-3 py-1 rounded-full shadow-sm text-sm sm:text-base">
-                    <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-yellow-500" />
-                    {score}
-                </span>
-            </div>
+            )}
 
-            <div className="p-5 sm:p-8 pb-6 sm:pb-10">
-                <div className="text-center mb-5 sm:mb-8">
-                    <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold rounded-full mb-3 sm:mb-4">
-                        {currentQ.type === 'en_to_ko' ? '다음 단어의 뜻은?' : '이 뜻을 가진 영어 단어는?'}
-                    </span>
-                    <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">
-                        {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
-                            <span>
-                                {currentQ.word.meaning_1}
-                                {currentQ.word.meaning_2 && <span> / {currentQ.word.meaning_2}</span>}
-                                {currentQ.word.meaning_3 && <span> / {currentQ.word.meaning_3}</span>}
+            <div className="max-w-md w-full mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-blue-200">
+                <div className="p-4 sm:p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="font-bold text-blue-800 text-sm sm:text-base">문제 {currentIndex + 1} / {questions.length}</span>
+                        {isReviewMode && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">복습</span>
+                        )}
+                        {combo >= 2 && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-600 border border-orange-200 flex items-center gap-0.5 animate-in zoom-in-75 duration-300">
+                                <Zap className="w-3 h-3" /> {combo}콤보!
                             </span>
                         )}
-                    </h2>
-                    {currentQ.type === 'en_to_ko' && (
-                        <div className="flex justify-center gap-2 mt-2">
-                            {currentQ.word.phonetic && (
-                                <p className="text-slate-400 font-medium text-sm sm:text-base">[{currentQ.word.phonetic}]</p>
-                            )}
-                            {currentQ.word.korean_pronunciation && (
-                                <p className="text-slate-400 font-medium text-sm sm:text-base">{currentQ.word.korean_pronunciation}</p>
-                            )}
-                        </div>
-                    )}
+                    </div>
+                    <span className="font-bold text-yellow-600 flex items-center bg-white px-2.5 sm:px-3 py-1 rounded-full shadow-sm text-sm sm:text-base">
+                        <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-yellow-500" />
+                        {score}
+                    </span>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        disabled={status !== 'playing'}
-                        autoFocus
-                        className="w-full text-center text-xl sm:text-2xl font-bold py-3 sm:py-4 px-4 sm:px-6 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:outline-none transition-colors disabled:bg-slate-50 disabled:text-slate-500"
-                        placeholder={currentQ.type === 'en_to_ko' ? "뜻 입력..." : "영어 입력..."}
-                    />
-
-                    {status === 'playing' ? (
-                        <button type="submit"
-                            className="w-full py-3 sm:py-4 px-6 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-md transition-colors transform hover:-translate-y-0.5">
-                            정답 확인!
-                        </button>
-                    ) : (
-                        <div className={`p-4 sm:p-6 rounded-2xl border-4 ${status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} text-center animate-in fade-in slide-in-from-bottom-2`}>
-                            <div className="flex justify-center items-center mb-2">
-                                {status === 'correct' ? (
-                                    <Check className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
-                                ) : (
-                                    <X className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
+                <div className="p-5 sm:p-8 pb-6 sm:pb-10">
+                    <div className="text-center mb-5 sm:mb-8">
+                        <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold rounded-full mb-3 sm:mb-4">
+                            {currentQ.type === 'en_to_ko' ? '다음 단어의 뜻은?' : '이 뜻을 가진 영어 단어는?'}
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">
+                            {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
+                                <span>
+                                    {currentQ.word.meaning_1}
+                                    {currentQ.word.meaning_2 && <span> / {currentQ.word.meaning_2}</span>}
+                                    {currentQ.word.meaning_3 && <span> / {currentQ.word.meaning_3}</span>}
+                                </span>
+                            )}
+                        </h2>
+                        {currentQ.type === 'en_to_ko' && (
+                            <div className="flex justify-center gap-2 mt-2">
+                                {currentQ.word.phonetic && (
+                                    <p className="text-slate-400 font-medium text-sm sm:text-base">[{currentQ.word.phonetic}]</p>
+                                )}
+                                {currentQ.word.korean_pronunciation && (
+                                    <p className="text-slate-400 font-medium text-sm sm:text-base">{currentQ.word.korean_pronunciation}</p>
                                 )}
                             </div>
-                            <h3 className={`text-lg sm:text-xl font-black mb-1 ${status === 'correct' ? 'text-green-700' : 'text-red-700'}`}>
-                                {status === 'correct' ? '정답이야! 멋져! 👍' : '아앗! 틀렸어 🥲'}
-                            </h3>
-                            <button type="button" onClick={() => speakWord(currentQ.word.word)}
-                                className="mx-auto mb-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full text-xs font-bold flex items-center gap-1 transition-colors">
-                                <Volume2 className="w-3.5 h-3.5" /> {currentQ.word.word} 발음 듣기
+                        )}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            disabled={status !== 'playing'}
+                            autoFocus
+                            className="w-full text-center text-xl sm:text-2xl font-bold py-3 sm:py-4 px-4 sm:px-6 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:outline-none transition-colors disabled:bg-slate-50 disabled:text-slate-500"
+                            placeholder={currentQ.type === 'en_to_ko' ? "뜻 입력..." : "영어 입력..."}
+                        />
+
+                        {status === 'playing' ? (
+                            <button type="submit"
+                                className="w-full py-3 sm:py-4 px-6 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-md transition-colors transform hover:-translate-y-0.5">
+                                정답 확인!
                             </button>
-                            {status === 'wrong' && (
-                                <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
-                                    정답: {currentQ.type === 'en_to_ko'
-                                        ? [currentQ.word.meaning_1, currentQ.word.meaning_2, currentQ.word.meaning_3].filter(Boolean).join(', ')
-                                        : currentQ.word.word}
-                                </p>
-                            )}
-                            <button type="button" onClick={handleNext}
-                                className={`w-full py-2.5 sm:py-3 px-6 mt-1 sm:mt-2 rounded-xl font-bold text-white flex items-center justify-center text-sm sm:text-base ${status === 'correct' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors`}>
-                                다음 문제 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-                            </button>
-                        </div>
-                    )}
-                </form>
+                        ) : (
+                            <div className={`p-4 sm:p-6 rounded-2xl border-4 ${status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} text-center animate-in fade-in slide-in-from-bottom-2`}>
+                                <div className="flex justify-center items-center mb-2">
+                                    {status === 'correct' ? (
+                                        <Check className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
+                                    ) : (
+                                        <X className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
+                                    )}
+                                </div>
+                                <h3 className={`text-lg sm:text-xl font-black mb-1 ${status === 'correct' ? 'text-green-700' : 'text-red-700'}`}>
+                                    {status === 'correct' ? '정답이야! 멋져! 👍' : '아앗! 틀렸어 🥲'}
+                                </h3>
+                                <button type="button" onClick={() => speakWord(currentQ.word.word)}
+                                    className="mx-auto mb-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full text-xs font-bold flex items-center gap-1 transition-colors">
+                                    <Volume2 className="w-3.5 h-3.5" /> {currentQ.word.word} 발음 듣기
+                                </button>
+                                {status === 'wrong' && (
+                                    <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                                        정답: {currentQ.type === 'en_to_ko'
+                                            ? [currentQ.word.meaning_1, currentQ.word.meaning_2, currentQ.word.meaning_3].filter(Boolean).join(', ')
+                                            : currentQ.word.word}
+                                    </p>
+                                )}
+                                <button type="button" onClick={handleNext}
+                                    className={`w-full py-2.5 sm:py-3 px-6 mt-1 sm:mt-2 rounded-xl font-bold text-white flex items-center justify-center text-sm sm:text-base ${status === 'correct' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors`}>
+                                    다음 문제 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                                </button>
+                            </div>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     );
 }
+

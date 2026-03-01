@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
 import WrongNoteViewer from '@/components/student/WrongNoteViewer';
+import PetAvatar from '@/components/student/PetAvatar';
+import DailyRoulette from '@/components/student/DailyRoulette';
 import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X, ArrowLeft, Lock, Star, Zap, Flame } from 'lucide-react';
@@ -24,6 +26,7 @@ export default function Home() {
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
+  const [showRoulette, setShowRoulette] = useState(false);
 
   // 시험 요청 상태 확인
   const checkTestRequest = useCallback(async (userId: string) => {
@@ -94,6 +97,11 @@ export default function Home() {
       }
 
       setUser(finalUser);
+
+      // 일일 보물상자 체크
+      if (finalUser.last_roulette_date !== today) {
+        setTimeout(() => setShowRoulette(true), 800);
+      }
 
       const { data: wordsData, error: wordsError } = await supabase
         .from('words')
@@ -496,6 +504,18 @@ export default function Home() {
               <p className="text-[10px] sm:text-xs text-slate-500 font-medium">틀린 단어를 다시 학습하고 테스트해 봐!</p>
             </div>
           </button>
+
+          {/* 펫 아바타 */}
+          <PetAvatar currentDay={unlockedDay} />
+
+          {/* 럭키 보물상자 팝업 */}
+          {showRoulette && (
+            <DailyRoulette
+              userId={user.id}
+              onClose={() => setShowRoulette(false)}
+              onTokensEarned={async () => { await refreshUser(); }}
+            />
+          )}
 
           {/* Day 그리드 */}
           {dayCategories.length > 0 ? (
