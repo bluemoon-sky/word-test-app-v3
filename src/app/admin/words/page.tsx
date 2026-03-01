@@ -641,8 +641,8 @@ export default function AdminWordsPage() {
                                             ) : (
                                                 <span className="text-slate-600">
                                                     {word.meaning_1}
-                                                    {word.meaning_2 && <span className="ml-1 text-xs text-slate-400">/ {word.meaning_2}</span>}
-                                                    {word.meaning_3 && <span className="ml-1 text-xs text-slate-400">/ {word.meaning_3}</span>}
+                                                    {word.meaning_2 && <span className="text-slate-600"> / {word.meaning_2}</span>}
+                                                    {word.meaning_3 && <span className="text-slate-600"> / {word.meaning_3}</span>}
                                                 </span>
                                             )}
                                         </td>
