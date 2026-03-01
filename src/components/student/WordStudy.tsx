@@ -130,7 +130,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                             {showMeaning ? (
                                 <span>
                                     {currentWord.meaning_1}
-                                    {currentWord.meaning_2 && <span className="block text-2xl sm:text-4xl text-slate-500 mt-2">{currentWord.meaning_2}</span>}
+                                    {currentWord.meaning_2 && <span className="text-slate-500">, {currentWord.meaning_2}</span>}
                                 </span>
                             ) : currentWord.word}
                         </h2>

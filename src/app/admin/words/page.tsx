@@ -206,8 +206,13 @@ export default function AdminWordsPage() {
         const lines = text.split('\n').map(line => line.replace(/\r/g, ''));
         const parsedWords: Partial<Word>[] = [];
 
-        // 첫 번째 줄(Header)은 건너뛰기 위해 i = 1부터 시작
-        for (let i = 1; i < lines.length; i++) {
+        // 첫 번째 줄(Header) 스킵 및 파싱
+        let startIndex = 0;
+        if (lines[0] && (lines[0].toLowerCase().includes('day') || lines[0].includes('영단어'))) {
+            startIndex = 1;
+        }
+
+        for (let i = startIndex; i < lines.length; i++) {
             const line = lines[i];
             if (!line.trim()) continue;
 
@@ -220,17 +225,35 @@ export default function AdminWordsPage() {
                 return cleaned;
             };
 
-            const w = clean(cols[0]);
-            const m1 = clean(cols[1]);
+            // 사용자 지정 컬럼: DAY, 영단어, 뜻1, 뜻2, 발음기호, 한국어발음
+            // (만약 5칼럼이라면 첫 번째가 영단어, 6칼럼이면 첫 번째가 DAY)
+            let w = '', m1 = '', m2 = '', phon = '', kPro = '', cat = csvCategory.trim();
+
+            if (cols.length >= 6) {
+                // 6열 형식 (DAY 포함)
+                if (clean(cols[0])) cat = clean(cols[0]); // DAY가 있으면 카테고리 덮어쓰기
+                w = clean(cols[1]);
+                m1 = clean(cols[2]);
+                m2 = clean(cols[3]);
+                phon = clean(cols[4]);
+                kPro = clean(cols[5]);
+            } else {
+                // 기존 5열 형식 백폴 (영단어, 뜻1, 뜻2, 발음기호, 한국어발음)
+                w = clean(cols[0]);
+                m1 = clean(cols[1]);
+                m2 = clean(cols[2]);
+                phon = clean(cols[3]);
+                kPro = clean(cols[4]);
+            }
 
             if (w && m1) {
                 parsedWords.push({
                     word: w,
                     meaning_1: m1,
-                    meaning_2: clean(cols[2]) || null,
-                    phonetic: clean(cols[3]) || null,
-                    korean_pronunciation: clean(cols[4]) || null,
-                    category: csvCategory.trim() || null,
+                    meaning_2: m2 || null,
+                    phonetic: phon || null,
+                    korean_pronunciation: kPro || null,
+                    category: cat || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
                 });
             }
