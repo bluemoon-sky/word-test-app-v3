@@ -5,7 +5,7 @@ import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
 import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle } from 'lucide-react';
+import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X } from 'lucide-react';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
