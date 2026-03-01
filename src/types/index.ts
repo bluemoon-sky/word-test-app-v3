@@ -8,6 +8,7 @@ export type User = {
     last_test_time?: string;
     last_wrong_word_ids?: string[];
     test_question_count?: number;
+    current_unlocked_day?: number;
     created_at: string;
 };
 
@@ -41,4 +42,15 @@ export type TestRequest = {
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
     users?: User; // joined data
+};
+
+// 테스트 기록 타입
+export type TestHistory = {
+    id: string;
+    user_id: string;
+    day_number: number;
+    score: number;
+    earned_tokens: number;
+    is_first_clear: boolean;
+    created_at: string;
 };
