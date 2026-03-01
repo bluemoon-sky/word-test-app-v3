@@ -192,9 +192,9 @@ export default function AdminUsersPage() {
                                                 className="flex items-center gap-1 text-yellow-700 font-bold hover:bg-yellow-50 px-2 py-1 rounded-lg transition-colors"
                                             >
                                                 <Coins className="w-3.5 h-3.5 text-yellow-500" />
-                                                {user.tokens.toLocaleString()} T
+                                                {(user.tokens || 0).toLocaleString()} T
                                             </button>
-                                            <span className="text-emerald-600 font-semibold text-xs">₩ {(user.tokens * 10).toLocaleString()}</span>
+                                            <span className="text-emerald-600 font-semibold text-xs">₩ {((user.tokens || 0) * 10).toLocaleString()}</span>
                                             <span className="text-slate-400 text-xs">
                                                 {new Date(user.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                                             </span>
@@ -245,11 +245,11 @@ export default function AdminUsersPage() {
                                                             title="클릭하여 토큰 수 조정"
                                                         >
                                                             <Coins className="w-4 h-4 text-yellow-500" />
-                                                            {user.tokens.toLocaleString()} T
+                                                            {(user.tokens || 0).toLocaleString()} T
                                                         </button>
                                                     </td>
                                                     <td className="px-6 py-4 text-emerald-600 font-semibold">
-                                                        ₩ {(user.tokens * 10).toLocaleString()}
+                                                        ₩ {((user.tokens || 0) * 10).toLocaleString()}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-slate-500">
                                                         {new Date(user.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}

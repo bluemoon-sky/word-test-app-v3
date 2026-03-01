@@ -395,7 +395,7 @@ export default function Home() {
               </div>
               <div className="text-right">
                 <p className="text-[10px] sm:text-xs font-bold text-yellow-600 mb-0.5">보유 토큰 (자세히 👆)</p>
-                <p className="text-lg sm:text-xl font-black text-yellow-700 leading-none">{user.tokens.toLocaleString()}</p>
+                <p className="text-lg sm:text-xl font-black text-yellow-700 leading-none">{(user.tokens || 0).toLocaleString()}</p>
               </div>
             </button>
 
@@ -428,11 +428,11 @@ export default function Home() {
                 </div>
                 <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
                   <span className="font-bold text-slate-600 text-sm">보유 중인 총 토큰</span>
-                  <span className="font-black text-yellow-600 text-lg">{user.tokens.toLocaleString()}개</span>
+                  <span className="font-black text-yellow-600 text-lg">{(user.tokens || 0).toLocaleString()}개</span>
                 </div>
                 <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 rounded-2xl text-white flex justify-between items-center shadow-lg shadow-teal-500/20">
                   <span className="font-bold text-teal-50 text-sm">현재 환전 가능 총액</span>
-                  <span className="font-black text-xl">₩ {(user.tokens * 10).toLocaleString()}</span>
+                  <span className="font-black text-xl">₩ {((user.tokens || 0) * 10).toLocaleString()}</span>
                 </div>
                 <p className="text-center text-xs font-bold text-slate-400 bg-slate-50 py-1.5 rounded-full">
                   ⚠️ 1,000원 단위로만 정산 가능해요!
