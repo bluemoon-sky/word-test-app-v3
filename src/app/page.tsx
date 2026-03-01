@@ -147,9 +147,12 @@ export default function Home() {
       });
     }
 
-    setWords(dayWords);
+    // 학습 단어 수 제한 적용
+    const studyLimit = user.study_word_count || 20;
+    setWords(dayWords.slice(0, studyLimit));
     setStudyCompleted(false);
     setTestRequest(null);
+
     setMode('dashboard');
     if (user) checkTestRequest(user.id);
   };

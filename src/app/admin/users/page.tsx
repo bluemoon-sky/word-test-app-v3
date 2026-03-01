@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/types';
 import AdminNav from '@/components/admin/AdminNav';
-import { Plus, Trash2, Loader2, Coins, UserPlus, Save, Hash } from 'lucide-react';
+import { Plus, Trash2, Loader2, Coins, UserPlus, Save, Hash, BookOpen } from 'lucide-react';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -15,6 +15,9 @@ export default function AdminUsersPage() {
     // 문항 수 편집 상태
     const [editingQCountId, setEditingQCountId] = useState<string | null>(null);
     const [editQCount, setEditQCount] = useState(30);
+    // 학습 단어 수 편집 상태
+    const [editingSWCountId, setEditingSWCountId] = useState<string | null>(null);
+    const [editSWCount, setEditSWCount] = useState(20);
     const router = useRouter();
 
     useEffect(() => {
@@ -143,6 +146,29 @@ export default function AdminUsersPage() {
         }
     };
 
+    // 학습 단어 수 수정
+    const handleUpdateStudyWordCount = async (id: string) => {
+        if (editSWCount < 1 || editSWCount > 200) {
+            alert('단어 수는 1~200 사이로 입력해 주세요.');
+            return;
+        }
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .update({ study_word_count: editSWCount })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            setUsers(users.map(u => u.id === id ? (data as User) : u));
+            setEditingSWCountId(null);
+        } catch (error: any) {
+            console.error('학습 단어 수 수정 에러:', error);
+            alert(`학습 단어 수 수정 중 오류가 발생했습니다.\n${error?.message || JSON.stringify(error)}`);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50">
             <AdminNav />
@@ -151,7 +177,7 @@ export default function AdminUsersPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                         <h1 className="text-xl sm:text-3xl font-black text-slate-800">사용자 관리</h1>
-                        <p className="text-xs sm:text-base text-slate-500 mt-1">학생들을 추가하고 토큰 및 시험 문항 수를 관리하세요.</p>
+                        <p className="text-xs sm:text-base text-slate-500 mt-1">학생들을 추가하고 토큰, 시험 문항 수, 학습 단어 수를 관리하세요.</p>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-bold text-blue-800">
                         총 {users.length}명 등록됨
@@ -259,6 +285,43 @@ export default function AdminUsersPage() {
                                                 </button>
                                             )}
                                         </div>
+                                        {/* 학습 단어 수 편집 (모바일) */}
+                                        <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-2 mt-2">
+                                            <span className="text-slate-500 font-medium flex items-center gap-1">
+                                                <BookOpen className="w-3.5 h-3.5" /> 학습 단어 수
+                                            </span>
+                                            {editingSWCountId === user.id ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={editSWCount}
+                                                        onChange={(e) => setEditSWCount(parseInt(e.target.value) || 0)}
+                                                        className="w-16 px-2 py-1 border border-emerald-300 rounded-lg text-center text-sm font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                                        min={1}
+                                                        max={200}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleUpdateStudyWordCount(user.id)}
+                                                        className="p-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                                                    >
+                                                        <Save className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingSWCountId(null)}
+                                                        className="p-1 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { setEditingSWCountId(user.id); setEditSWCount(user.study_word_count || 20); }}
+                                                    className="font-bold text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-colors"
+                                                >
+                                                    {user.study_word_count || 20}단어
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -275,6 +338,7 @@ export default function AdminUsersPage() {
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">보유 토큰</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">환산 용돈</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">시험 문항 수</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">학습 단어 수</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">가입일</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600 text-right">관리</th>
                                         </tr>
@@ -282,7 +346,7 @@ export default function AdminUsersPage() {
                                     <tbody className="divide-y divide-slate-100">
                                         {users.length === 0 ? (
                                             <tr>
-                                                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                                                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                                                     등록된 사용자가 없습니다. 위에서 학생을 추가해 보세요!
                                                 </td>
                                             </tr>
@@ -346,6 +410,43 @@ export default function AdminUsersPage() {
                                                             >
                                                                 <Hash className="w-4 h-4 text-blue-500" />
                                                                 {user.test_question_count || 30}문제
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        {editingSWCountId === user.id ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={editSWCount}
+                                                                    onChange={(e) => setEditSWCount(parseInt(e.target.value) || 0)}
+                                                                    className="w-20 px-3 py-1.5 border border-emerald-300 rounded-lg text-center font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                                    min={1}
+                                                                    max={200}
+                                                                />
+                                                                <button
+                                                                    onClick={() => handleUpdateStudyWordCount(user.id)}
+                                                                    className="p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                                                                    title="저장"
+                                                                >
+                                                                    <Save className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingSWCountId(null)}
+                                                                    className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
+                                                                    title="취소"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => { setEditingSWCountId(user.id); setEditSWCount(user.study_word_count || 20); }}
+                                                                className="flex items-center gap-1.5 text-emerald-700 font-bold hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors"
+                                                                title="클릭하여 학습 단어 수 수정"
+                                                            >
+                                                                <BookOpen className="w-4 h-4 text-emerald-500" />
+                                                                {user.study_word_count || 20}단어
                                                             </button>
                                                         )}
                                                     </td>

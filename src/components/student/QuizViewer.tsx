@@ -149,7 +149,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                             <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500 fill-yellow-500" />
                             최초 통과 보상: +{displayTokens} 토큰! 🏆
                         </div>
-                        <p className="text-xs text-emerald-500 font-medium">💡 다음 Day가 해금되었어! 계속 도전해봐! 🚀</p>
+                        <p className="text-xs text-emerald-500 font-medium">💡 다음 Day가 해제되었어! 계속 도전해봐! 🚀</p>
                     </div>
                 )}
 

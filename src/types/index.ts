@@ -8,6 +8,7 @@ export type User = {
     last_test_time?: string;
     last_wrong_word_ids?: string[];
     test_question_count?: number;
+    study_word_count?: number;
     current_unlocked_day?: number;
     current_streak?: number;
     last_study_date?: string;
