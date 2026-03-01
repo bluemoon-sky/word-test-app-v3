@@ -24,6 +24,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
     const [score, setScore] = useState(0);
     const [earnedTokens, setEarnedTokens] = useState(0);
     const [wrongWordIds, setWrongWordIds] = useState<string[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
         // 단어 배열 섞기
@@ -36,6 +37,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
         }));
 
         setQuestions(newQuestions);
+        setIsMounted(true);
     }, [words]);
 
     const currentQ = questions[currentIndex];
@@ -94,7 +96,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
         }
     };
 
-    if (questions.length === 0) return <div className="text-center p-8">로딩 중...</div>;
+    if (!isMounted || questions.length === 0) return <div className="text-center p-8">로딩 중...</div>;
 
     if (status === 'finished') {
         return (

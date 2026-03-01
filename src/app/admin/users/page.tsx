@@ -195,7 +195,7 @@ export default function AdminUsersPage() {
                                                 {(user.tokens || 0).toLocaleString()} T
                                             </button>
                                             <span className="text-emerald-600 font-semibold text-xs">₩ {((user.tokens || 0) * 10).toLocaleString()}</span>
-                                            <span className="text-slate-400 text-xs">
+                                            <span className="text-slate-400 text-xs" suppressHydrationWarning>
                                                 {new Date(user.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                                             </span>
                                         </div>
@@ -251,7 +251,7 @@ export default function AdminUsersPage() {
                                                     <td className="px-6 py-4 text-emerald-600 font-semibold">
                                                         ₩ {((user.tokens || 0) * 10).toLocaleString()}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-slate-500">
+                                                    <td className="px-6 py-4 text-sm text-slate-500" suppressHydrationWarning>
                                                         {new Date(user.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
                                                     </td>
                                                     <td className="px-6 py-4 text-right">

@@ -142,7 +142,7 @@ export default function AdminRequestsPage() {
                                         <td className="p-4 font-medium text-slate-800">{req.users?.nickname || '알 수 없음'}</td>
                                         <td className="p-4 text-orange-600 font-semibold">{req.tokens_deducted} T</td>
                                         <td className="p-4 text-green-600 font-bold">{req.amount.toLocaleString()} 원</td>
-                                        <td className="p-4 text-slate-500 text-sm">
+                                        <td className="p-4 text-slate-500 text-sm" suppressHydrationWarning>
                                             {new Date(req.created_at).toLocaleDateString('ko-KR', {
                                                 year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                                             })}

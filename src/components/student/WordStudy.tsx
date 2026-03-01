@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Word } from '@/types';
 import { ChevronLeft, ChevronRight, BookOpen, Eye, EyeOff } from 'lucide-react';
 
@@ -16,6 +16,12 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     const [showMeaning, setShowMeaning] = useState(false);
     const [studiedCount, setStudiedCount] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Hydration 불일치 방지
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const currentWord = words[currentIndex];
     const isLast = currentIndex === words.length - 1;
@@ -52,6 +58,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     };
 
     const progress = Math.round(((studiedCount) / words.length) * 100);
+
+    if (!isMounted) return null;
 
     return (
         <div className="max-w-md mx-auto w-full relative px-1">
