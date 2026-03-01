@@ -261,8 +261,8 @@ export default function AdminWordsPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
                     {/* 단어 추가 폼 */}
-                    <div className="lg:col-span-1">
-                        <form onSubmit={handleAddWord} className="bg-white p-4 sm:p-6 mb-4 xl:mb-0 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 lg:sticky lg:top-20">
+                    <div className="lg:col-span-1 lg:sticky lg:top-20 space-y-4 xl:space-y-6 self-start">
+                        <form onSubmit={handleAddWord} className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
                             <h2 className="text-base sm:text-xl font-bold text-slate-800 mb-4 sm:mb-6 flex items-center">
                                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" /> 새 단어 1개 등록
                             </h2>
@@ -350,7 +350,7 @@ export default function AdminWordsPage() {
                             </div>
                         </form>
 
-                        <div className="bg-white mt-4 xl:mt-6 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+                        <div className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
                             <h2 className="text-base sm:text-xl font-bold text-emerald-700 mb-2 sm:mb-3 flex items-center">
                                 <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> 대량 CSV 등록 (.csv)
                             </h2>
