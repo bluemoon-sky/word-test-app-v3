@@ -137,9 +137,9 @@ export default function AdminUsersPage() {
             if (error) throw error;
             setUsers(users.map(u => u.id === id ? (data as User) : u));
             setEditingQCountId(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('문항 수 수정 에러:', error);
-            alert('문항 수 수정 중 오류가 발생했습니다.');
+            alert(`문항 수 수정 중 오류가 발생했습니다.\n${error?.message || JSON.stringify(error)}`);
         }
     };
 
