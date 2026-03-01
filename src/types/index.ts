@@ -17,6 +17,7 @@ export type Word = {
     meaning_2?: string | null;
     phonetic?: string | null;
     korean_pronunciation?: string | null;
+    category?: string | null;
     user_id?: string | null;
     created_at: string;
 };

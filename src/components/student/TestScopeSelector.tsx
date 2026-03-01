@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Word } from '@/types';
-import { Check, CheckSquare, Dices, Layers } from 'lucide-react';
+import { Check, CheckSquare, Dices, Layers, FolderOpen } from 'lucide-react';
 import clsx from 'clsx';
 
 type Props = {
@@ -11,8 +11,20 @@ type Props = {
 };
 
 export default function TestScopeSelector({ words, onStartTest }: Props) {
-    const [mode, setMode] = useState<'all' | 'select' | null>(null);
+    const [mode, setMode] = useState<'all' | 'select' | 'category' | null>(null);
     const [selectedWordIds, setSelectedWordIds] = useState<Set<string>>(new Set());
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    // 카테고리 목록 추출
+    const categories = useMemo(() => {
+        const catMap = new Map<string, number>();
+        words.forEach(w => {
+            if (w.category) {
+                catMap.set(w.category, (catMap.get(w.category) || 0) + 1);
+            }
+        });
+        return Array.from(catMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    }, [words]);
 
     const handleToggleWord = (id: string) => {
         const newSet = new Set(selectedWordIds);
@@ -34,6 +46,17 @@ export default function TestScopeSelector({ words, onStartTest }: Props) {
                 return;
             }
             onStartTest(selectedWords);
+        } else if (mode === 'category') {
+            if (!selectedCategory) {
+                alert('카테고리를 선택해 주세요!');
+                return;
+            }
+            const catWords = words.filter(w => w.category === selectedCategory);
+            if (catWords.length === 0) {
+                alert('해당 카테고리에 단어가 없습니다.');
+                return;
+            }
+            onStartTest(catWords);
         }
     };
 
@@ -45,38 +68,87 @@ export default function TestScopeSelector({ words, onStartTest }: Props) {
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* 전체 랜덤 */}
                     <button
                         onClick={() => setMode('all')}
                         className={clsx(
-                            "p-6 rounded-2xl border-4 flex flex-col items-center justify-center transition-all duration-200",
+                            "p-5 rounded-2xl border-4 flex flex-col items-center justify-center transition-all duration-200",
                             mode === 'all'
                                 ? "border-blue-500 bg-blue-50 text-blue-700 shadow-md transform scale-[1.02]"
                                 : "border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/50"
                         )}
                     >
-                        <Dices size={48} className={clsx("mb-3", mode === 'all' ? "text-blue-500" : "text-slate-300")} />
-                        <span className="font-bold text-lg">전체 랜덤 출제</span>
-                        <span className="text-sm opacity-80 mt-1">모든 단어 중 랜덤으로!</span>
+                        <Dices size={40} className={clsx("mb-2", mode === 'all' ? "text-blue-500" : "text-slate-300")} />
+                        <span className="font-bold text-base">전체 랜덤</span>
+                        <span className="text-xs opacity-80 mt-0.5">{words.length}개 중 랜덤!</span>
                     </button>
 
+                    {/* 카테고리별 출제 */}
+                    <button
+                        onClick={() => setMode('category')}
+                        className={clsx(
+                            "p-5 rounded-2xl border-4 flex flex-col items-center justify-center transition-all duration-200",
+                            mode === 'category'
+                                ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md transform scale-[1.02]"
+                                : "border-slate-100 bg-white text-slate-500 hover:border-purple-200 hover:bg-purple-50/50"
+                        )}
+                    >
+                        <FolderOpen size={40} className={clsx("mb-2", mode === 'category' ? "text-purple-500" : "text-slate-300")} />
+                        <span className="font-bold text-base">카테고리별</span>
+                        <span className="text-xs opacity-80 mt-0.5">{categories.length}개 그룹</span>
+                    </button>
+
+                    {/* 직접 선택 */}
                     <button
                         onClick={() => setMode('select')}
                         className={clsx(
-                            "p-6 rounded-2xl border-4 flex flex-col items-center justify-center transition-all duration-200",
+                            "p-5 rounded-2xl border-4 flex flex-col items-center justify-center transition-all duration-200",
                             mode === 'select'
                                 ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md transform scale-[1.02]"
                                 : "border-slate-100 bg-white text-slate-500 hover:border-emerald-200 hover:bg-emerald-50/50"
                         )}
                     >
-                        <CheckSquare size={48} className={clsx("mb-3", mode === 'select' ? "text-emerald-500" : "text-slate-300")} />
-                        <span className="font-bold text-lg">내가 선택 출제</span>
-                        <span className="text-sm opacity-80 mt-1">원하는 단어만 콕콕!</span>
+                        <CheckSquare size={40} className={clsx("mb-2", mode === 'select' ? "text-emerald-500" : "text-slate-300")} />
+                        <span className="font-bold text-base">내가 선택</span>
+                        <span className="text-xs opacity-80 mt-0.5">원하는 단어만 콕콕!</span>
                     </button>
                 </div>
 
+                {/* 카테고리별 출제 목록 */}
+                {mode === 'category' && (
+                    <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <h3 className="font-bold text-slate-700 flex items-center mb-3">
+                            <FolderOpen className="w-5 h-5 mr-2 text-purple-500" />
+                            카테고리 선택
+                        </h3>
+                        {categories.length === 0 ? (
+                            <p className="text-center text-slate-400 py-6">아직 등록된 카테고리가 없어요.</p>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                {categories.map(([cat, count]) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={clsx(
+                                            "p-3 rounded-xl border-2 text-left transition-all",
+                                            selectedCategory === cat
+                                                ? "border-purple-500 bg-purple-50 shadow-sm"
+                                                : "border-slate-100 hover:border-purple-200 hover:bg-purple-50/30"
+                                        )}
+                                    >
+                                        <span className="font-bold text-sm text-slate-800 block">{cat}</span>
+                                        <span className="text-xs text-slate-500">{count}개 단어</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* 직접 선택 목록 */}
                 {mode === 'select' && (
-                    <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-slate-700 flex items-center">
                                 <Layers className="w-5 h-5 mr-2 text-emerald-500" />
@@ -85,9 +157,9 @@ export default function TestScopeSelector({ words, onStartTest }: Props) {
                             <button
                                 onClick={() => {
                                     if (selectedWordIds.size === words.length) {
-                                        setSelectedWordIds(new Set()); // deselect all
+                                        setSelectedWordIds(new Set());
                                     } else {
-                                        setSelectedWordIds(new Set(words.map(w => w.id))); // select all
+                                        setSelectedWordIds(new Set(words.map(w => w.id)));
                                     }
                                 }}
                                 className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
@@ -113,7 +185,7 @@ export default function TestScopeSelector({ words, onStartTest }: Props) {
                                         )}>
                                             {isSelected && <Check size={16} strokeWidth={3} />}
                                         </div>
-                                        <div className="flex-1">
+                                        <div className="flex-1" onClick={() => handleToggleWord(word.id)}>
                                             <p className="font-bold text-slate-800 text-lg leading-tight">{word.word}</p>
                                             <p className="text-slate-500 text-sm">{word.meaning_1}</p>
                                         </div>
