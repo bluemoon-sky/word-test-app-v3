@@ -349,6 +349,21 @@ export default function AdminWordsPage() {
                                 </button>
                             </div>
                         </form>
+
+                        <div className="bg-white mt-4 xl:mt-6 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+                            <h2 className="text-base sm:text-xl font-bold text-emerald-700 mb-2 sm:mb-3 flex items-center">
+                                <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> 대량 CSV 등록 (.csv)
+                            </h2>
+                            <p className="text-xs text-slate-500 mb-4">
+                                구글 시트 등에서 <strong>영단어, 뜻1(필수), 뜻2, 발음기호, 한국어발음</strong> 이 5개 열 순서대로 작성된 문서를 CSV 다운로드 후 첨부하세요. 위 '출제 대상 학생' 설정이 동일하게 적용됩니다.
+                            </p>
+                            <input
+                                type="file"
+                                accept=".csv"
+                                onChange={handleFileUpload}
+                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-colors cursor-pointer"
+                            />
+                        </div>
                     </div>
 
                     {/* CSV 업로드 및 파싱 트리 & 미리보기 */}
@@ -589,6 +604,6 @@ export default function AdminWordsPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
