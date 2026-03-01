@@ -50,7 +50,7 @@ export default function AdminWordsPage() {
     const [sortField, setSortField] = useState<'word' | 'created_at'>('created_at');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
     const [currentPage, setCurrentPage] = useState(1);
-    const PAGE_SIZE = 50;
+    const PAGE_SIZE = 20;
 
     // ─── 데이터 가져오기 ───
     useEffect(() => {
@@ -559,9 +559,9 @@ export default function AdminWordsPage() {
                     </div>
 
                     {/* 테이블 */}
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto max-h-[65vh] overflow-y-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 border-b border-slate-200">
+                            <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-4 py-3 text-xs font-bold text-slate-600 cursor-pointer hover:text-blue-600 select-none" onClick={() => toggleSort('word')}>
                                         <span className="flex items-center gap-1">영단어 <ArrowUpDown className="w-3 h-3" /></span>
