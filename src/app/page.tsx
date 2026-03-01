@@ -447,7 +447,7 @@ export default function Home() {
               last_study_date: today
             }).eq('id', user.id);
 
-            setMode('dashboard');
+            setMode('day_select');
             setStudyCompleted(false);
             setTestRequest(null);
             if (testRequest) await supabase.from('test_requests').delete().eq('id', testRequest.id);
