@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
+import WrongNoteViewer from '@/components/student/WrongNoteViewer';
 import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X, ArrowLeft, Lock, Star, Zap } from 'lucide-react';
+import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X, ArrowLeft, Lock, Star, Zap, Flame } from 'lucide-react';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
@@ -17,8 +18,8 @@ export default function Home() {
   const [selectedDayNum, setSelectedDayNum] = useState<number>(0);
   const [isReviewMode, setIsReviewMode] = useState(false);
 
-  // 학생 플로우: day_select → dashboard → study → request_sent → test
-  const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'request_sent' | 'test'>('day_select');
+  // 학생 플로우: day_select → dashboard → study → request_sent → test → wrong_note
+  const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'request_sent' | 'test' | 'wrong_note'>('day_select');
   const [studyCompleted, setStudyCompleted] = useState(false);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
@@ -307,6 +308,22 @@ export default function Home() {
     );
   }
 
+  // ─── 오답 노트 화면 ───
+  if (mode === 'wrong_note') {
+    return (
+      <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
+        <WrongNoteViewer
+          userId={user.id}
+          onBack={() => setMode('day_select')}
+          onTokensEarned={async (tokens) => {
+            await refreshUser();
+            if (tokens > 0) setTimeout(() => alert(`오답 테스트 보너스로 ${tokens} 토큰이 지급되었어요!`), 300);
+          }}
+        />
+      </div>
+    );
+  }
+
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
     const questionCount = user.test_question_count || 30;
@@ -324,10 +341,8 @@ export default function Home() {
             let isFirstClear = false;
 
             if (isReviewMode) {
-              // 복습 모드: 정답 5개당 1토큰
               actualEarned = Math.floor(score / 5);
             } else {
-              // 최초 통과: 정답 1개당 1토큰
               actualEarned = score;
               isFirstClear = true;
             }
@@ -369,14 +384,59 @@ export default function Home() {
               is_first_clear: isFirstClear
             }]);
 
-            // 시간, 오답 및 daily 업데이트
+            // ─── 오답 노트 자동 저장 ───
+            if (wrongWordIds.length > 0) {
+              for (const wid of wrongWordIds) {
+                const { data: existing } = await supabase
+                  .from('wrong_words')
+                  .select('id, failed_count')
+                  .eq('user_id', user.id)
+                  .eq('word_id', wid)
+                  .single();
+
+                if (existing) {
+                  await supabase.from('wrong_words').update({ failed_count: existing.failed_count + 1 }).eq('id', existing.id);
+                } else {
+                  await supabase.from('wrong_words').insert([{ user_id: user.id, word_id: wid, failed_count: 1 }]);
+                }
+              }
+            }
+
+            // ─── 연속 학습 streak 갱신 ───
             const now = new Date().toISOString();
             const today = now.split('T')[0];
+            const lastStudy = user.last_study_date;
+            let newStreak = user.current_streak || 0;
+            let streakBonusAlert = '';
+
+            if (lastStudy !== today) {
+              // 어제 학습했으면 연속, 아니면 리셋
+              const yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+              if (lastStudy === yesterdayStr) {
+                newStreak = newStreak + 1;
+              } else {
+                newStreak = 1;
+              }
+
+              // 7일 연속 보너스
+              if (newStreak > 0 && newStreak % 7 === 0) {
+                try {
+                  await supabase.rpc('increment_tokens', { p_user_id: user.id, p_amount: 10 });
+                  streakBonusAlert = `🔥 ${newStreak}일 연속 학습 달성! 보너스 10토큰이 지급되었어요!`;
+                } catch (e) { console.error('Streak bonus error:', e); }
+              }
+            }
+
             await supabase.from('users').update({
               last_test_time: now,
               last_wrong_word_ids: wrongWordIds,
               daily_earned_tokens: currentDailyTokens + actualEarned,
-              last_earn_date: today
+              last_earn_date: today,
+              current_streak: newStreak,
+              last_study_date: today
             }).eq('id', user.id);
 
             setMode('dashboard');
@@ -384,7 +444,8 @@ export default function Home() {
             setTestRequest(null);
             if (testRequest) await supabase.from('test_requests').delete().eq('id', testRequest.id);
             await refreshUser();
-            if (limitAlert) setTimeout(() => alert(limitAlert), 500);
+            if (streakBonusAlert) setTimeout(() => alert(streakBonusAlert), 300);
+            if (limitAlert) setTimeout(() => alert(limitAlert), streakBonusAlert ? 1500 : 500);
           }}
         />
       </div>
@@ -405,7 +466,14 @@ export default function Home() {
               <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg text-xl sm:text-2xl">😎</div>
               <div>
                 <h1 className="text-base sm:text-xl font-black text-slate-800">안녕, <span className="text-blue-600">{user.nickname}</span>!</h1>
-                <p className="text-[10px] sm:text-sm text-slate-500 font-medium">현재 진도: <span className="text-blue-600 font-black">Day {unlockedDay}</span></p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] sm:text-sm text-slate-500 font-medium">진도: <span className="text-blue-600 font-black">Day {unlockedDay}</span></p>
+                  {(user.current_streak || 0) > 0 && (
+                    <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-full text-[10px] sm:text-xs font-black border border-orange-200">
+                      <Flame className="w-3 h-3 fill-orange-500" /> {user.current_streak}일
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -418,6 +486,16 @@ export default function Home() {
           </div>
 
           <TokenModal />
+
+          {/* 오답 노트 버튼 */}
+          <button onClick={() => setMode('wrong_note')}
+            className="w-full bg-white hover:bg-red-50 rounded-2xl shadow-sm border-2 border-red-100 hover:border-red-300 p-3 sm:p-4 flex items-center gap-3 transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-xl flex items-center justify-center text-xl sm:text-2xl shrink-0">📝</div>
+            <div className="text-left">
+              <p className="font-black text-slate-800 text-sm sm:text-base">내 오답 노트</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium">틀린 단어를 다시 학습하고 테스트해 봐!</p>
+            </div>
+          </button>
 
           {/* Day 그리드 */}
           {dayCategories.length > 0 ? (
@@ -435,17 +513,17 @@ export default function Home() {
                     onClick={() => handleSelectDay(day)}
                     disabled={isLocked}
                     className={`rounded-xl sm:rounded-2xl shadow-sm border-2 p-3 sm:p-4 text-center transition-all group ${isLocked
-                        ? 'bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed'
-                        : isCurrent
-                          ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-400 shadow-md shadow-blue-200/50 ring-2 ring-blue-300 hover:shadow-lg active:scale-[0.97]'
-                          : 'bg-white border-emerald-200 hover:border-emerald-400 hover:shadow-md active:scale-[0.97]'
+                      ? 'bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed'
+                      : isCurrent
+                        ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-400 shadow-md shadow-blue-200/50 ring-2 ring-blue-300 hover:shadow-lg active:scale-[0.97]'
+                        : 'bg-white border-emerald-200 hover:border-emerald-400 hover:shadow-md active:scale-[0.97]'
                       }`}
                   >
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1.5 sm:mb-2 transition-colors ${isLocked
-                        ? 'bg-slate-200'
-                        : isCurrent
-                          ? 'bg-gradient-to-br from-blue-400 to-indigo-500 shadow-md'
-                          : 'bg-gradient-to-br from-emerald-100 to-teal-100'
+                      ? 'bg-slate-200'
+                      : isCurrent
+                        ? 'bg-gradient-to-br from-blue-400 to-indigo-500 shadow-md'
+                        : 'bg-gradient-to-br from-emerald-100 to-teal-100'
                       }`}>
                       {isLocked ? (
                         <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />

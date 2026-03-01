@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Word } from '@/types';
-import { ChevronLeft, ChevronRight, BookOpen, Eye, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Eye, EyeOff, Volume2 } from 'lucide-react';
+import { speakWord } from '@/lib/tts';
 
 type Props = {
     words: Word[];
@@ -115,9 +116,17 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                         {showMeaning ? 'Meaning' : 'Vocabulary'}
                     </div>
 
-                    {/* 아이콘 표시 */}
-                    <div className="absolute top-4 sm:top-6 right-4 sm:right-6 text-indigo-200">
-                        {showMeaning ? <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> : <Eye className="w-5 h-5 sm:w-6 sm:h-6" />}
+                    <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex items-center gap-2">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); speakWord(currentWord.word); }}
+                            className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-100 hover:bg-blue-200 text-blue-500 rounded-full flex items-center justify-center transition-colors"
+                            title="발음 듣기"
+                        >
+                            <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                        <span className="text-indigo-200">
+                            {showMeaning ? <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> : <Eye className="w-5 h-5 sm:w-6 sm:h-6" />}
+                        </span>
                     </div>
 
                     <div className="text-center w-full mt-4">

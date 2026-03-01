@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Word } from '@/types';
-import { Check, X, ArrowRight, Coins, Star, RotateCcw } from 'lucide-react';
+import { Check, X, ArrowRight, Coins, Star, RotateCcw, Volume2 } from 'lucide-react';
+import { speakWord } from '@/lib/tts';
 
 type Props = {
     words: Word[];
@@ -211,6 +212,10 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                             <h3 className={`text-lg sm:text-xl font-black mb-1 ${status === 'correct' ? 'text-green-700' : 'text-red-700'}`}>
                                 {status === 'correct' ? '정답이야! 멋져! 👍' : '아앗! 틀렸어 🥲'}
                             </h3>
+                            <button type="button" onClick={() => speakWord(currentQ.word.word)}
+                                className="mx-auto mb-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full text-xs font-bold flex items-center gap-1 transition-colors">
+                                <Volume2 className="w-3.5 h-3.5" /> {currentQ.word.word} 발음 듣기
+                            </button>
                             {status === 'wrong' && (
                                 <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
                                     정답: {currentQ.type === 'en_to_ko'

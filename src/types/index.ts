@@ -9,6 +9,8 @@ export type User = {
     last_wrong_word_ids?: string[];
     test_question_count?: number;
     current_unlocked_day?: number;
+    current_streak?: number;
+    last_study_date?: string;
     created_at: string;
 };
 
@@ -33,19 +35,17 @@ export type ExchangeRequest = {
     status: 'pending' | 'completed';
     created_at: string;
     updated_at: string;
-    users?: User; // joined data
+    users?: User;
 };
 
-// 시험 승인 요청 타입
 export type TestRequest = {
     id: string;
     user_id: string;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
-    users?: User; // joined data
+    users?: User;
 };
 
-// 테스트 기록 타입
 export type TestHistory = {
     id: string;
     user_id: string;
@@ -54,4 +54,13 @@ export type TestHistory = {
     earned_tokens: number;
     is_first_clear: boolean;
     created_at: string;
+};
+
+export type WrongWord = {
+    id: string;
+    user_id: string;
+    word_id: string;
+    failed_count: number;
+    created_at: string;
+    words?: Word;
 };
