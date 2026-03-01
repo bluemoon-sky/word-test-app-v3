@@ -213,39 +213,61 @@ export default function AdminWordsPage() {
         const lines = cleanedText.split('\n').map(line => line.replace(/\r/g, ''));
         const parsedWords: Partial<Word>[] = [];
 
-        // 첫 번째 줄은 항상 헤더이므로 무조건 스킵 (i = 1부터 시작)
+        if (lines.length < 2) return [];
+
+        const clean = (val: string) => {
+            let cleaned = val?.trim() || '';
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                cleaned = cleaned.substring(1, cleaned.length - 1);
+            }
+            return cleaned;
+        };
+
+        const headers = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(clean);
+
+        // 헤더 인덱스 매핑 (대소문자 무시, 공백 무시)
+        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+        const headerMap: Record<string, number> = {};
+
+        headers.forEach((h, idx) => {
+            const nh = normalize(h);
+            if (nh.includes('day') || nh.includes('카테고리')) headerMap['category'] = idx;
+            if (nh.includes('영단어') || nh.includes('단어') || nh === 'word') headerMap['word'] = idx;
+            if (nh === '뜻1' || nh.includes('첫번째뜻')) headerMap['m1'] = idx;
+            if (nh === '뜻2' || nh.includes('두번째뜻')) headerMap['m2'] = idx;
+            if (nh === '뜻3' || nh.includes('세번째뜻') || nh === '뜻') headerMap['m3'] = idx;
+            if (nh.includes('발음기호')) headerMap['phon'] = idx;
+            if (nh.includes('한국어발음') || nh.includes('한글발음')) headerMap['kpro'] = idx;
+        });
+
+        // 만약 헤더 매핑이 2개(단어, 뜻1) 미만으로 감지되었다면, 기존의 위치(인덱스) 기반 로직을 사용
+        const useFallback = !headerMap.hasOwnProperty('word') || !headerMap.hasOwnProperty('m1');
+
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i];
             if (!line.trim()) continue;
 
             const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            const clean = (val: string) => {
-                let cleaned = val?.trim() || '';
-                if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-                    cleaned = cleaned.substring(1, cleaned.length - 1);
+
+            let w = '', m1 = '', m2 = '', m3 = '', phon = '', kPro = '', cat = csvCategory.trim();
+
+            if (useFallback) {
+                // 기존 하드코딩 백폴 로직
+                if (cols.length >= 6) {
+                    if (clean(cols[0])) cat = clean(cols[0]);
+                    w = clean(cols[1]); m1 = clean(cols[2]); m2 = clean(cols[3]); phon = clean(cols[4]); kPro = clean(cols[5]);
+                } else {
+                    w = clean(cols[0]); m1 = clean(cols[1]); m2 = clean(cols[2]); phon = clean(cols[3]); kPro = clean(cols[4]);
                 }
-                return cleaned;
-            };
-
-            // 사용자 지정 컬럼: DAY, 영단어, 뜻1, 뜻2, 발음기호, 한국어발음
-            // (만약 5칼럼이라면 첫 번째가 영단어, 6칼럼이면 첫 번째가 DAY)
-            let w = '', m1 = '', m2 = '', phon = '', kPro = '', cat = csvCategory.trim();
-
-            if (cols.length >= 6) {
-                // 6열 형식 (DAY 포함)
-                if (clean(cols[0])) cat = clean(cols[0]); // DAY가 있으면 카테고리 덮어쓰기
-                w = clean(cols[1]);
-                m1 = clean(cols[2]);
-                m2 = clean(cols[3]);
-                phon = clean(cols[4]);
-                kPro = clean(cols[5]);
             } else {
-                // 기존 5열 형식 백폴 (영단어, 뜻1, 뜻2, 발음기호, 한국어발음)
-                w = clean(cols[0]);
-                m1 = clean(cols[1]);
-                m2 = clean(cols[2]);
-                phon = clean(cols[3]);
-                kPro = clean(cols[4]);
+                // 헤더 매핑 기반 추출
+                if (headerMap['category'] !== undefined && clean(cols[headerMap['category']])) cat = clean(cols[headerMap['category']]);
+                if (headerMap['word'] !== undefined) w = clean(cols[headerMap['word']]);
+                if (headerMap['m1'] !== undefined) m1 = clean(cols[headerMap['m1']]);
+                if (headerMap['m2'] !== undefined) m2 = clean(cols[headerMap['m2']]);
+                if (headerMap['m3'] !== undefined) m3 = clean(cols[headerMap['m3']]);
+                if (headerMap['phon'] !== undefined) phon = clean(cols[headerMap['phon']]);
+                if (headerMap['kpro'] !== undefined) kPro = clean(cols[headerMap['kpro']]);
             }
 
             if (w && m1) {
@@ -253,6 +275,7 @@ export default function AdminWordsPage() {
                     word: w,
                     meaning_1: m1,
                     meaning_2: m2 || null,
+                    meaning_3: m3 || null,
                     phonetic: phon || null,
                     korean_pronunciation: kPro || null,
                     category: cat || null,
@@ -520,6 +543,7 @@ export default function AdminWordsPage() {
                                         <th className="px-3 py-2 text-slate-600">영단어</th>
                                         <th className="px-3 py-2 text-slate-600">뜻1</th>
                                         <th className="px-3 py-2 text-slate-600">뜻2</th>
+                                        <th className="px-3 py-2 text-slate-600">뜻3</th>
                                         <th className="px-3 py-2 text-slate-600">발음기호</th>
                                         <th className="px-3 py-2 text-slate-600">한국어발음</th>
                                         <th className="px-3 py-2 text-slate-600">카테고리</th>
@@ -531,6 +555,7 @@ export default function AdminWordsPage() {
                                             <td className="px-3 py-2 font-bold text-slate-800">{word.word}</td>
                                             <td className="px-3 py-2 text-slate-600">{word.meaning_1}</td>
                                             <td className="px-3 py-2 text-slate-500">{word.meaning_2 || '-'}</td>
+                                            <td className="px-3 py-2 text-slate-500">{word.meaning_3 || '-'}</td>
                                             <td className="px-3 py-2 text-slate-500">{word.phonetic || '-'}</td>
                                             <td className="px-3 py-2 text-blue-600">{word.korean_pronunciation || '-'}</td>
                                             <td className="px-3 py-2 text-purple-600">{word.category || '-'}</td>
