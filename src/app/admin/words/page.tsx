@@ -24,6 +24,7 @@ export default function AdminWordsPage() {
     const [newMeaning, setNewMeaning] = useState('');
     const [newMeaning2, setNewMeaning2] = useState('');
     const [newPronun, setNewPronun] = useState('');
+    const [newMeaning3, setNewMeaning3] = useState('');
     const [newKoreanPronun, setNewKoreanPronun] = useState('');
     const [newCategory, setNewCategory] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
@@ -41,6 +42,7 @@ export default function AdminWordsPage() {
     const [editWord, setEditWord] = useState('');
     const [editMeaning, setEditMeaning] = useState('');
     const [editMeaning2, setEditMeaning2] = useState('');
+    const [editMeaning3, setEditMeaning3] = useState('');
     const [editKoreanPronun, setEditKoreanPronun] = useState('');
     const [editCategory, setEditCategory] = useState('');
 
@@ -133,6 +135,7 @@ export default function AdminWordsPage() {
                     word: newWord.trim(),
                     meaning_1: newMeaning.trim(),
                     meaning_2: newMeaning2.trim() || null,
+                    meaning_3: newMeaning3.trim() || null,
                     phonetic: newPronun.trim() || null,
                     korean_pronunciation: newKoreanPronun.trim() || null,
                     category: newCategory.trim() || null,
@@ -143,7 +146,7 @@ export default function AdminWordsPage() {
 
             if (error) throw error;
             setWords([data as Word, ...words]);
-            setNewWord(''); setNewMeaning(''); setNewMeaning2('');
+            setNewWord(''); setNewMeaning(''); setNewMeaning2(''); setNewMeaning3('');
             setNewPronun(''); setNewKoreanPronun('');
         } catch (error) {
             console.error('추가 에러:', error);
@@ -172,6 +175,7 @@ export default function AdminWordsPage() {
         setEditWord(word.word);
         setEditMeaning(word.meaning_1);
         setEditMeaning2(word.meaning_2 || '');
+        setEditMeaning3(word.meaning_3 || '');
         setEditKoreanPronun(word.korean_pronunciation || '');
         setEditCategory(word.category || '');
     };
@@ -185,6 +189,7 @@ export default function AdminWordsPage() {
                     word: editWord.trim(),
                     meaning_1: editMeaning.trim(),
                     meaning_2: editMeaning2.trim() || null,
+                    meaning_3: editMeaning3.trim() || null,
                     korean_pronunciation: editKoreanPronun.trim() || null,
                     category: editCategory.trim() || null,
                 })
@@ -401,6 +406,11 @@ export default function AdminWordsPage() {
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm" placeholder="능금" />
                                 </div>
                                 <div>
+                                    <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">한글 뜻 3</label>
+                                    <input type="text" value={newMeaning3} onChange={e => setNewMeaning3(e.target.value)}
+                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm" placeholder="세 번째 뜻 (선택)" />
+                                </div>
+                                <div>
                                     <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">발음 기호</label>
                                     <input type="text" value={newPronun} onChange={e => setNewPronun(e.target.value)}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm" placeholder="[æpl]" />
@@ -600,11 +610,14 @@ export default function AdminWordsPage() {
                                                         className="w-full px-2 py-1 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" placeholder="뜻1" />
                                                     <input type="text" value={editMeaning2} onChange={e => setEditMeaning2(e.target.value)}
                                                         className="w-full px-2 py-1 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500" placeholder="뜻2 (선택)" />
+                                                    <input type="text" value={editMeaning3} onChange={e => setEditMeaning3(e.target.value)}
+                                                        className="w-full px-2 py-1 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500" placeholder="뜻3 (선택)" />
                                                 </div>
                                             ) : (
                                                 <span className="text-slate-600">
                                                     {word.meaning_1}
                                                     {word.meaning_2 && <span className="ml-1 text-xs text-slate-400">/ {word.meaning_2}</span>}
+                                                    {word.meaning_3 && <span className="ml-1 text-xs text-slate-400">/ {word.meaning_3}</span>}
                                                 </span>
                                             )}
                                         </td>

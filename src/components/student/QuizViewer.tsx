@@ -52,7 +52,8 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
         if (currentQ.type === 'en_to_ko') {
             const m1 = currentQ.word.meaning_1.replace(/\s+/g, '').toLowerCase();
             const m2 = currentQ.word.meaning_2 ? currentQ.word.meaning_2.replace(/\s+/g, '').toLowerCase() : null;
-            isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2);
+            const m3 = currentQ.word.meaning_3 ? currentQ.word.meaning_3.replace(/\s+/g, '').toLowerCase() : null;
+            isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2) || (m3 !== null && normalizedInput === m3);
         } else {
             isCorrect = normalizedInput === currentQ.word.word.replace(/\s+/g, '').toLowerCase();
         }
@@ -131,8 +132,8 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                 <button
                     onClick={() => onFinish(earnedTokens, wrongWordIds, score)}
                     className={`w-full py-3.5 sm:py-4 text-white font-bold rounded-2xl transition text-base sm:text-lg ${isReviewMode
-                            ? 'bg-amber-500 hover:bg-amber-600'
-                            : 'bg-slate-800 hover:bg-slate-700'
+                        ? 'bg-amber-500 hover:bg-amber-600'
+                        : 'bg-slate-800 hover:bg-slate-700'
                         }`}
                 >
                     돌아가기
@@ -165,7 +166,8 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                         {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
                             <span>
                                 {currentQ.word.meaning_1}
-                                {currentQ.word.meaning_2 && <span className="text-xl sm:text-2xl text-slate-500 ml-2">/ {currentQ.word.meaning_2}</span>}
+                                {currentQ.word.meaning_2 && <span className="text-xl sm:text-2xl ml-2">/ {currentQ.word.meaning_2}</span>}
+                                {currentQ.word.meaning_3 && <span className="text-xl sm:text-2xl ml-2">/ {currentQ.word.meaning_3}</span>}
                             </span>
                         )}
                     </h2>
@@ -212,7 +214,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                             {status === 'wrong' && (
                                 <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
                                     정답: {currentQ.type === 'en_to_ko'
-                                        ? `${currentQ.word.meaning_1}${currentQ.word.meaning_2 ? ` (또는 ${currentQ.word.meaning_2})` : ''}`
+                                        ? [currentQ.word.meaning_1, currentQ.word.meaning_2, currentQ.word.meaning_3].filter(Boolean).join(', ')
                                         : currentQ.word.word}
                                 </p>
                             )}
