@@ -7,6 +7,7 @@ export type User = {
     last_earn_date?: string;
     last_test_time?: string;
     last_wrong_word_ids?: string[];
+    test_question_count?: number;
     created_at: string;
 };
 

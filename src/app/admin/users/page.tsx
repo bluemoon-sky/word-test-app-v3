@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/types';
 import AdminNav from '@/components/admin/AdminNav';
-import { Plus, Trash2, Loader2, Coins, UserPlus } from 'lucide-react';
+import { Plus, Trash2, Loader2, Coins, UserPlus, Save, Hash } from 'lucide-react';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [newNickname, setNewNickname] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    // 문항 수 편집 상태
+    const [editingQCountId, setEditingQCountId] = useState<string | null>(null);
+    const [editQCount, setEditQCount] = useState(30);
     const router = useRouter();
 
     useEffect(() => {
@@ -117,6 +120,29 @@ export default function AdminUsersPage() {
         }
     };
 
+    // 테스트 문항 수 수정
+    const handleUpdateQuestionCount = async (id: string) => {
+        if (editQCount < 1 || editQCount > 200) {
+            alert('문항 수는 1~200 사이로 입력해 주세요.');
+            return;
+        }
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .update({ test_question_count: editQCount })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            setUsers(users.map(u => u.id === id ? (data as User) : u));
+            setEditingQCountId(null);
+        } catch (error) {
+            console.error('문항 수 수정 에러:', error);
+            alert('문항 수 수정 중 오류가 발생했습니다.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50">
             <AdminNav />
@@ -125,7 +151,7 @@ export default function AdminUsersPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                         <h1 className="text-xl sm:text-3xl font-black text-slate-800">사용자 관리</h1>
-                        <p className="text-xs sm:text-base text-slate-500 mt-1">학생들을 추가하고 토큰 정보를 관리하세요.</p>
+                        <p className="text-xs sm:text-base text-slate-500 mt-1">학생들을 추가하고 토큰 및 시험 문항 수를 관리하세요.</p>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-bold text-blue-800">
                         총 {users.length}명 등록됨
@@ -186,7 +212,7 @@ export default function AdminUsersPage() {
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center justify-between text-sm mb-2">
                                             <button
                                                 onClick={() => handleAdjustTokens(user.id, user.tokens)}
                                                 className="flex items-center gap-1 text-yellow-700 font-bold hover:bg-yellow-50 px-2 py-1 rounded-lg transition-colors"
@@ -195,9 +221,43 @@ export default function AdminUsersPage() {
                                                 {(user.tokens || 0).toLocaleString()} T
                                             </button>
                                             <span className="text-emerald-600 font-semibold text-xs">₩ {((user.tokens || 0) * 10).toLocaleString()}</span>
-                                            <span className="text-slate-400 text-xs" suppressHydrationWarning>
-                                                {new Date(user.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                        </div>
+                                        {/* 문항 수 편집 (모바일) */}
+                                        <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-2 mt-2">
+                                            <span className="text-slate-500 font-medium flex items-center gap-1">
+                                                <Hash className="w-3.5 h-3.5" /> 문항 수
                                             </span>
+                                            {editingQCountId === user.id ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={editQCount}
+                                                        onChange={(e) => setEditQCount(parseInt(e.target.value) || 0)}
+                                                        className="w-16 px-2 py-1 border border-blue-300 rounded-lg text-center text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        min={1}
+                                                        max={200}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleUpdateQuestionCount(user.id)}
+                                                        className="p-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                                    >
+                                                        <Save className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingQCountId(null)}
+                                                        className="p-1 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { setEditingQCountId(user.id); setEditQCount(user.test_question_count || 30); }}
+                                                    className="font-bold text-blue-700 hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors"
+                                                >
+                                                    {user.test_question_count || 30}문제
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))
@@ -214,6 +274,7 @@ export default function AdminUsersPage() {
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">역할</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">보유 토큰</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">환산 용돈</th>
+                                            <th className="px-6 py-4 text-sm font-bold text-slate-600">시험 문항 수</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600">가입일</th>
                                             <th className="px-6 py-4 text-sm font-bold text-slate-600 text-right">관리</th>
                                         </tr>
@@ -221,7 +282,7 @@ export default function AdminUsersPage() {
                                     <tbody className="divide-y divide-slate-100">
                                         {users.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                                     등록된 사용자가 없습니다. 위에서 학생을 추가해 보세요!
                                                 </td>
                                             </tr>
@@ -250,6 +311,43 @@ export default function AdminUsersPage() {
                                                     </td>
                                                     <td className="px-6 py-4 text-emerald-600 font-semibold">
                                                         ₩ {((user.tokens || 0) * 10).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        {editingQCountId === user.id ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={editQCount}
+                                                                    onChange={(e) => setEditQCount(parseInt(e.target.value) || 0)}
+                                                                    className="w-20 px-3 py-1.5 border border-blue-300 rounded-lg text-center font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    min={1}
+                                                                    max={200}
+                                                                />
+                                                                <button
+                                                                    onClick={() => handleUpdateQuestionCount(user.id)}
+                                                                    className="p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                                                    title="저장"
+                                                                >
+                                                                    <Save className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingQCountId(null)}
+                                                                    className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
+                                                                    title="취소"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => { setEditingQCountId(user.id); setEditQCount(user.test_question_count || 30); }}
+                                                                className="flex items-center gap-1.5 text-blue-700 font-bold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                                                                title="클릭하여 문항 수 수정"
+                                                            >
+                                                                <Hash className="w-4 h-4 text-blue-500" />
+                                                                {user.test_question_count || 30}문제
+                                                            </button>
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-slate-500" suppressHydrationWarning>
                                                         {new Date(user.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}

@@ -1,25 +1,28 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import WordStudy from '@/components/student/WordStudy';
 import QuizViewer from '@/components/student/QuizViewer';
 import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X } from 'lucide-react';
+import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X, ArrowLeft, FolderOpen } from 'lucide-react';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [words, setWords] = useState<Word[]>([]);
-  // 학생 플로우: dashboard → study → request_sent → test
-  const [mode, setMode] = useState<'dashboard' | 'study' | 'request_sent' | 'test'>('dashboard');
+  const [allWords, setAllWords] = useState<Word[]>([]); // 전체 단어
+  const [words, setWords] = useState<Word[]>([]); // 선택된 Day의 단어
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+
+  // 학생 플로우: day_select → dashboard → study → request_sent → test
+  const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'request_sent' | 'test'>('day_select');
   const [studyCompleted, setStudyCompleted] = useState(false);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
 
-  // 시험 요청 상태 확인하는 함수
+  // 시험 요청 상태 확인
   const checkTestRequest = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('test_requests')
@@ -36,6 +39,19 @@ export default function Home() {
       }
     }
   }, []);
+
+  // Day 목록 추출 (DB에 등록된 카테고리 기반)
+  const dayCategories = useMemo(() => {
+    const cats = new Set<string>();
+    allWords.forEach(w => { if (w.category) cats.add(w.category); });
+    // Day 숫자 기준 정렬 시도
+    return Array.from(cats).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.replace(/\D/g, '')) || 0;
+      if (numA !== numB) return numA - numB;
+      return a.localeCompare(b);
+    });
+  }, [allWords]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +74,9 @@ export default function Home() {
         return;
       }
 
-      // 날짜가 바뀌었으면 daily_earned_tokens 초기화 로직
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      // 날짜가 바뀌었으면 daily_earned_tokens 초기화
+      const today = new Date().toISOString().split('T')[0];
       const userLastEarnDate = existingUser.last_earn_date;
-
       let finalUser = existingUser as User;
 
       if (userLastEarnDate !== today) {
@@ -78,26 +93,15 @@ export default function Home() {
 
       setUser(finalUser);
 
-      // 단어 가져오기 (마지막 시험 오답 여부 포함해서 정렬)
+      // 전체 단어 가져오기
       const { data: wordsData, error: wordsError } = await supabase
         .from('words')
         .select('*')
         .or(`user_id.is.null,user_id.eq.${existingUser.id}`);
       if (wordsError) throw wordsError;
 
-      let fetchedWords = wordsData as Word[];
-
-      // 오답 위주 정렬: last_wrong_word_ids에 있는 단어를 맨 앞으로 (0이 앞에 오도록)
-      if (finalUser.last_wrong_word_ids && finalUser.last_wrong_word_ids.length > 0) {
-        const wrongIds = new Set(finalUser.last_wrong_word_ids);
-        fetchedWords.sort((a, b) => {
-          const aIsWrong = wrongIds.has(a.id) ? 0 : 1;
-          const bIsWrong = wrongIds.has(b.id) ? 0 : 1;
-          return aIsWrong - bIsWrong;
-        });
-      }
-
-      setWords(fetchedWords);
+      setAllWords(wordsData as Word[]);
+      setMode('day_select');
 
       // 기존 시험 요청 확인
       await checkTestRequest(existingUser.id);
@@ -110,12 +114,35 @@ export default function Home() {
     }
   };
 
+  // Day 선택 핸들러
+  const handleSelectDay = (day: string) => {
+    setSelectedDay(day);
+    const dayWords = allWords.filter(w => w.category === day);
+
+    // 오답 위주 정렬
+    if (user?.last_wrong_word_ids && user.last_wrong_word_ids.length > 0) {
+      const wrongIds = new Set(user.last_wrong_word_ids);
+      dayWords.sort((a, b) => {
+        const aIsWrong = wrongIds.has(a.id) ? 0 : 1;
+        const bIsWrong = wrongIds.has(b.id) ? 0 : 1;
+        return aIsWrong - bIsWrong;
+      });
+    }
+
+    setWords(dayWords);
+    setStudyCompleted(false);
+    setTestRequest(null);
+    setMode('dashboard');
+
+    // 해당 Day의 시험 요청 확인
+    if (user) checkTestRequest(user.id);
+  };
+
   // 시험 요청 보내기
   const handleRequestTest = async () => {
     if (!user) return;
 
     try {
-      // 기존 pending 요청이 있으면 사용
       if (testRequest && testRequest.status === 'pending') {
         setMode('request_sent');
         return;
@@ -307,11 +334,13 @@ export default function Home() {
 
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
+    const questionCount = user.test_question_count || 30;
     return (
       <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <QuizViewer
           words={words}
           userId={user.id}
+          questionCount={questionCount}
           onFinish={async (earnedTokens, wrongWordIds) => {
             // 하루 20토큰 제한 로직
             const currentDailyTokens = user.daily_earned_tokens || 0;
@@ -327,14 +356,14 @@ export default function Home() {
               limitAlert = `오늘 남은 획득 가능 금액은 ${maxAllowed * 10}원 이하여서, ${maxAllowed} 토큰만 지급되었어요.`;
             }
 
-            // 토큰 업데이트 처리
+            // 토큰 업데이트
             if (actualEarned > 0) {
               try {
                 await supabase.rpc('increment_tokens', { p_user_id: user.id, p_amount: actualEarned });
               } catch (e) { console.error('Token inc error:', e); }
             }
 
-            // last 시간, 오답 목록 및 daily 업데이트
+            // 시간, 오답 및 daily 업데이트
             const now = new Date().toISOString();
             const today = now.split('T')[0];
 
@@ -367,7 +396,111 @@ export default function Home() {
     );
   }
 
-  // ─── 메인 대시보드 화면 ───
+  // ─── Day 선택 화면 ───
+  if (mode === 'day_select') {
+    return (
+      <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-4 md:p-8 pb-12">
+        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
+
+          {/* 헤더 */}
+          <div className="flex items-center justify-between bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border-2 border-slate-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg text-xl sm:text-2xl">
+                😎
+              </div>
+              <div>
+                <h1 className="text-base sm:text-xl font-black text-slate-800">안녕, <span className="text-blue-600">{user.nickname}</span>!</h1>
+                <p className="text-[10px] sm:text-sm text-slate-500 font-medium">공부할 Day를 선택해 봐!</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowTokenModal(true)}
+                className="bg-yellow-50 hover:bg-yellow-100 flex items-center p-1 pr-3 sm:pr-4 rounded-xl border-2 border-yellow-200 transition-colors"
+              >
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-400 rounded-lg flex items-center justify-center shadow-inner mr-1.5 sm:mr-2 text-yellow-900">
+                  <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <span className="text-sm sm:text-base font-black text-yellow-700">{(user.tokens ?? 0).toLocaleString()}</span>
+              </button>
+
+              <button onClick={() => { setUser(null); setMode('day_select'); setSelectedDay(null); }} className="p-2 sm:p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* 토큰 상세/정산 모달 */}
+          {showTokenModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+              <div className="bg-white max-w-sm w-full rounded-3xl shadow-2xl p-6 sm:p-8 relative animate-in fade-in zoom-in-95 duration-200">
+                <button onClick={() => setShowTokenModal(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                  <X className="w-6 h-6" />
+                </button>
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">💰</div>
+                <h2 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-6">용돈 지갑</h2>
+                <div className="space-y-4 mb-8">
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
+                    <span className="font-bold text-slate-600 text-sm">오늘 획득한 토큰</span>
+                    <span className="font-black text-slate-800">{user.daily_earned_tokens || 0} / 20개</span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
+                    <span className="font-bold text-slate-600 text-sm">보유 중인 총 토큰</span>
+                    <span className="font-black text-yellow-600 text-lg">{(user.tokens ?? 0).toLocaleString()}개</span>
+                  </div>
+                  <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 rounded-2xl text-white flex justify-between items-center shadow-lg shadow-teal-500/20">
+                    <span className="font-bold text-teal-50 text-sm">현재 환전 가능 총액</span>
+                    <span className="font-black text-xl">₩ {((user.tokens ?? 0) * 10).toLocaleString()}</span>
+                  </div>
+                  <p className="text-center text-xs font-bold text-slate-400 bg-slate-50 py-1.5 rounded-full">
+                    ⚠️ 1,000원 단위로만 정산 가능해요!
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setShowTokenModal(false); handleExchange(); }}
+                  disabled={user.tokens < 100}
+                  className="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg rounded-2xl shadow-md transition-all disabled:opacity-50 flex justify-center items-center"
+                >
+                  1,000원 단위로 정산 신청하기
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Day 그리드 */}
+          {dayCategories.length > 0 ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3">
+              {dayCategories.map((day) => {
+                const count = allWords.filter(w => w.category === day).length;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => handleSelectDay(day)}
+                    className="bg-white rounded-xl sm:rounded-2xl shadow-sm border-2 border-slate-100 hover:border-blue-300 hover:shadow-md p-3 sm:p-4 text-center transition-all group active:scale-[0.97]"
+                  >
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1.5 sm:mb-2 group-hover:from-blue-200 group-hover:to-indigo-200 transition-colors">
+                      <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                    </div>
+                    <p className="font-black text-xs sm:text-sm text-slate-800">{day}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 font-medium">{count}개 단어</p>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white p-8 sm:p-12 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 text-center">
+              <div className="text-4xl sm:text-6xl mb-3 grayscale opacity-50">📭</div>
+              <h3 className="text-base sm:text-xl font-bold text-slate-700 mb-2">아직 등록된 Day가 없어!</h3>
+              <p className="text-xs sm:text-base text-slate-500 font-medium">선생님이나 부모님이 단어를 추가해 줄 때까지 기다려 줘.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── 메인 대시보드 화면 (Day 선택 후) ───
   return (
     <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-4 md:p-8 pb-12">
       <div className="max-w-5xl mx-auto space-y-5 sm:space-y-8">
@@ -375,12 +508,17 @@ export default function Home() {
         {/* 헤더 섹션 */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border-2 border-slate-100">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 text-2xl sm:text-3xl">
-              😎
-            </div>
+            <button
+              onClick={() => { setMode('day_select'); setSelectedDay(null); setStudyCompleted(false); setTestRequest(null); }}
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 hover:bg-slate-200 rounded-xl sm:rounded-2xl flex items-center justify-center transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
+            </button>
             <div>
-              <h1 className="text-lg sm:text-2xl font-black text-slate-800">안녕, <span className="text-blue-600">{user.nickname}</span>!</h1>
-              <p className="text-xs sm:text-base text-slate-500 font-medium">오늘도 단어 마스터가 되어볼까?</p>
+              <h1 className="text-lg sm:text-2xl font-black text-slate-800">
+                <span className="text-blue-600">{selectedDay}</span> 학습
+              </h1>
+              <p className="text-xs sm:text-base text-slate-500 font-medium">{words.length}개의 단어가 준비되어 있어!</p>
             </div>
           </div>
 
@@ -398,7 +536,7 @@ export default function Home() {
               </div>
             </button>
 
-            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('dashboard'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
+            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('day_select'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
@@ -408,18 +546,11 @@ export default function Home() {
         {showTokenModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
             <div className="bg-white max-w-sm w-full rounded-3xl shadow-2xl p-6 sm:p-8 relative animate-in fade-in zoom-in-95 duration-200">
-              <button
-                onClick={() => setShowTokenModal(false)}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition"
-              >
+              <button onClick={() => setShowTokenModal(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition">
                 <X className="w-6 h-6" />
               </button>
-
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                💰
-              </div>
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">💰</div>
               <h2 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-6">용돈 지갑</h2>
-
               <div className="space-y-4 mb-8">
                 <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
                   <span className="font-bold text-slate-600 text-sm">오늘 획득한 토큰</span>
@@ -437,14 +568,10 @@ export default function Home() {
                   ⚠️ 1,000원 단위로만 정산 가능해요!
                 </p>
               </div>
-
               <button
-                onClick={() => {
-                  setShowTokenModal(false);
-                  handleExchange();
-                }}
+                onClick={() => { setShowTokenModal(false); handleExchange(); }}
                 disabled={user.tokens < 100}
-                className="w-full py-4 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold text-lg rounded-2xl shadow-md transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center"
+                className="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg rounded-2xl shadow-md transition-all disabled:opacity-50 flex justify-center items-center"
               >
                 1,000원 단위로 정산 신청하기
               </button>
@@ -492,7 +619,6 @@ export default function Home() {
                 {studyCompleted && (
                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {testRequest?.status === 'approved' ? (
-                      // 승인됨 → 시험 가능
                       <button
                         onClick={() => setMode('test')}
                         className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-2xl sm:rounded-3xl shadow-lg shadow-orange-500/20 p-5 sm:p-8 text-left hover:shadow-xl transition-all group"
@@ -503,12 +629,11 @@ export default function Home() {
                           </div>
                           <div className="min-w-0">
                             <h3 className="text-base sm:text-xl font-black text-white">⚡ 2단계: 시험 시작!</h3>
-                            <p className="text-xs sm:text-base text-orange-100 font-medium mt-0.5 sm:mt-1">승인이 완료되었어! 시험을 봐서 토큰을 획득해 봐!</p>
+                            <p className="text-xs sm:text-base text-orange-100 font-medium mt-0.5 sm:mt-1">승인 완료! 시험을 봐서 토큰을 획득해 봐! ({user.test_question_count || 30}문제)</p>
                           </div>
                         </div>
                       </button>
                     ) : testRequest?.status === 'pending' ? (
-                      // 대기 중
                       <button
                         onClick={() => setMode('request_sent')}
                         className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-amber-200 p-5 sm:p-8 text-left hover:shadow-lg transition-all group"
@@ -524,7 +649,6 @@ export default function Home() {
                         </div>
                       </button>
                     ) : (
-                      // 아직 요청 안 함
                       <button
                         onClick={handleRequestTest}
                         className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group"
@@ -552,12 +676,11 @@ export default function Home() {
             ) : (
               <div className="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">
                 <div className="text-4xl sm:text-6xl mb-3 sm:mb-4 grayscale opacity-50">📭</div>
-                <h3 className="text-base sm:text-xl font-bold text-slate-700 mb-1.5 sm:mb-2">아직 외울 단어가 없어!</h3>
+                <h3 className="text-base sm:text-xl font-bold text-slate-700 mb-1.5 sm:mb-2">이 Day에는 아직 단어가 없어!</h3>
                 <p className="text-xs sm:text-base text-slate-500 font-medium">선생님이나 부모님이 단어를 추가해 줄 때까지 기다려 줘.</p>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

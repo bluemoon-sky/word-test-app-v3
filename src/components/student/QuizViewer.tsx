@@ -8,6 +8,7 @@ import { Check, X, ArrowRight, Coins } from 'lucide-react';
 type Props = {
     words: Word[];
     userId: string;
+    questionCount?: number;
     onFinish: (earnedTokens: number, wrongWordIds: string[]) => void;
 };
 
@@ -16,7 +17,7 @@ type Question = {
     type: 'en_to_ko' | 'ko_to_en';
 };
 
-export default function QuizViewer({ words, userId, onFinish }: Props) {
+export default function QuizViewer({ words, userId, questionCount = 30, onFinish }: Props) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [input, setInput] = useState('');
@@ -30,15 +31,18 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
         // 단어 배열 섞기
         const shuffled = [...words].sort(() => Math.random() - 0.5);
 
+        // questionCount만큼만 출제 (단어 수보다 적으면 단어 수만큼)
+        const limited = shuffled.slice(0, Math.min(questionCount, shuffled.length));
+
         // 교차 출제 로직 설정 (50:50)
-        const newQuestions: Question[] = shuffled.map((w) => ({
+        const newQuestions: Question[] = limited.map((w) => ({
             word: w,
-            type: Math.random() > 0.5 ? 'en_to_ko' : 'ko_to_en' // 50% 확률로 타입 결정
+            type: Math.random() > 0.5 ? 'en_to_ko' : 'ko_to_en'
         }));
 
         setQuestions(newQuestions);
         setIsMounted(true);
-    }, [words]);
+    }, [words, questionCount]);
 
     const currentQ = questions[currentIndex];
 
