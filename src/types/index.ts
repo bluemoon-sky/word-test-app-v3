@@ -66,3 +66,12 @@ export type WrongWord = {
     created_at: string;
     words?: Word;
 };
+
+export type UserWordMastery = {
+    id: string;
+    user_id: string;
+    day_number: number;
+    word: string;
+    is_mastered: boolean;
+    updated_at: string;
+};

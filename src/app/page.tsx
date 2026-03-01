@@ -27,6 +27,8 @@ export default function Home() {
   const [checkingRequest, setCheckingRequest] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showRoulette, setShowRoulette] = useState(false);
+  // 단어별 마스터 추적: { dayNumber: Set<word> }
+  const [masteryMap, setMasteryMap] = useState<Record<number, Set<string>>>({});
 
   // 시험 요청 상태 확인
   const checkTestRequest = useCallback(async (userId: string) => {
@@ -110,6 +112,23 @@ export default function Home() {
       if (wordsError) throw wordsError;
 
       setAllWords(wordsData as Word[]);
+
+      // 마스터리 데이터 로드
+      const { data: masteryData } = await supabase
+        .from('user_word_mastery')
+        .select('day_number, word')
+        .eq('user_id', existingUser.id)
+        .eq('is_mastered', true);
+
+      if (masteryData) {
+        const mMap: Record<number, Set<string>> = {};
+        masteryData.forEach((m: { day_number: number; word: string }) => {
+          if (!mMap[m.day_number]) mMap[m.day_number] = new Set();
+          mMap[m.day_number].add(m.word);
+        });
+        setMasteryMap(mMap);
+      }
+
       setMode('day_select');
       await checkTestRequest(existingUser.id);
 
@@ -144,6 +163,17 @@ export default function Home() {
         const aW = wrongIds.has(a.id) ? 0 : 1;
         const bW = wrongIds.has(b.id) ? 0 : 1;
         return aW - bW;
+      });
+    }
+
+    // 스마트 출제: 미마스터 단어 우선 정렬
+    const masteredSet = masteryMap[dayNum] || new Set<string>();
+    if (!review) {
+      // 최초 학습 모드일 때: 미마스터 단어를 앞으로 정렬
+      dayWords.sort((a, b) => {
+        const aM = masteredSet.has(a.word) ? 1 : 0;
+        const bM = masteredSet.has(b.word) ? 1 : 0;
+        return aM - bM;
       });
     }
 
@@ -346,7 +376,7 @@ export default function Home() {
           questionCount={questionCount}
           isReviewMode={isReviewMode}
           dayNumber={selectedDayNum}
-          onFinish={async (earnedFromQuiz, wrongWordIds, score) => {
+          onFinish={async (earnedFromQuiz, wrongWordIds, score, correctWords) => {
             // ─── 보상 분기 ───
             let actualEarned = 0;
             let isFirstClear = false;
@@ -355,7 +385,6 @@ export default function Home() {
               actualEarned = Math.floor(score / 5);
             } else {
               actualEarned = score;
-              isFirstClear = true;
             }
 
             // 하루 20토큰 제한
@@ -378,11 +407,41 @@ export default function Home() {
               } catch (e) { console.error('Token inc error:', e); }
             }
 
-            // 최초 통과 시: 다음 Day 해금
-            if (isFirstClear && !isReviewMode) {
-              const currentUnlocked = user.current_unlocked_day || 1;
-              if (selectedDayNum >= currentUnlocked) {
-                await supabase.from('users').update({ current_unlocked_day: selectedDayNum + 1 }).eq('id', user.id);
+            // ─── 마스터리 기록 (정답 단어 upsert) ───
+            if (!isReviewMode && correctWords.length > 0) {
+              for (const w of correctWords) {
+                await supabase.from('user_word_mastery').upsert({
+                  user_id: user.id,
+                  day_number: selectedDayNum,
+                  word: w,
+                  is_mastered: true,
+                  updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id,day_number,word' });
+              }
+
+              // masteryMap 로컬 업데이트
+              setMasteryMap(prev => {
+                const updated = { ...prev };
+                if (!updated[selectedDayNum]) updated[selectedDayNum] = new Set();
+                const newSet = new Set(updated[selectedDayNum]);
+                correctWords.forEach(w => newSet.add(w));
+                updated[selectedDayNum] = newSet;
+                return updated;
+              });
+            }
+
+            // ─── 100% 클리어 체크 → Day 해금 ───
+            if (!isReviewMode) {
+              const totalDayWords = allWords.filter(w => w.category === selectedDay).map(w => w.word);
+              const currentMastered = new Set(masteryMap[selectedDayNum] || []);
+              correctWords.forEach(w => currentMastered.add(w));
+
+              if (currentMastered.size >= totalDayWords.length && totalDayWords.length > 0) {
+                isFirstClear = true;
+                const currentUnlocked = user.current_unlocked_day || 1;
+                if (selectedDayNum >= currentUnlocked) {
+                  await supabase.from('users').update({ current_unlocked_day: selectedDayNum + 1 }).eq('id', user.id);
+                }
               }
             }
 
@@ -526,6 +585,8 @@ export default function Home() {
               {dayCategories.map((day) => {
                 const dayNum = extractDayNum(day);
                 const count = allWords.filter(w => w.category === day).length;
+                const masteredCount = masteryMap[dayNum]?.size || 0;
+                const progress = count > 0 ? Math.round((masteredCount / count) * 100) : 0;
                 const isCompleted = dayNum < unlockedDay;
                 const isCurrent = dayNum === unlockedDay;
                 const isLocked = dayNum > unlockedDay;
@@ -550,6 +611,8 @@ export default function Home() {
                       }`}>
                       {isLocked ? (
                         <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                      ) : isCompleted ? (
+                        <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" />
                       ) : isCurrent ? (
                         <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       ) : (
@@ -558,10 +621,28 @@ export default function Home() {
                     </div>
                     <p className={`font-black text-xs sm:text-sm ${isLocked ? 'text-slate-400' : isCurrent ? 'text-blue-700' : 'text-emerald-700'
                       }`}>{day}</p>
-                    <p className={`text-[10px] sm:text-xs font-medium ${isLocked ? 'text-slate-300' : isCurrent ? 'text-blue-400' : 'text-emerald-400'
-                      }`}>
-                      {isLocked ? '🔒 잠김' : isCurrent ? '🔥 도전!' : `⭐ ${count}개`}
-                    </p>
+
+                    {/* 프로그레스 바 */}
+                    {!isLocked && (
+                      <div className="mt-1.5">
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${progress >= 100
+                              ? 'bg-emerald-500'
+                              : isCurrent ? 'bg-blue-500' : 'bg-amber-400'
+                              }`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                        <p className={`text-[9px] sm:text-[10px] font-bold mt-0.5 ${progress >= 100 ? 'text-emerald-500' : isCurrent ? 'text-blue-400' : 'text-slate-400'
+                          }`}>
+                          {progress >= 100 ? '✅ 완료!' : `${masteredCount}/${count}`}
+                        </p>
+                      </div>
+                    )}
+                    {isLocked && (
+                      <p className="text-[10px] sm:text-xs font-medium text-slate-300">🔒 잠김</p>
+                    )}
                   </button>
                 );
               })}

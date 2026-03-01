@@ -13,7 +13,7 @@ type Props = {
     questionCount?: number;
     isReviewMode?: boolean;
     dayNumber?: number;
-    onFinish: (earnedTokens: number, wrongWordIds: string[], score: number) => void;
+    onFinish: (earnedTokens: number, wrongWordIds: string[], score: number, correctWords: string[]) => void;
 };
 
 type Question = {
@@ -29,6 +29,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
     const [score, setScore] = useState(0);
     const [earnedTokens, setEarnedTokens] = useState(0);
     const [wrongWordIds, setWrongWordIds] = useState<string[]>([]);
+    const [correctWords, setCorrectWords] = useState<string[]>([]);
     const [isMounted, setIsMounted] = useState(false);
     const [combo, setCombo] = useState(0);
     const [showComboAlert, setShowComboAlert] = useState(false);
@@ -66,6 +67,9 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
             setStatus('correct');
             setScore(s => s + 1);
             setEarnedTokens(t => t + 1);
+            if (!correctWords.includes(currentQ.word.word)) {
+                setCorrectWords(prev => [...prev, currentQ.word.word]);
+            }
             const newCombo = combo + 1;
             setCombo(newCombo);
 
@@ -154,7 +158,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                 )}
 
                 <button
-                    onClick={() => onFinish(earnedTokens, wrongWordIds, score)}
+                    onClick={() => onFinish(earnedTokens, wrongWordIds, score, correctWords)}
                     className={`w-full py-3.5 sm:py-4 text-white font-bold rounded-2xl transition text-base sm:text-lg ${isReviewMode
                         ? 'bg-amber-500 hover:bg-amber-600'
                         : 'bg-slate-800 hover:bg-slate-700'
