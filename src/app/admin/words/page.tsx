@@ -203,16 +203,13 @@ export default function AdminWordsPage() {
 
     // ─── CSV 파일 파싱 ───
     const parseCSVText = (text: string) => {
-        const lines = text.split('\n').map(line => line.replace(/\r/g, ''));
+        // UTF-8 BOM 제거
+        const cleanedText = text.replace(/^\uFEFF/, '');
+        const lines = cleanedText.split('\n').map(line => line.replace(/\r/g, ''));
         const parsedWords: Partial<Word>[] = [];
 
-        // 첫 번째 줄(Header) 스킵 및 파싱
-        let startIndex = 0;
-        if (lines[0] && (lines[0].toLowerCase().includes('day') || lines[0].includes('영단어'))) {
-            startIndex = 1;
-        }
-
-        for (let i = startIndex; i < lines.length; i++) {
+        // 첫 번째 줄은 항상 헤더이므로 무조건 스킵 (i = 1부터 시작)
+        for (let i = 1; i < lines.length; i++) {
             const line = lines[i];
             if (!line.trim()) continue;
 
