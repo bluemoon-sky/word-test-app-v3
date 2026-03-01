@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Word, User } from '@/types';
-import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Save, X, Upload, CheckCircle2 } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
 
 export default function AdminWordsPage() {
@@ -21,6 +21,10 @@ export default function AdminWordsPage() {
     const [newKoreanPronun, setNewKoreanPronun] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState<string>('all'); // 'all' 이면 공통 단어
     const [isAdding, setIsAdding] = useState(false);
+
+    // CSV 일괄 업로드 상태
+    const [csvPreview, setCsvPreview] = useState<Partial<Word>[]>([]);
+    const [isUploadingCSV, setIsUploadingCSV] = useState(false);
 
     // 수정 모드 상태
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -74,9 +78,9 @@ export default function AdminWordsPage() {
                 .from('words')
                 .insert([{
                     word: newWord.trim(),
-                    meaning: newMeaning.trim(),
+                    meaning_1: newMeaning.trim(),
                     meaning_2: newMeaning2.trim() || null,
-                    pronunciation: newPronun.trim() || null,
+                    phonetic: newPronun.trim() || null,
                     korean_pronunciation: newKoreanPronun.trim() || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
                 }])
@@ -117,7 +121,7 @@ export default function AdminWordsPage() {
     const startEdit = (word: Word) => {
         setEditingId(word.id);
         setEditWord(word.word);
-        setEditMeaning(word.meaning);
+        setEditMeaning(word.meaning_1);
         setEditMeaning2(word.meaning_2 || '');
         setEditKoreanPronun(word.korean_pronunciation || '');
     };
@@ -130,7 +134,7 @@ export default function AdminWordsPage() {
                 .from('words')
                 .update({
                     word: editWord.trim(),
-                    meaning: editMeaning.trim(),
+                    meaning_1: editMeaning.trim(),
                     meaning_2: editMeaning2.trim() || null,
                     korean_pronunciation: editKoreanPronun.trim() || null,
                 })
@@ -145,6 +149,84 @@ export default function AdminWordsPage() {
         } catch (error) {
             console.error('수정 에러:', error);
             alert('수정 중 오류가 발생했습니다.');
+        }
+    };
+
+    // CSV 파일 파싱
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            // 줄바꿈으로 나누기. \r 제거
+            const lines = text.split('\n').map(line => line.replace(/\r/g, ''));
+            const parsedWords: Partial<Word>[] = [];
+
+            // 최소 1줄 이상
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+
+                // 쉼표 분리 (단순화: 엑셀에서 큰따옴표 이스케이프 된 경우 복잡해지므로, 기본 정규식 사용)
+                // "a,b", c 형태를 파싱하기 위한 정규식
+                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                // 따옴표 제거 헬퍼
+                const clean = (val: string) => {
+                    let cleaned = val?.trim() || '';
+                    if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                        cleaned = cleaned.substring(1, cleaned.length - 1);
+                    }
+                    return cleaned;
+                };
+
+                const w = clean(cols[0]);
+                const m1 = clean(cols[1]); // 필수
+
+                if (w && m1) {
+                    parsedWords.push({
+                        word: w,
+                        meaning_1: m1,
+                        meaning_2: clean(cols[2]) || null,
+                        phonetic: clean(cols[3]) || null,
+                        korean_pronunciation: clean(cols[4]) || null,
+                        user_id: selectedStudentId === 'all' ? null : selectedStudentId
+                    });
+                }
+            }
+
+            if (parsedWords.length > 0) {
+                setCsvPreview(parsedWords);
+            } else {
+                alert('파싱할 수 있는 유효한 단어가 없습니다. 형식을 확인해주세요.');
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // DB 일괄 저장
+    const handleBulkInsert = async () => {
+        if (csvPreview.length === 0) return;
+        setIsUploadingCSV(true);
+        try {
+            const { data, error } = await supabase
+                .from('words')
+                .insert(csvPreview as Word[])
+                .select();
+
+            if (error) throw error;
+
+            // 성공 시 리스트 갱신 및 초기화
+            setWords([...(data as Word[]), ...words]);
+            setCsvPreview([]);
+            alert(`${data.length}개의 단어가 성공적으로 저장되었습니다!`);
+        } catch (error) {
+            console.error('CSV Bulk Insert Error:', error);
+            alert('데이터 일괄 저장에 실패했습니다.');
+        } finally {
+            setIsUploadingCSV(false);
         }
     };
 
@@ -180,9 +262,9 @@ export default function AdminWordsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
                     {/* 단어 추가 폼 */}
                     <div className="lg:col-span-1">
-                        <form onSubmit={handleAddWord} className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 lg:sticky lg:top-20">
+                        <form onSubmit={handleAddWord} className="bg-white p-4 sm:p-6 mb-4 xl:mb-0 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 lg:sticky lg:top-20">
                             <h2 className="text-base sm:text-xl font-bold text-slate-800 mb-4 sm:mb-6 flex items-center">
-                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" /> 새 단어 추가
+                                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" /> 새 단어 1개 등록
                             </h2>
 
                             <div className="space-y-3 sm:space-y-4">
@@ -269,6 +351,57 @@ export default function AdminWordsPage() {
                         </form>
                     </div>
 
+                    {/* CSV 업로드 및 파싱 트리 & 미리보기 */}
+                    {csvPreview.length > 0 && (
+                        <div className="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-emerald-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-sm sm:text-lg font-bold text-emerald-800 flex items-center gap-2">
+                                    <CheckCircle2 className="w-5 h-5" /> CSV 파싱 미리보기 ({csvPreview.length}개)
+                                </h3>
+                                <div className="space-x-2">
+                                    <button
+                                        onClick={() => setCsvPreview([])}
+                                        className="px-3 py-1.5 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors"
+                                    >
+                                        초기화
+                                    </button>
+                                    <button
+                                        onClick={handleBulkInsert}
+                                        disabled={isUploadingCSV}
+                                        className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex border-none items-center disabled:opacity-70 gap-2"
+                                    >
+                                        {isUploadingCSV ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        DB 일괄 저장 시작
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto max-h-60 overflow-y-auto border border-slate-100 rounded-lg">
+                                <table className="w-full text-left text-xs sm:text-sm">
+                                    <thead className="bg-slate-50 sticky top-0 border-b border-slate-200">
+                                        <tr>
+                                            <th className="px-3 py-2 text-slate-600">영단어(Word)</th>
+                                            <th className="px-3 py-2 text-slate-600">뜻1(Meaning 1)</th>
+                                            <th className="px-3 py-2 text-slate-600">뜻2(Meaning 2)</th>
+                                            <th className="px-3 py-2 text-slate-600">발음기호(Phonetic)</th>
+                                            <th className="px-3 py-2 text-slate-600">한국어발음(Kor Pronun)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {csvPreview.map((word, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50">
+                                                <td className="px-3 py-2 font-bold text-slate-800">{word.word}</td>
+                                                <td className="px-3 py-2 text-slate-600">{word.meaning_1}</td>
+                                                <td className="px-3 py-2 text-slate-500">{word.meaning_2 || '-'}</td>
+                                                <td className="px-3 py-2 text-slate-500">{word.phonetic || '-'}</td>
+                                                <td className="px-3 py-2 text-blue-600">{word.korean_pronunciation || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 단어 리스트 */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -330,7 +463,7 @@ export default function AdminWordsPage() {
                                                             <div className="min-w-0 flex-1">
                                                                 <span className="font-bold text-slate-800 text-sm">{word.word}</span>
                                                                 {word.korean_pronunciation && <span className="ml-1.5 text-[10px] font-bold text-blue-500">[{word.korean_pronunciation}]</span>}
-                                                                {word.pronunciation && <span className="ml-1 text-[10px] text-slate-400">{word.pronunciation}</span>}
+                                                                {word.phonetic && <span className="ml-1 text-[10px] text-slate-400">{word.phonetic}</span>}
                                                             </div>
                                                             <div className="flex gap-1 shrink-0 ml-2">
                                                                 <button onClick={() => startEdit(word)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
@@ -343,7 +476,7 @@ export default function AdminWordsPage() {
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <span className="text-slate-600 text-xs">
-                                                                {word.meaning} {word.meaning_2 && <span className="text-slate-400">/ {word.meaning_2}</span>}
+                                                                {word.meaning_1} {word.meaning_2 && <span className="text-slate-400">/ {word.meaning_2}</span>}
                                                             </span>
                                                             <AssignBadge userId={word.user_id} />
                                                         </div>
@@ -388,7 +521,7 @@ export default function AdminWordsPage() {
                                                                 <div className="font-bold text-slate-800">
                                                                     {word.word}
                                                                     {word.korean_pronunciation && <span className="ml-2 text-xs font-bold text-blue-500">[{word.korean_pronunciation}]</span>}
-                                                                    {word.pronunciation && <span className="ml-2 text-xs font-normal text-slate-400">{word.pronunciation}</span>}
+                                                                    {word.phonetic && <span className="ml-2 text-xs font-normal text-slate-400">{word.phonetic}</span>}
                                                                 </div>
                                                             )}
                                                         </td>
@@ -412,7 +545,7 @@ export default function AdminWordsPage() {
                                                                 </div>
                                                             ) : (
                                                                 <span className="text-slate-600 font-medium">
-                                                                    {word.meaning}
+                                                                    {word.meaning_1}
                                                                     {word.meaning_2 && <span className="ml-1.5 text-xs text-slate-400">/ {word.meaning_2}</span>}
                                                                 </span>
                                                             )}

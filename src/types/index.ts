@@ -13,10 +13,10 @@ export type User = {
 export type Word = {
     id: string;
     word: string;
-    meaning: string;
+    meaning_1: string;
     meaning_2?: string | null;
-    pronunciation?: string;
-    korean_pronunciation?: string; // 한국어 발음 (예: apple → 애플)
+    phonetic?: string | null;
+    korean_pronunciation?: string | null;
     user_id?: string | null;
     created_at: string;
 };

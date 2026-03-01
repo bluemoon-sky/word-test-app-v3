@@ -51,7 +51,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
 
         if (currentQ.type === 'en_to_ko') {
             // 영어 스펠링 보여주고 한글 뜻 타이핑
-            const m1 = currentQ.word.meaning.replace(/\s+/g, '').toLowerCase();
+            const m1 = currentQ.word.meaning_1.replace(/\s+/g, '').toLowerCase();
             const m2 = currentQ.word.meaning_2 ? currentQ.word.meaning_2.replace(/\s+/g, '').toLowerCase() : null;
 
             isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2);
@@ -137,13 +137,20 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
                     <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">
                         {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
                             <span>
-                                {currentQ.word.meaning}
+                                {currentQ.word.meaning_1}
                                 {currentQ.word.meaning_2 && <span className="text-xl sm:text-2xl text-slate-500 ml-2">/ {currentQ.word.meaning_2}</span>}
                             </span>
                         )}
                     </h2>
-                    {currentQ.type === 'en_to_ko' && currentQ.word.pronunciation && (
-                        <p className="text-slate-400 font-medium mt-1.5 sm:mt-2 text-sm sm:text-base">[{currentQ.word.pronunciation}]</p>
+                    {currentQ.type === 'en_to_ko' && (
+                        <div className="flex justify-center gap-2 mt-2">
+                            {currentQ.word.phonetic && (
+                                <p className="text-slate-400 font-medium text-sm sm:text-base">[{currentQ.word.phonetic}]</p>
+                            )}
+                            {currentQ.word.korean_pronunciation && (
+                                <p className="text-slate-400 font-medium text-sm sm:text-base">{currentQ.word.korean_pronunciation}</p>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -180,7 +187,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
                             {status === 'wrong' && (
                                 <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
                                     정답: {currentQ.type === 'en_to_ko'
-                                        ? `${currentQ.word.meaning}${currentQ.word.meaning_2 ? ` (또는 ${currentQ.word.meaning_2})` : ''}`
+                                        ? `${currentQ.word.meaning_1}${currentQ.word.meaning_2 ? ` (또는 ${currentQ.word.meaning_2})` : ''}`
                                         : currentQ.word.word}
                                 </p>
                             )}

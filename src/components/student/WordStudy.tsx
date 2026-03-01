@@ -129,7 +129,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                         `}>
                             {showMeaning ? (
                                 <span>
-                                    {currentWord.meaning}
+                                    {currentWord.meaning_1}
                                     {currentWord.meaning_2 && <span className="block text-2xl sm:text-4xl text-slate-500 mt-2">{currentWord.meaning_2}</span>}
                                 </span>
                             ) : currentWord.word}
@@ -143,8 +143,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                                         🔊 {currentWord.korean_pronunciation}
                                     </div>
                                 )}
-                                {currentWord.pronunciation && (
-                                    <p className="text-slate-400 font-medium text-base sm:text-lg mt-1.5 sm:mt-2">[{currentWord.pronunciation}]</p>
+                                {currentWord.phonetic && (
+                                    <p className="text-slate-400 font-medium text-base sm:text-lg mt-1.5 sm:mt-2">[{currentWord.phonetic}]</p>
                                 )}
                             </div>
                         )}

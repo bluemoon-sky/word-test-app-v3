@@ -115,7 +115,7 @@ export default function TestScopeSelector({ words, onStartTest }: Props) {
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-bold text-slate-800 text-lg leading-tight">{word.word}</p>
-                                            <p className="text-slate-500 text-sm">{word.meaning}</p>
+                                            <p className="text-slate-500 text-sm">{word.meaning_1}</p>
                                         </div>
                                     </label>
                                 );
