@@ -17,6 +17,7 @@ export default function Home() {
   const [studyCompleted, setStudyCompleted] = useState(false);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
   // 시험 요청 상태 확인하는 함수
   const checkTestRequest = useCallback(async (userId: string) => {
@@ -365,9 +366,6 @@ export default function Home() {
       </div>
     );
   }
-
-  // ─── 토큰 상세 모달 ───
-  const [showTokenModal, setShowTokenModal] = useState(false);
 
   // ─── 메인 대시보드 화면 ───
   return (
