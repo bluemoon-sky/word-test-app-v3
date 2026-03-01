@@ -167,8 +167,8 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                         {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
                             <span>
                                 {currentQ.word.meaning_1}
-                                {currentQ.word.meaning_2 && <span className="text-xl sm:text-2xl ml-2">/ {currentQ.word.meaning_2}</span>}
-                                {currentQ.word.meaning_3 && <span className="text-xl sm:text-2xl ml-2">/ {currentQ.word.meaning_3}</span>}
+                                {currentQ.word.meaning_2 && <span> / {currentQ.word.meaning_2}</span>}
+                                {currentQ.word.meaning_3 && <span> / {currentQ.word.meaning_3}</span>}
                             </span>
                         )}
                     </h2>
