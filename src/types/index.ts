@@ -3,6 +3,10 @@ export type User = {
     role: 'kid' | 'admin';
     nickname: string;
     tokens: number;
+    daily_earned_tokens?: number;
+    last_earn_date?: string;
+    last_test_time?: string;
+    last_wrong_word_ids?: string[];
     created_at: string;
 };
 
@@ -10,6 +14,7 @@ export type Word = {
     id: string;
     word: string;
     meaning: string;
+    meaning_2?: string | null;
     pronunciation?: string;
     korean_pronunciation?: string; // 한국어 발음 (예: apple → 애플)
     user_id?: string | null;

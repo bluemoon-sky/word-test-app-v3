@@ -16,6 +16,7 @@ export default function AdminWordsPage() {
     // 새 단어 폼 상태
     const [newWord, setNewWord] = useState('');
     const [newMeaning, setNewMeaning] = useState('');
+    const [newMeaning2, setNewMeaning2] = useState('');
     const [newPronun, setNewPronun] = useState('');
     const [newKoreanPronun, setNewKoreanPronun] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState<string>('all'); // 'all' 이면 공통 단어
@@ -25,6 +26,7 @@ export default function AdminWordsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editWord, setEditWord] = useState('');
     const [editMeaning, setEditMeaning] = useState('');
+    const [editMeaning2, setEditMeaning2] = useState('');
     const [editKoreanPronun, setEditKoreanPronun] = useState('');
 
     useEffect(() => {
@@ -73,6 +75,7 @@ export default function AdminWordsPage() {
                 .insert([{
                     word: newWord.trim(),
                     meaning: newMeaning.trim(),
+                    meaning_2: newMeaning2.trim() || null,
                     pronunciation: newPronun.trim() || null,
                     korean_pronunciation: newKoreanPronun.trim() || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
@@ -87,6 +90,7 @@ export default function AdminWordsPage() {
             // 폼 초기화
             setNewWord('');
             setNewMeaning('');
+            setNewMeaning2('');
             setNewPronun('');
             setNewKoreanPronun('');
         } catch (error) {
@@ -114,6 +118,7 @@ export default function AdminWordsPage() {
         setEditingId(word.id);
         setEditWord(word.word);
         setEditMeaning(word.meaning);
+        setEditMeaning2(word.meaning_2 || '');
         setEditKoreanPronun(word.korean_pronunciation || '');
     };
 
@@ -126,6 +131,7 @@ export default function AdminWordsPage() {
                 .update({
                     word: editWord.trim(),
                     meaning: editMeaning.trim(),
+                    meaning_2: editMeaning2.trim() || null,
                     korean_pronunciation: editKoreanPronun.trim() || null,
                 })
                 .eq('id', editingId)
@@ -201,6 +207,17 @@ export default function AdminWordsPage() {
                                         className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm sm:text-base"
                                         placeholder="예: 사과"
                                         required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">두 번째 한글 뜻 (선택)</label>
+                                    <input
+                                        type="text"
+                                        value={newMeaning2}
+                                        onChange={(e) => setNewMeaning2(e.target.value)}
+                                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm sm:text-base"
+                                        placeholder="예: 능금"
                                     />
                                 </div>
 
@@ -289,6 +306,13 @@ export default function AdminWordsPage() {
                                                         />
                                                         <input
                                                             type="text"
+                                                            value={editMeaning2}
+                                                            onChange={(e) => setEditMeaning2(e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                            placeholder="두 번째 뜻 (선택)"
+                                                        />
+                                                        <input
+                                                            type="text"
                                                             value={editKoreanPronun}
                                                             onChange={(e) => setEditKoreanPronun(e.target.value)}
                                                             placeholder="한국어 발음"
@@ -318,7 +342,9 @@ export default function AdminWordsPage() {
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-slate-600 text-xs">{word.meaning}</span>
+                                                            <span className="text-slate-600 text-xs">
+                                                                {word.meaning} {word.meaning_2 && <span className="text-slate-400">/ {word.meaning_2}</span>}
+                                                            </span>
                                                             <AssignBadge userId={word.user_id} />
                                                         </div>
                                                     </div>
@@ -369,14 +395,26 @@ export default function AdminWordsPage() {
 
                                                         <td className="px-6 py-4">
                                                             {editingId === word.id ? (
-                                                                <input
-                                                                    type="text"
-                                                                    value={editMeaning}
-                                                                    onChange={(e) => setEditMeaning(e.target.value)}
-                                                                    className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                                />
+                                                                <div className="space-y-1">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editMeaning}
+                                                                        onChange={(e) => setEditMeaning(e.target.value)}
+                                                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editMeaning2}
+                                                                        onChange={(e) => setEditMeaning2(e.target.value)}
+                                                                        placeholder="두 번째 뜻 (선택)"
+                                                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs"
+                                                                    />
+                                                                </div>
                                                             ) : (
-                                                                <span className="text-slate-600 font-medium">{word.meaning}</span>
+                                                                <span className="text-slate-600 font-medium">
+                                                                    {word.meaning}
+                                                                    {word.meaning_2 && <span className="ml-1.5 text-xs text-slate-400">/ {word.meaning_2}</span>}
+                                                                </span>
                                                             )}
                                                         </td>
 

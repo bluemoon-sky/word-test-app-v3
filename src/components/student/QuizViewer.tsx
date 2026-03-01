@@ -8,7 +8,7 @@ import { Check, X, ArrowRight, Coins } from 'lucide-react';
 type Props = {
     words: Word[];
     userId: string;
-    onFinish: () => void;
+    onFinish: (earnedTokens: number, wrongWordIds: string[]) => void;
 };
 
 type Question = {
@@ -22,6 +22,8 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
     const [input, setInput] = useState('');
     const [status, setStatus] = useState<'playing' | 'correct' | 'wrong' | 'finished'>('playing');
     const [score, setScore] = useState(0);
+    const [earnedTokens, setEarnedTokens] = useState(0);
+    const [wrongWordIds, setWrongWordIds] = useState<string[]>([]);
 
     useEffect(() => {
         // 단어 배열 섞기
@@ -43,20 +45,25 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
         if (!input.trim() || status !== 'playing') return;
 
         let isCorrect = false;
+        const normalizedInput = input.trim().replace(/\s+/g, '').toLowerCase();
 
         if (currentQ.type === 'en_to_ko') {
             // 영어 스펠링 보여주고 한글 뜻 타이핑
-            isCorrect = input.trim().replace(/\s+/g, '') === currentQ.word.meaning.replace(/\s+/g, '');
+            const m1 = currentQ.word.meaning.replace(/\s+/g, '').toLowerCase();
+            const m2 = currentQ.word.meaning_2 ? currentQ.word.meaning_2.replace(/\s+/g, '').toLowerCase() : null;
+
+            isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2);
         } else {
             // 한글 뜻 보여주고 영어 스펠링 타이핑
-            isCorrect = input.trim().toLowerCase() === currentQ.word.word.toLowerCase();
+            isCorrect = normalizedInput === currentQ.word.word.replace(/\s+/g, '').toLowerCase();
         }
 
         if (isCorrect) {
             setStatus('correct');
             setScore(s => s + 1);
 
-            // DB에 1 토큰 추가
+            // DB에 1 토큰 추가 (이 로직은 부모 컴포넌트로 이관할 것이므로 주석 처리/삭제)
+            /*
             try {
                 const { data, error } = await supabase.rpc('increment_tokens', {
                     p_user_id: userId,
@@ -66,9 +73,14 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
             } catch (err) {
                 console.error(err);
             }
+            */
+            setEarnedTokens(t => t + 1);
 
         } else {
             setStatus('wrong');
+            if (!wrongWordIds.includes(currentQ.word.id)) {
+                setWrongWordIds(prev => [...prev, currentQ.word.id]);
+            }
         }
     };
 
@@ -96,7 +108,7 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
                 </div>
 
                 <button
-                    onClick={onFinish}
+                    onClick={() => onFinish(earnedTokens, wrongWordIds)}
                     className="w-full py-3.5 sm:py-4 text-white font-bold bg-slate-800 rounded-2xl hover:bg-slate-700 transition text-base sm:text-lg"
                 >
                     돌아가기
@@ -121,7 +133,12 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
                         {currentQ.type === 'en_to_ko' ? '다음 단어의 뜻은?' : '이 뜻을 가진 영어 단어는?'}
                     </span>
                     <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">
-                        {currentQ.type === 'en_to_ko' ? currentQ.word.word : currentQ.word.meaning}
+                        {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
+                            <span>
+                                {currentQ.word.meaning}
+                                {currentQ.word.meaning_2 && <span className="text-xl sm:text-2xl text-slate-500 ml-2">/ {currentQ.word.meaning_2}</span>}
+                            </span>
+                        )}
                     </h2>
                     {currentQ.type === 'en_to_ko' && currentQ.word.pronunciation && (
                         <p className="text-slate-400 font-medium mt-1.5 sm:mt-2 text-sm sm:text-base">[{currentQ.word.pronunciation}]</p>
@@ -160,7 +177,9 @@ export default function QuizViewer({ words, userId, onFinish }: Props) {
                             </h3>
                             {status === 'wrong' && (
                                 <p className="font-bold text-slate-700 mb-3 sm:mb-4 text-sm sm:text-base">
-                                    정답: {currentQ.type === 'en_to_ko' ? currentQ.word.meaning : currentQ.word.word}
+                                    정답: {currentQ.type === 'en_to_ko'
+                                        ? `${currentQ.word.meaning}${currentQ.word.meaning_2 ? ` (또는 ${currentQ.word.meaning_2})` : ''}`
+                                        : currentQ.word.word}
                                 </p>
                             )}
                             <button

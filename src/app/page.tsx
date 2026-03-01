@@ -57,15 +57,46 @@ export default function Home() {
         return;
       }
 
-      setUser(existingUser as User);
+      // 날짜가 바뀌었으면 daily_earned_tokens 초기화 로직
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const userLastEarnDate = existingUser.last_earn_date;
 
-      // 단어 가져오기
+      let finalUser = existingUser as User;
+
+      if (userLastEarnDate !== today) {
+        const { data: updatedUser, error: resetError } = await supabase
+          .from('users')
+          .update({ daily_earned_tokens: 0, last_earn_date: today })
+          .eq('id', existingUser.id)
+          .select()
+          .single();
+        if (!resetError && updatedUser) {
+          finalUser = updatedUser as User;
+        }
+      }
+
+      setUser(finalUser);
+
+      // 단어 가져오기 (마지막 시험 오답 여부 포함해서 정렬)
       const { data: wordsData, error: wordsError } = await supabase
         .from('words')
         .select('*')
         .or(`user_id.is.null,user_id.eq.${existingUser.id}`);
       if (wordsError) throw wordsError;
-      setWords(wordsData as Word[]);
+
+      let fetchedWords = wordsData as Word[];
+
+      // 오답 위주 정렬: last_wrong_word_ids에 있는 단어를 맨 앞으로 (0이 앞에 오도록)
+      if (finalUser.last_wrong_word_ids && finalUser.last_wrong_word_ids.length > 0) {
+        const wrongIds = new Set(finalUser.last_wrong_word_ids);
+        fetchedWords.sort((a, b) => {
+          const aIsWrong = wrongIds.has(a.id) ? 0 : 1;
+          const bIsWrong = wrongIds.has(b.id) ? 0 : 1;
+          return aIsWrong - bIsWrong;
+        });
+      }
+
+      setWords(fetchedWords);
 
       // 기존 시험 요청 확인
       await checkTestRequest(existingUser.id);
@@ -87,6 +118,19 @@ export default function Home() {
       if (testRequest && testRequest.status === 'pending') {
         setMode('request_sent');
         return;
+      }
+
+      // 30분 쿨다운 체크
+      if (user.last_test_time) {
+        const lastTestTime = new Date(user.last_test_time).getTime();
+        const now = new Date().getTime();
+        const diffMinutes = (now - lastTestTime) / (1000 * 60);
+
+        if (diffMinutes < 30) {
+          const remainMinutes = Math.ceil(30 - diffMinutes);
+          alert(`아직 시험을 다시 볼 수 없어요!\n${remainMinutes}분 후에 다시 요청할 수 있습니다.`);
+          return;
+        }
       }
 
       const { data, error } = await supabase
@@ -113,22 +157,26 @@ export default function Home() {
   };
 
   const handleExchange = async () => {
-    if (!user || user.tokens <= 0) {
-      alert('교환할 토큰이 없어요!');
+    if (!user || user.tokens < 100) {
+      alert('정산은 최소 1,000원(100 토큰) 단위부터 가능합니다!');
       return;
     }
-    const confirmExchange = window.confirm(`현재 ${user.tokens} 토큰을 용돈 ${(user.tokens * 10).toLocaleString()}원으로 교환 신청할까요?`);
+
+    const exchangeableTokens = Math.floor(user.tokens / 100) * 100;
+    const amount = exchangeableTokens * 10;
+
+    const confirmExchange = window.confirm(`현재 ${exchangeableTokens} 토큰을 용돈 ${amount.toLocaleString()}원으로 교환 신청할까요? (남은 토큰: ${user.tokens - exchangeableTokens}개)`);
     if (!confirmExchange) return;
 
     try {
       const { error: requestError } = await supabase
         .from('exchange_requests')
-        .insert([{ user_id: user.id, tokens_deducted: user.tokens, amount: user.tokens * 10, status: 'pending' }]);
+        .insert([{ user_id: user.id, tokens_deducted: exchangeableTokens, amount: amount, status: 'pending' }]);
       if (requestError) throw requestError;
 
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')
-        .update({ tokens: 0 })
+        .update({ tokens: user.tokens - exchangeableTokens })
         .eq('id', user.id)
         .select()
         .single();
@@ -262,20 +310,63 @@ export default function Home() {
         <QuizViewer
           words={words}
           userId={user.id}
-          onFinish={async () => {
+          onFinish={async (earnedTokens, wrongWordIds) => {
+            // 하루 20토큰 제한 로직
+            const currentDailyTokens = user.daily_earned_tokens || 0;
+            const maxAllowed = 20 - currentDailyTokens;
+            let actualEarned = earnedTokens;
+            let limitAlert = '';
+
+            if (maxAllowed <= 0) {
+              actualEarned = 0;
+              limitAlert = '오늘은 이미 200원(20토큰)을 모두 획득해서 보상이 지급되지 않아요!';
+            } else if (earnedTokens > maxAllowed) {
+              actualEarned = maxAllowed;
+              limitAlert = `오늘 남은 획득 가능 금액은 ${maxAllowed * 10}원 이하여서, ${maxAllowed} 토큰만 지급되었어요.`;
+            }
+
+            // 토큰 업데이트 처리
+            if (actualEarned > 0) {
+              try {
+                await supabase.rpc('increment_tokens', { p_user_id: user.id, p_amount: actualEarned });
+              } catch (e) { console.error('Token inc error:', e); }
+            }
+
+            // last 시간, 오답 목록 및 daily 업데이트
+            const now = new Date().toISOString();
+            const today = now.split('T')[0];
+
+            await supabase
+              .from('users')
+              .update({
+                last_test_time: now,
+                last_wrong_word_ids: wrongWordIds,
+                daily_earned_tokens: currentDailyTokens + actualEarned,
+                last_earn_date: today
+              })
+              .eq('id', user.id);
+
             setMode('dashboard');
             setStudyCompleted(false);
             setTestRequest(null);
-            // 시험 완료 후 사용한 요청 삭제/리셋 (다음 번 학습→신청 사이클을 위해)
+
             if (testRequest) {
               await supabase.from('test_requests').delete().eq('id', testRequest.id);
             }
-            refreshUser();
+
+            await refreshUser();
+
+            if (limitAlert) {
+              setTimeout(() => alert(limitAlert), 500);
+            }
           }}
         />
       </div>
     );
   }
+
+  // ─── 토큰 상세 모달 ───
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
   // ─── 메인 대시보드 화면 ───
   return (
@@ -295,15 +386,18 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            <div className="bg-yellow-50 flex items-center p-1 pr-4 sm:pr-6 rounded-xl sm:rounded-2xl border-2 border-yellow-200 flex-1 sm:flex-auto">
+            <button
+              onClick={() => setShowTokenModal(true)}
+              className="bg-yellow-50 hover:bg-yellow-100 flex items-center p-1 pr-4 sm:pr-6 rounded-xl sm:rounded-2xl border-2 border-yellow-200 flex-1 sm:flex-auto transition-colors focus:outline-none"
+            >
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-400 rounded-lg sm:rounded-xl flex items-center justify-center shadow-inner mr-2 sm:mr-3 text-yellow-900">
                 <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="text-right">
-                <p className="text-[10px] sm:text-xs font-bold text-yellow-600 mb-0.5">보유 토큰</p>
+                <p className="text-[10px] sm:text-xs font-bold text-yellow-600 mb-0.5">보유 토큰 (자세히 👆)</p>
                 <p className="text-lg sm:text-xl font-black text-yellow-700 leading-none">{user.tokens.toLocaleString()}</p>
               </div>
-            </div>
+            </button>
 
             <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('dashboard'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors">
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -311,9 +405,57 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 토큰 상세/정산 모달 */}
+        {showTokenModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+            <div className="bg-white max-w-sm w-full rounded-3xl shadow-2xl p-6 sm:p-8 relative animate-in fade-in zoom-in-95 duration-200">
+              <button
+                onClick={() => setShowTokenModal(false)}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                💰
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-center text-slate-800 mb-6">용돈 지갑</h2>
+
+              <div className="space-y-4 mb-8">
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
+                  <span className="font-bold text-slate-600 text-sm">오늘 획득한 토큰</span>
+                  <span className="font-black text-slate-800">{user.daily_earned_tokens || 0} / 20개</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex justify-between items-center">
+                  <span className="font-bold text-slate-600 text-sm">보유 중인 총 토큰</span>
+                  <span className="font-black text-yellow-600 text-lg">{user.tokens.toLocaleString()}개</span>
+                </div>
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 rounded-2xl text-white flex justify-between items-center shadow-lg shadow-teal-500/20">
+                  <span className="font-bold text-teal-50 text-sm">현재 환전 가능 총액</span>
+                  <span className="font-black text-xl">₩ {(user.tokens * 10).toLocaleString()}</span>
+                </div>
+                <p className="text-center text-xs font-bold text-slate-400 bg-slate-50 py-1.5 rounded-full">
+                  ⚠️ 1,000원 단위로만 정산 가능해요!
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowTokenModal(false);
+                  handleExchange();
+                }}
+                disabled={user.tokens < 100}
+                className="w-full py-4 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold text-lg rounded-2xl shadow-md transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center"
+              >
+                1,000원 단위로 정산 신청하기
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 액션 섹션 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:max-w-2xl lg:mx-auto gap-4 sm:gap-6">
+          <div className="lg:col-span-1">
             {words.length > 0 ? (
               <div className="space-y-3 sm:space-y-4">
                 {/* 1단계: 단어 학습 */}
@@ -417,23 +559,6 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4 sm:gap-6">
-            <div className="bg-gradient-to-b from-emerald-400 to-teal-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-lg shadow-teal-500/30">
-              <div className="mb-4 sm:mb-6">
-                <h3 className="font-bold text-teal-100 mb-1 sm:mb-2 text-sm sm:text-base">현재 교환 가능한 용돈</h3>
-                <p className="text-2xl sm:text-4xl font-black">₩ {(user.tokens * 10).toLocaleString()}</p>
-                <p className="text-xs sm:text-sm text-teal-100 mt-1.5 sm:mt-2 font-medium bg-black/10 inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">1 토큰당 10원으로 계산됨</p>
-              </div>
-
-              <button
-                onClick={handleExchange}
-                disabled={user.tokens <= 0}
-                className="w-full py-3 sm:py-4 bg-white text-teal-700 font-bold text-base sm:text-lg rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
-              >
-                용돈으로 교환 신청하기 💸
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

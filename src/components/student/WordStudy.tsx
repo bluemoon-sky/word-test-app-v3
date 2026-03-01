@@ -119,7 +119,12 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                                 ? 'text-3xl sm:text-5xl text-slate-800'
                                 : 'text-3xl sm:text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600'}
                         `}>
-                            {showMeaning ? currentWord.meaning : currentWord.word}
+                            {showMeaning ? (
+                                <span>
+                                    {currentWord.meaning}
+                                    {currentWord.meaning_2 && <span className="block text-2xl sm:text-4xl text-slate-500 mt-2">{currentWord.meaning_2}</span>}
+                                </span>
+                            ) : currentWord.word}
                         </h2>
 
                         {/* 영어 단어 화면에서 한국어 발음과 발음 기호 표시 */}
