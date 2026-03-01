@@ -206,7 +206,8 @@ export default function AdminWordsPage() {
         const lines = text.split('\n').map(line => line.replace(/\r/g, ''));
         const parsedWords: Partial<Word>[] = [];
 
-        for (let i = 0; i < lines.length; i++) {
+        // 첫 번째 줄(Header)은 건너뛰기 위해 i = 1부터 시작
+        for (let i = 1; i < lines.length; i++) {
             const line = lines[i];
             if (!line.trim()) continue;
 
