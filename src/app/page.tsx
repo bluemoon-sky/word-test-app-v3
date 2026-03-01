@@ -367,7 +367,8 @@ export default function Home() {
 
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
-    const questionCount = user.test_question_count || 30;
+    // 학습한 단어에서만 출제: 문항 수를 학습 단어 수 이하로 제한
+    const questionCount = Math.min(user.test_question_count || 30, words.length);
     return (
       <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <QuizViewer
