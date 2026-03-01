@@ -3,30 +3,49 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLoginPage() {
     const [pin, setPin] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        // 환경 변수에 설정된 PIN 혹은 기본값 '1234'
-        const correctPin = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
+        try {
+            // DB에서 관리자 비밀번호 조회
+            const { data, error } = await supabase
+                .from('app_settings')
+                .select('value')
+                .eq('key', 'admin_pin')
+                .single();
 
-        setTimeout(() => {
+            // DB에 설정이 없으면 환경변수 또는 기본값 사용
+            const correctPin = data?.value || process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
+
             if (pin === correctPin) {
-                // 로컬스토리지에 인증 정보 저장 (간단한 보안)
                 localStorage.setItem('isAdmin', 'true');
                 router.push('/admin/words');
             } else {
                 alert('비밀번호가 틀렸습니다!');
                 setPin('');
             }
+        } catch (error) {
+            console.error('로그인 에러:', error);
+            // DB 연결 실패 시 환경변수/기본값으로 폴백
+            const fallbackPin = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
+            if (pin === fallbackPin) {
+                localStorage.setItem('isAdmin', 'true');
+                router.push('/admin/words');
+            } else {
+                alert('비밀번호가 틀렸습니다!');
+                setPin('');
+            }
+        } finally {
             setLoading(false);
-        }, 500); // 약간의 딜레이로 로그인 느낌 주기
+        }
     };
 
     return (
@@ -44,7 +63,7 @@ export default function AdminLoginPage() {
                         type="password"
                         value={pin}
                         onChange={(e) => setPin(e.target.value)}
-                        placeholder="비밀번호 문자 숫자 등 자유롭게 입력..."
+                        placeholder="비밀번호 입력..."
                         className="w-full text-center text-lg sm:text-xl font-bold py-3 sm:py-4 px-4 sm:px-6 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-slate-800 focus:bg-white focus:outline-none transition-all tracking-widest"
                         required
                         autoFocus
@@ -59,8 +78,7 @@ export default function AdminLoginPage() {
                 </form>
 
                 <div className="mt-6 text-xs text-slate-400">
-                    초기 기본 비밀번호는 <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">1234</code> 입니다.
-                    <br />(Vercel 환경 변수 <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">NEXT_PUBLIC_ADMIN_PIN</code>에 추가하여 변경 가능)
+                    비밀번호는 관리자 메뉴 <strong>⚙️ 설정</strong> 탭에서 변경할 수 있습니다.
                 </div>
             </div>
         </div>

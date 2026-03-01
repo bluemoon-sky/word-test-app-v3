@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Users, Receipt, LogOut, ClipboardCheck } from 'lucide-react';
+import { BookOpen, Users, Receipt, LogOut, ClipboardCheck, Settings } from 'lucide-react';
 
 // 관리자 페이지 공통 내비게이션 바
 export default function AdminNav() {
@@ -14,6 +14,7 @@ export default function AdminNav() {
         { href: '/admin/users', label: '사용자', icon: Users },
         { href: '/admin/tests', label: '시험 승인', icon: ClipboardCheck },
         { href: '/admin/requests', label: '정산', icon: Receipt },
+        { href: '/admin/settings', label: '설정', icon: Settings },
     ];
 
     const handleLogout = () => {
