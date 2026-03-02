@@ -33,6 +33,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
     const [isMounted, setIsMounted] = useState(false);
     const [combo, setCombo] = useState(0);
     const [showComboAlert, setShowComboAlert] = useState(false);
+    const [isFinishing, setIsFinishing] = useState(false);
 
     useEffect(() => {
         const shuffled = [...words].sort(() => Math.random() - 0.5);
@@ -158,13 +159,18 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                 )}
 
                 <button
-                    onClick={() => onFinish(earnedTokens, wrongWordIds, score, correctWords)}
-                    className={`w-full py-3.5 sm:py-4 text-white font-bold rounded-2xl transition text-base sm:text-lg ${isReviewMode
+                    onClick={() => {
+                        if (isFinishing) return;
+                        setIsFinishing(true);
+                        onFinish(earnedTokens, wrongWordIds, score, correctWords);
+                    }}
+                    disabled={isFinishing}
+                    className={`w-full py-3.5 sm:py-4 text-white font-bold rounded-2xl transition text-base sm:text-lg disabled:opacity-50 ${isReviewMode
                         ? 'bg-amber-500 hover:bg-amber-600'
                         : 'bg-slate-800 hover:bg-slate-700'
                         }`}
                 >
-                    돌아가기
+                    {isFinishing ? '처리 중...' : '돌아가기'}
                 </button>
             </div>
         );

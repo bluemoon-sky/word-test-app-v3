@@ -28,6 +28,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
     const [testStatus, setTestStatus] = useState<'playing' | 'correct' | 'wrong' | 'finished'>('playing');
     const [testScore, setTestScore] = useState(0);
     const [correctWordIds, setCorrectWordIds] = useState<string[]>([]);
+    const [isFinishing, setIsFinishing] = useState(false);
 
     // 오답 데이터 불러오기
     useEffect(() => {
@@ -106,6 +107,8 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
 
     // 오답 테스트 완료 처리
     const handleTestFinish = async () => {
+        if (isFinishing) return;
+        setIsFinishing(true);
         // 정답 3개당 1토큰
         const earnedTokens = Math.floor(testScore / 3);
 
@@ -218,8 +221,9 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                         오답 보너스: +{earnedTokens} 토큰 (정답 3개당 1토큰)
                     </div>
                     <button onClick={handleTestFinish}
-                        className="w-full py-3.5 text-white font-bold bg-slate-800 hover:bg-slate-700 rounded-2xl transition">
-                        돌아가기
+                        disabled={isFinishing}
+                        className="w-full py-3.5 text-white font-bold bg-slate-800 hover:bg-slate-700 rounded-2xl transition disabled:opacity-50">
+                        {isFinishing ? '처리 중...' : '돌아가기'}
                     </button>
                 </div>
             );
