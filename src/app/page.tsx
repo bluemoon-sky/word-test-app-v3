@@ -193,14 +193,6 @@ export default function Home() {
     try {
       if (testRequest && testRequest.status === 'pending') { setMode('request_sent'); return; }
 
-      if (user.last_test_time) {
-        const diff = (Date.now() - new Date(user.last_test_time).getTime()) / (1000 * 60);
-        if (diff < 30) {
-          alert(`아직 시험을 다시 볼 수 없어요!\n${Math.ceil(30 - diff)}분 후에 다시 요청할 수 있습니다.`);
-          return;
-        }
-      }
-
       const { data, error } = await supabase
         .from('test_requests')
         .insert([{ user_id: user.id, status: 'pending' }])
