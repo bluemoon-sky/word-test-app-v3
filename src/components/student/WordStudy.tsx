@@ -381,8 +381,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 ) : (
                     <button
                         onClick={isNextEnabled ? handleNext : handleSkipAttempt}
-                        className={`flex-1 h-14 sm:h-16 font-black text-base sm:text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1'
+                        className={`flex-1 h-14 sm:h-16 font-black text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
+                            ? 'bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.5)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.6)] hover:-translate-y-1'
                             : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
                     >
