@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Word } from '@/types';
-import { ChevronLeft, ChevronRight, BookOpen, Eye, Volume2, Headphones } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Eye, Volume2, Headphones, Play } from 'lucide-react';
 
 type Props = {
     words: Word[];
@@ -10,13 +10,18 @@ type Props = {
     onBack: () => void; // 메인으로 돌아가기 콜백
 };
 
-// TTS 순차 재생 헬퍼: 영단어 → 한국어 발음 → 뜻1, 뜻2
+// iOS/모바일 감지 (자동 TTS 불가 환경)
+function isMobileDevice(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+// TTS 순차 재생: 모든 utterance를 한 번에 큐에 넣어 iOS에서도 작동
 function speakSequence(
     word: Word,
     onStart: () => void,
     onEnd: () => void
 ): () => void {
-    // 브라우저 TTS 사용 불가 시 즉시 완료
     if (typeof window === 'undefined' || !window.speechSynthesis) {
         onEnd();
         return () => { };
@@ -25,66 +30,66 @@ function speakSequence(
     window.speechSynthesis.cancel();
     onStart();
 
-    const parts: { text: string; lang: string }[] = [];
+    const utterances: SpeechSynthesisUtterance[] = [];
 
     // 1순위: 영단어 (en-US)
     if (word.word) {
-        parts.push({ text: word.word, lang: 'en-US' });
+        const u = new SpeechSynthesisUtterance(word.word);
+        u.lang = 'en-US';
+        u.rate = 0.85;
+        utterances.push(u);
     }
+
+    // 짧은 무음 쉼표 (단어 사이 텀)
+    const pause1 = new SpeechSynthesisUtterance(' ');
+    pause1.lang = 'ko-KR';
+    pause1.volume = 0;
+    pause1.rate = 2;
+    utterances.push(pause1);
 
     // 2순위: 한국어 발음 (ko-KR)
     if (word.korean_pronunciation) {
-        parts.push({ text: word.korean_pronunciation, lang: 'ko-KR' });
+        const u = new SpeechSynthesisUtterance(word.korean_pronunciation);
+        u.lang = 'ko-KR';
+        u.rate = 0.9;
+        utterances.push(u);
+
+        const pause2 = new SpeechSynthesisUtterance(' ');
+        pause2.lang = 'ko-KR';
+        pause2.volume = 0;
+        pause2.rate = 2;
+        utterances.push(pause2);
     }
 
     // 3순위: 뜻1, 뜻2 (ko-KR)
     const meanings = [word.meaning_1, word.meaning_2].filter(Boolean);
     if (meanings.length > 0) {
-        parts.push({ text: meanings.join(', '), lang: 'ko-KR' });
+        const u = new SpeechSynthesisUtterance(meanings.join(', '));
+        u.lang = 'ko-KR';
+        u.rate = 0.9;
+        utterances.push(u);
     }
 
-    if (parts.length === 0) {
+    if (utterances.length === 0) {
         onEnd();
         return () => { };
     }
 
-    let partIndex = 0;
     let cancelled = false;
 
-    const playNext = () => {
-        if (cancelled || partIndex >= parts.length) {
-            if (!cancelled) onEnd();
-            return;
-        }
-
-        const { text, lang } = parts[partIndex];
-        partIndex++;
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.9;
-
-        utterance.onend = () => {
-            if (cancelled) return;
-            // 다음 파트 전 0.5초 텀
-            setTimeout(() => {
-                if (!cancelled) playNext();
-            }, 500);
-        };
-
-        utterance.onerror = () => {
-            if (cancelled) return;
-            setTimeout(() => {
-                if (!cancelled) playNext();
-            }, 300);
-        };
-
-        window.speechSynthesis.speak(utterance);
+    // 마지막 utterance의 onend에서 완료 콜백
+    utterances[utterances.length - 1].onend = () => {
+        if (!cancelled) onEnd();
+    };
+    utterances[utterances.length - 1].onerror = () => {
+        if (!cancelled) onEnd();
     };
 
-    playNext();
+    // 모든 utterance를 한 번에 큐에 넣기 (iOS 호환)
+    for (const u of utterances) {
+        window.speechSynthesis.speak(u);
+    }
 
-    // 취소 함수 반환
     return () => {
         cancelled = true;
         window.speechSynthesis.cancel();
@@ -103,51 +108,45 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     const [isNextEnabled, setIsNextEnabled] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showSkipWarning, setShowSkipWarning] = useState(false);
+    const [needsManualPlay, setNeedsManualPlay] = useState(false);
 
-    // 취소 함수 ref
     const cancelTtsRef = useRef<(() => void) | null>(null);
     const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const isMobileRef = useRef(false);
 
-    // Hydration 불일치 방지
+    // Hydration 불일치 방지 + 모바일 감지
     useEffect(() => {
         setIsMounted(true);
+        isMobileRef.current = isMobileDevice();
     }, []);
 
-    // 카드 변경 시 자동 TTS 재생
+    // 카드 변경 시 TTS 시작
     useEffect(() => {
         if (!isMounted || words.length === 0) return;
 
         // 이전 음성 취소
         if (cancelTtsRef.current) {
             cancelTtsRef.current();
+            cancelTtsRef.current = null;
         }
 
         setIsNextEnabled(false);
         setShowSkipWarning(false);
+        setIsPlaying(false);
 
-        const currentWord = words[currentIndex];
-
-        // 약간의 딜레이 후 재생 (카드 전환 애니메이션 후)
-        const startTimer = setTimeout(() => {
-            const cancel = speakSequence(
-                currentWord,
-                () => setIsPlaying(true),
-                () => {
-                    setIsPlaying(false);
-                    setIsNextEnabled(true);
-                }
-            );
-            cancelTtsRef.current = cancel;
-        }, 400);
-
-        return () => {
-            clearTimeout(startTimer);
-            if (cancelTtsRef.current) {
-                cancelTtsRef.current();
-                cancelTtsRef.current = null;
-            }
-        };
-    }, [currentIndex, isMounted, words]);
+        if (isMobileRef.current) {
+            // 모바일: 수동 재생 버튼 표시
+            setNeedsManualPlay(true);
+        } else {
+            // PC: 자동 재생
+            setNeedsManualPlay(false);
+            const startTimer = setTimeout(() => {
+                startTts();
+            }, 400);
+            return () => clearTimeout(startTimer);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, isMounted]);
 
     // 컴포넌트 언마운트 시 TTS 정지
     useEffect(() => {
@@ -161,12 +160,33 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         };
     }, []);
 
+    const startTts = useCallback(() => {
+        if (cancelTtsRef.current) cancelTtsRef.current();
+
+        const currentWord = words[currentIndex];
+        setNeedsManualPlay(false);
+
+        const cancel = speakSequence(
+            currentWord,
+            () => setIsPlaying(true),
+            () => {
+                setIsPlaying(false);
+                setIsNextEnabled(true);
+            }
+        );
+        cancelTtsRef.current = cancel;
+    }, [words, currentIndex]);
+
+    // 모바일 수동 재생 버튼 핸들러 (사용자 제스처!)
+    const handleManualPlay = () => {
+        startTts();
+    };
+
     const currentWord = words[currentIndex];
     const isLast = currentIndex === words.length - 1;
 
     const handleNext = useCallback(() => {
         if (isLast || !isNextEnabled) return;
-        // 음성 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         setIsAnimating(true);
         setTimeout(() => {
@@ -179,7 +199,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
     const handlePrev = () => {
         if (currentIndex === 0) return;
-        // 음성 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         setIsAnimating(true);
         setTimeout(() => {
@@ -196,7 +215,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         }
     };
 
-    // 스킵 시도 시 경고 표시
     const handleSkipAttempt = () => {
         setShowSkipWarning(true);
         if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
@@ -204,7 +222,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     };
 
     const handleBack = () => {
-        // 뒤로가기 시 TTS 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
@@ -213,7 +230,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     };
 
     const handleFinishStudy = () => {
-        // 학습 완료 시 TTS 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
@@ -227,7 +243,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
     return (
         <div className="max-w-md mx-auto w-full relative px-1">
-            {/* 상단 네비게이션바 (뒤로가기 포함) */}
+            {/* 상단 네비게이션바 */}
             <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <button
                     onClick={handleBack}
@@ -248,13 +264,12 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                         className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500 ease-out relative"
                         style={{ width: `${progress}%` }}
                     >
-                        {/* 빛나는 효과 */}
                         <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-white/40 to-transparent blur-[2px]" />
                     </div>
                 </div>
             </div>
 
-            {/* TTS 재생 상태 표시 */}
+            {/* TTS 상태 표시 */}
             {isPlaying && (
                 <div className="flex items-center justify-center gap-2 mb-3 animate-pulse">
                     <Headphones className="w-4 h-4 text-indigo-500" />
@@ -262,11 +277,20 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 </div>
             )}
 
-            {/* 플래시카드 영역 (3D 효과 & 애니메이션 추가) */}
+            {/* 모바일: 수동 재생 버튼 */}
+            {needsManualPlay && !isPlaying && (
+                <button
+                    onClick={handleManualPlay}
+                    className="w-full mb-3 py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 hover:shadow-xl active:scale-[0.97] transition-all animate-in fade-in zoom-in-95 duration-300"
+                >
+                    <Play className="w-5 h-5 fill-white" />
+                    🔊 발음 듣기 (터치하세요!)
+                </button>
+            )}
+
+            {/* 플래시카드 영역 */}
             <div className="perspective-1000 relative mb-5 sm:mb-8">
-                {/* 배경 장식 그림자 1 */}
                 <div className="absolute inset-0 bg-blue-200/50 rounded-3xl transform translate-y-3 scale-95 blur-sm" />
-                {/* 배경 장식 그림자 2 */}
                 <div className="absolute inset-0 bg-indigo-200/40 rounded-3xl transform translate-y-6 scale-90 blur-md" />
 
                 <div
@@ -282,7 +306,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                         ${showMeaning ? 'bg-gradient-to-br from-white to-slate-50' : 'bg-white'}
                     `}
                 >
-                    {/* 카드 타이핑 */}
                     <div className="absolute top-4 sm:top-6 left-4 sm:left-6 text-[10px] sm:text-xs font-black tracking-widest text-slate-300 uppercase">
                         {showMeaning ? 'Meaning' : 'Vocabulary'}
                     </div>
@@ -296,7 +319,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                                     window.speechSynthesis.cancel();
                                     const u = new SpeechSynthesisUtterance(currentWord.word);
                                     u.lang = 'en-US';
-                                    u.rate = 0.9;
+                                    u.rate = 0.85;
                                     window.speechSynthesis.speak(u);
                                 }
                             }}
@@ -326,7 +349,6 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                             ) : currentWord.word}
                         </h2>
 
-                        {/* 영어 단어 화면에서 한국어 발음과 발음 기호 표시 */}
                         {!showMeaning && (
                             <div className="space-y-1.5 sm:space-y-2 mt-4 sm:mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 {currentWord.korean_pronunciation && (
@@ -349,7 +371,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 </div>
             </div>
 
-            {/* 스킵 방지 경고 메시지 */}
+            {/* 스킵 방지 경고 */}
             {showSkipWarning && (
                 <div className="mb-3 text-center animate-in fade-in zoom-in-95 duration-300">
                     <div className="inline-block bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold shadow-sm">
@@ -358,7 +380,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 </div>
             )}
 
-            {/* 하단 컨트롤 (이전/다음) */}
+            {/* 하단 컨트롤 */}
             <div className="flex gap-3 sm:gap-4">
                 <button
                     onClick={handlePrev}
@@ -376,7 +398,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
                     >
-                        {isNextEnabled ? '✨ 학습 완료! ✨' : '🎧 듣는 중...'}
+                        {isNextEnabled ? '✨ 학습 완료! ✨' : '🎧 듣기를 완료하세요'}
                     </button>
                 ) : (
                     <button
@@ -388,7 +410,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                     >
                         {isNextEnabled ? (
                             <>다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" /></>
-                        ) : '🎧 듣는 중...'}
+                        ) : '🎧 듣기를 완료하세요'}
                     </button>
                 )}
             </div>
