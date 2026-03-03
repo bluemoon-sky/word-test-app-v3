@@ -721,7 +721,16 @@ export default function Home() {
             {words.length > 0 ? (
               <div className="space-y-3 sm:space-y-4">
                 {/* 1단계: 단어 학습 */}
-                <button onClick={() => setMode('study')}
+                <button onClick={() => {
+                  // 브라우저 TTS 잠금 해제 (사용자 제스처 필요)
+                  if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    const unlock = new SpeechSynthesisUtterance(' ');
+                    unlock.volume = 0;
+                    unlock.rate = 2;
+                    window.speechSynthesis.speak(unlock);
+                  }
+                  setMode('study');
+                }}
                   className={`w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 p-5 sm:p-8 text-left transition-all group ${studyCompleted ? 'border-emerald-200 opacity-80' : 'border-indigo-200 hover:shadow-lg hover:border-indigo-300'}`}>
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${studyCompleted ? 'bg-emerald-100' : 'bg-indigo-100'}`}>

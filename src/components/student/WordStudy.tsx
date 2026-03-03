@@ -372,8 +372,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                     <button
                         onClick={isNextEnabled ? handleFinishStudy : handleSkipAttempt}
                         className={`flex-1 h-14 sm:h-16 font-black text-lg sm:text-xl rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
-                                ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         {isNextEnabled ? '✨ 학습 완료! ✨' : '🎧 듣는 중...'}
@@ -382,8 +382,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                     <button
                         onClick={isNextEnabled ? handleNext : handleSkipAttempt}
                         className={`flex-1 h-14 sm:h-16 font-black text-base sm:text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
-                                ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         {isNextEnabled ? (
