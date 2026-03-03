@@ -363,9 +363,9 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 <button
                     onClick={handlePrev}
                     disabled={currentIndex === 0 || isAnimating}
-                    className="w-16 sm:w-20 h-14 sm:h-16 bg-white shadow-md shadow-slate-200/50 text-slate-500 font-bold rounded-2xl flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 hover:text-slate-800 transition-all active:scale-95"
+                    className="flex-1 h-14 sm:h-16 bg-white shadow-md shadow-slate-200/50 text-slate-500 font-bold text-base sm:text-lg rounded-2xl flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:shadow-lg hover:-translate-y-1 hover:text-slate-800 transition-all active:scale-95"
                 >
-                    <ChevronLeft className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-1" /> 이전 카드
                 </button>
 
                 {isLast ? (
@@ -381,7 +381,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 ) : (
                     <button
                         onClick={isNextEnabled ? handleNext : handleSkipAttempt}
-                        className={`flex-1 h-14 sm:h-16 font-black text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
+                        className={`flex-1 h-14 sm:h-16 font-black text-base sm:text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
                             ? 'bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.5)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.6)] hover:-translate-y-1'
                             : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
