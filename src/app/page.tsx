@@ -110,7 +110,7 @@ export default function Home() {
             </button>
           </div>
           <div className="max-w-lg mx-auto mt-2 flex gap-2">
-            <button onClick={handleOpenExternal} className="flex-1 bg-white text-amber-700 font-bold text-sm py-2 rounded-xl hover:bg-amber-50 transition">
+            <button onClick={() => { setShowInAppBanner(false); handleOpenExternal(); }} className="flex-1 bg-white text-amber-700 font-bold text-sm py-2 rounded-xl hover:bg-amber-50 transition">
               🌐 외부 브라우저로 열기
             </button>
             <button onClick={() => { navigator.clipboard.writeText(currentUrl); alert('링크가 복사되었어요! 크롬이나 사파리에 붙여넣기 해주세요.'); }} className="bg-amber-600 text-white font-bold text-sm py-2 px-4 rounded-xl hover:bg-amber-700 transition">
