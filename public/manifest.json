@@ -1,6 +1,6 @@
 {
     "name": "영단어 마스터",
-    "short_name": "영단어",
+    "short_name": "영단어 암기",
     "description": "영단어 학습 및 테스트 웹 앱",
     "start_url": "/",
     "display": "standalone",
