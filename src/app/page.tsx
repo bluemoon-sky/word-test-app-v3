@@ -723,10 +723,11 @@ export default function Home() {
                 {/* 1단계: 단어 학습 */}
                 <button onClick={() => {
                   // 브라우저 TTS 잠금 해제 (사용자 제스처 필요)
+                  // 안드로이드 크롬은 완전한 빈 공백(' ')을 무시하는 버그가 있으므로 모음('a') 사용
                   if (typeof window !== 'undefined' && window.speechSynthesis) {
-                    const unlock = new SpeechSynthesisUtterance(' ');
+                    const unlock = new SpeechSynthesisUtterance('a');
                     unlock.volume = 0;
-                    unlock.rate = 2;
+                    unlock.rate = 2; // 가장 빠르게 재생
                     window.speechSynthesis.speak(unlock);
                   }
                   setMode('study');

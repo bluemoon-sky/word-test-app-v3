@@ -117,9 +117,14 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     useEffect(() => {
         if (!isMounted || words.length === 0) return;
 
-        // 이전 음성 취소
+        // 이전 음성을 확실히 정리 (안드로이드 버그 방지)
         if (cancelTtsRef.current) {
             cancelTtsRef.current();
+            cancelTtsRef.current = null;
+        }
+        // 브라우저 큐 비우기
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
         }
 
         setIsNextEnabled(false);
@@ -127,18 +132,19 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
         const currentWord = words[currentIndex];
 
-        // 약간의 딜레이 후 재생 (카드 전환 애니메이션 후)
+        // 애니메이션 딜레이 최소화 (안드로이드에서는 setTimeout 지연이 길면 제스처 권한 상실로 간주될 수 있음)
         const startTimer = setTimeout(() => {
             const cancel = speakSequence(
                 currentWord,
                 () => setIsPlaying(true),
                 () => {
                     setIsPlaying(false);
-                    setIsNextEnabled(true);
+                    // 약간의 여유를 두고 다음 버튼 활성화
+                    setTimeout(() => setIsNextEnabled(true), 100);
                 }
             );
             cancelTtsRef.current = cancel;
-        }, 400);
+        }, 50);
 
         return () => {
             clearTimeout(startTimer);
