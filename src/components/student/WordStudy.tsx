@@ -11,6 +11,7 @@ type Props = {
 };
 
 // TTS 순차 재생 헬퍼: 영단어 → 한국어 발음 → 뜻1, 뜻2
+// 안드로이드 크롬 호환성을 위해 cancel/speak 타이밍 및 onend 폴백 적용
 function speakSequence(
     word: Word,
     onStart: () => void,
@@ -22,7 +23,6 @@ function speakSequence(
         return () => { };
     }
 
-    window.speechSynthesis.cancel();
     onStart();
 
     const parts: { text: string; lang: string }[] = [];
@@ -50,9 +50,18 @@ function speakSequence(
 
     let partIndex = 0;
     let cancelled = false;
+    let fallbackTimer: NodeJS.Timeout | null = null;
+
+    const clearFallback = () => {
+        if (fallbackTimer) {
+            clearTimeout(fallbackTimer);
+            fallbackTimer = null;
+        }
+    };
 
     const playNext = () => {
         if (cancelled || partIndex >= parts.length) {
+            clearFallback();
             if (!cancelled) onEnd();
             return;
         }
@@ -64,15 +73,19 @@ function speakSequence(
         utterance.lang = lang;
         utterance.rate = 0.9;
 
-        utterance.onend = () => {
+        // onend 이벤트가 정상적으로 오면 타이머 취소 후 다음 파트로
+        const handleEnd = () => {
+            clearFallback();
             if (cancelled) return;
-            // 다음 파트 전 0.5초 텀
             setTimeout(() => {
                 if (!cancelled) playNext();
             }, 500);
         };
 
+        utterance.onend = handleEnd;
+
         utterance.onerror = () => {
+            clearFallback();
             if (cancelled) return;
             setTimeout(() => {
                 if (!cancelled) playNext();
@@ -80,6 +93,19 @@ function speakSequence(
         };
 
         window.speechSynthesis.speak(utterance);
+
+        // 안드로이드 크롬 폴백: onend가 호출되지 않을 경우를 대비
+        // 텍스트 길이 기반으로 최대 대기 시간 설정 (글자당 약 200ms + 여유 3초)
+        const estimatedDuration = Math.max(3000, text.length * 200 + 2000);
+        fallbackTimer = setTimeout(() => {
+            // onend가 아직 안 온 경우 강제로 다음 파트로
+            if (!cancelled) {
+                window.speechSynthesis.cancel();
+                setTimeout(() => {
+                    if (!cancelled) playNext();
+                }, 200);
+            }
+        }, estimatedDuration);
     };
 
     playNext();
@@ -87,6 +113,7 @@ function speakSequence(
     // 취소 함수 반환
     return () => {
         cancelled = true;
+        clearFallback();
         window.speechSynthesis.cancel();
     };
 }
@@ -117,14 +144,10 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     useEffect(() => {
         if (!isMounted || words.length === 0) return;
 
-        // 이전 음성을 확실히 정리 (안드로이드 버그 방지)
+        // 이전 음성 취소 (cancel 함수 내부에서 speechSynthesis.cancel() 호출됨)
         if (cancelTtsRef.current) {
             cancelTtsRef.current();
             cancelTtsRef.current = null;
-        }
-        // 브라우저 큐 비우기
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
         }
 
         setIsNextEnabled(false);
@@ -132,19 +155,19 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
         const currentWord = words[currentIndex];
 
-        // 애니메이션 딜레이 최소화 (안드로이드에서는 setTimeout 지연이 길면 제스처 권한 상실로 간주될 수 있음)
+        // 안드로이드 크롬 핵심 버그 우회:
+        // cancel() 직후 speak()를 호출하면 무시되므로, cancel 후 200ms 대기
         const startTimer = setTimeout(() => {
             const cancel = speakSequence(
                 currentWord,
                 () => setIsPlaying(true),
                 () => {
                     setIsPlaying(false);
-                    // 약간의 여유를 두고 다음 버튼 활성화
                     setTimeout(() => setIsNextEnabled(true), 100);
                 }
             );
             cancelTtsRef.current = cancel;
-        }, 50);
+        }, 200);
 
         return () => {
             clearTimeout(startTimer);
