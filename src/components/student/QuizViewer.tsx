@@ -200,6 +200,12 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
             )}
 
             <div className="max-w-md w-full mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-blue-200">
+                {/* 방금 학습한 단어 및 테스트 안내 문구 */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3 sm:p-4 text-center border-b border-emerald-100">
+                    <p className="text-xs sm:text-sm font-bold text-teal-800">
+                        방금 학습한 단어 중 <span className="text-emerald-600 font-black text-sm sm:text-base px-1">{questions.length}</span>개로 테스트를 시작합니다! ✨
+                    </p>
+                </div>
                 <div className="p-4 sm:p-6 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <span className="font-bold text-blue-800 text-sm sm:text-base">문제 {currentIndex + 1} / {questions.length}</span>

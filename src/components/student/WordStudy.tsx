@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, BookOpen, Eye, Volume2, Headphones } from 'l
 
 type Props = {
     words: Word[];
-    onFinishStudy: () => void; // 학습 완료 후 콜백
+    testQuestionCount: number;
+    onFinishStudy: (learnedWords: Word[]) => void; // 학습 완료 후 콜백
     onBack: () => void; // 메인으로 돌아가기 콜백
 };
 
@@ -120,12 +121,14 @@ function speakSequence(
 }
 
 // 학생이 단어를 카드 형태로 학습하는 컴포넌트
-export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
+export default function WordStudy({ words, testQuestionCount, onFinishStudy, onBack }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showMeaning, setShowMeaning] = useState(false);
     const [studiedCount, setStudiedCount] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [shuffledWords, setShuffledWords] = useState<Word[]>([]);
+    const [learnedWordsThisSession, setLearnedWordsThisSession] = useState<Word[]>([]);
 
     // TTS 스킵 방지 상태
     const [isNextEnabled, setIsNextEnabled] = useState(false);
@@ -136,14 +139,17 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     const cancelTtsRef = useRef<(() => void) | null>(null);
     const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Hydration 불일치 방지
+    // 초기화 및 단어 셔플
     useEffect(() => {
+        if (words && words.length > 0) {
+            setShuffledWords([...words].sort(() => Math.random() - 0.5));
+        }
         setIsMounted(true);
-    }, []);
+    }, [words]);
 
     // 카드 변경 시 자동 TTS 재생
     useEffect(() => {
-        if (!isMounted || words.length === 0) return;
+        if (!isMounted || shuffledWords.length === 0) return;
 
         // 이전 음성 취소 (cancel 함수 내부에서 speechSynthesis.cancel() 호출됨)
         if (cancelTtsRef.current) {
@@ -154,7 +160,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         setIsNextEnabled(false);
         setShowSkipWarning(false);
 
-        const currentWord = words[currentIndex];
+        const currentWord = shuffledWords[currentIndex];
 
         // 안드로이드 크롬 핵심 버그 우회:
         // cancel() 직후 speak()를 호출하면 무시되므로, cancel 후 200ms 대기
@@ -177,7 +183,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 cancelTtsRef.current = null;
             }
         };
-    }, [currentIndex, isMounted, words]);
+    }, [currentIndex, isMounted, shuffledWords]);
 
     // 컴포넌트 언마운트 시 TTS 정지
     useEffect(() => {
@@ -191,11 +197,20 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         };
     }, []);
 
-    const currentWord = words[currentIndex];
-    const isLast = currentIndex === words.length - 1;
+    const currentWord = shuffledWords[currentIndex];
+    const isLast = currentIndex === (shuffledWords.length > 0 ? shuffledWords.length - 1 : 0);
 
     const handleNext = useCallback(() => {
         if (isLast || !isNextEnabled) return;
+
+        setLearnedWordsThisSession(prev => {
+            const wordToAdd = shuffledWords[currentIndex];
+            if (wordToAdd && !prev.some(w => w.id === wordToAdd.id)) {
+                return [...prev, wordToAdd];
+            }
+            return prev;
+        });
+
         // 음성 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         setIsAnimating(true);
@@ -205,7 +220,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
             setStudiedCount(s => Math.max(s, currentIndex + 1));
             setIsAnimating(false);
         }, 150);
-    }, [isLast, isNextEnabled, currentIndex]);
+    }, [isLast, isNextEnabled, currentIndex, shuffledWords]);
 
     const handlePrev = () => {
         if (currentIndex === 0) return;
@@ -243,15 +258,21 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     };
 
     const handleFinishStudy = () => {
+        const wordToAdd = shuffledWords[currentIndex];
+        let finalLearned = [...learnedWordsThisSession];
+        if (wordToAdd && !finalLearned.some(w => w.id === wordToAdd.id)) {
+            finalLearned.push(wordToAdd);
+        }
+
         // 학습 완료 시 TTS 정지
         if (cancelTtsRef.current) cancelTtsRef.current();
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
         }
-        onFinishStudy();
+        onFinishStudy(finalLearned);
     };
 
-    const progress = Math.round(((currentIndex + 1) / words.length) * 100);
+    const progress = Math.round(((currentIndex + 1) / (shuffledWords.length || 1)) * 100);
 
     // 스와이프 제스처 핸들러 (TTS 재생 중 차단)
     const swipeHandlers = useSwipeable({
@@ -269,6 +290,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     });
 
     if (!isMounted) return null;
+    if (shuffledWords.length === 0) return null;
 
     return (
         <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-3 sm:p-4 md:p-8 animate-in fade-in duration-300">
@@ -283,7 +305,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                     </button>
 
                     <div className="bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-sm text-xs sm:text-sm font-black text-indigo-600 border border-indigo-100/50">
-                        {currentIndex + 1} <span className="text-indigo-300 font-medium mx-0.5 sm:mx-1">/</span> {words.length}
+                        {currentIndex + 1} <span className="text-indigo-300 font-medium mx-0.5 sm:mx-1">/</span> {shuffledWords.length}
                     </div>
                 </div>
 
@@ -447,6 +469,35 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                             )}
                         </>
                     )}
+                </div>
+
+                {/* 학습량 기반 테스트 진입 제어 시스템 */}
+                <div className="mt-6 flex flex-col gap-3">
+                    <div className="text-center font-bold text-sm sm:text-base text-indigo-700 bg-indigo-100 py-3 px-4 rounded-xl border border-indigo-200 shadow-sm transition-all duration-300">
+                        테스트를 보려면 최소 <span className="font-black text-indigo-900 bg-white px-2 py-0.5 rounded shadow-sm">{testQuestionCount}</span>개의 단어를 학습해야 해요!
+                        <div className="text-xs sm:text-sm mt-1.5 text-indigo-600 font-medium bg-white/50 py-1 rounded-lg">
+                            (현재: <span className={`${learnedWordsThisSession.length < testQuestionCount ? 'text-red-500' : 'text-emerald-600'} font-black text-base`}>{learnedWordsThisSession.length}</span> / {testQuestionCount})
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => {
+                            if (learnedWordsThisSession.length >= testQuestionCount) {
+                                if (cancelTtsRef.current) cancelTtsRef.current();
+                                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                                    window.speechSynthesis.cancel();
+                                }
+                                onFinishStudy(learnedWordsThisSession);
+                            }
+                        }}
+                        disabled={learnedWordsThisSession.length < testQuestionCount}
+                        className={`w-full py-4 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 ${learnedWordsThisSession.length < testQuestionCount
+                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-inner'
+                                : 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-teal-500/30 hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:shadow-md'
+                            }`}
+                    >
+                        테스트 보러가기 🚀
+                    </button>
                 </div>
             </div>
         </div>

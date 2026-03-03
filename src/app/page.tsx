@@ -24,6 +24,7 @@ export default function Home() {
   // 학생 플로우: day_select → dashboard → study → request_sent → test → wrong_note
   const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'request_sent' | 'test' | 'wrong_note'>('day_select');
   const [studyCompleted, setStudyCompleted] = useState(false);
+  const [sessionWords, setSessionWords] = useState<Word[]>([]);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
@@ -259,6 +260,7 @@ export default function Home() {
     setWords(dayWords.slice(0, studyLimit));
     setStudyCompleted(false);
     setTestRequest(null);
+    setSessionWords([]);
 
     setMode('dashboard');
     if (user) checkTestRequest(user.id);
@@ -381,7 +383,16 @@ export default function Home() {
   if (mode === 'study') {
     return (
       <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
-        <WordStudy words={words} onFinishStudy={() => { setStudyCompleted(true); setMode('dashboard'); }} onBack={() => setMode('dashboard')} />
+        <WordStudy
+          words={words}
+          testQuestionCount={user.test_question_count || 30}
+          onFinishStudy={(learnedWords) => {
+            setSessionWords(learnedWords);
+            setStudyCompleted(true);
+            setMode('dashboard');
+          }}
+          onBack={() => setMode('dashboard')}
+        />
       </div>
     );
   }
@@ -437,10 +448,12 @@ export default function Home() {
 
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
-    // 학습한 단어에서만 출제: 문항 수를 학습 단어 수 이하로 제한
-    const questionCount = Math.min(user.test_question_count || 30, words.length);
+    // 세션 단어가 있으면 그 안에서만 출제, 없으면 Day 전체(words)에서 출제
+    const testWordsPool = sessionWords.length > 0 ? sessionWords : words;
+    // 문항 수를 학습 단어 풀 이하로 제한
+    const questionCount = Math.min(user.test_question_count || 30, testWordsPool.length);
 
-    // 현재 Day의 전체 단어 중 아직 મા스터하지 않은 단어 목록 계산
+    // 현재 Day의 전체 단어 중 아직 마스터하지 않은 단어 목록 계산
     const totalDayWords = allWords.filter(w => w.category === selectedDay).map(w => w.word);
     const currentMastered = new Set(masteryMap[selectedDayNum] || []);
     const unmasteredWords = totalDayWords.filter(w => !currentMastered.has(w));
@@ -448,7 +461,7 @@ export default function Home() {
     return (
       <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <QuizViewer
-          words={words}
+          words={testWordsPool}
           userId={user.id}
           questionCount={questionCount}
           isReviewMode={isReviewMode}
@@ -589,6 +602,7 @@ export default function Home() {
 
             setMode('day_select');
             setStudyCompleted(false);
+            setSessionWords([]);
             setTestRequest(null);
             if (testRequest) await supabase.from('test_requests').delete().eq('id', testRequest.id);
             await refreshUser();
@@ -750,7 +764,7 @@ export default function Home() {
         {/* 헤더 */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border-2 border-slate-100">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <button onClick={() => { setMode('day_select'); setSelectedDay(null); setStudyCompleted(false); setTestRequest(null); }}
+            <button onClick={() => { setMode('day_select'); setSelectedDay(null); setStudyCompleted(false); setTestRequest(null); setSessionWords([]); }}
               className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 hover:bg-slate-200 rounded-xl sm:rounded-2xl flex items-center justify-center transition-colors shrink-0">
               <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
             </button>
@@ -779,7 +793,7 @@ export default function Home() {
                 <p className="text-lg sm:text-xl font-black text-yellow-700 leading-none">{(user.tokens ?? 0).toLocaleString()}</p>
               </div>
             </button>
-            <button onClick={() => { setUser(null); setStudyCompleted(false); setTestRequest(null); setMode('day_select'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors"><LogOut className="w-4 h-4 sm:w-5 sm:h-5" /></button>
+            <button onClick={() => { setUser(null); setStudyCompleted(false); setSessionWords([]); setTestRequest(null); setMode('day_select'); }} className="p-2.5 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-colors"><LogOut className="w-4 h-4 sm:w-5 sm:h-5" /></button>
           </div>
         </div>
 
