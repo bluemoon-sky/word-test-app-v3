@@ -470,35 +470,6 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                         </>
                     )}
                 </div>
-
-                {/* 학습량 기반 테스트 진입 제어 시스템 */}
-                <div className="mt-6 flex flex-col gap-3">
-                    <div className="text-center font-bold text-sm sm:text-base text-indigo-700 bg-indigo-100 py-3 px-4 rounded-xl border border-indigo-200 shadow-sm transition-all duration-300">
-                        테스트를 보려면 최소 <span className="font-black text-indigo-900 bg-white px-2 py-0.5 rounded shadow-sm">{testQuestionCount}</span>개의 단어를 학습해야 해요!
-                        <div className="text-xs sm:text-sm mt-1.5 text-indigo-600 font-medium bg-white/50 py-1 rounded-lg">
-                            (현재: <span className={`${learnedWordsThisSession.length < testQuestionCount ? 'text-red-500' : 'text-emerald-600'} font-black text-base`}>{learnedWordsThisSession.length}</span> / {testQuestionCount})
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={() => {
-                            if (learnedWordsThisSession.length >= testQuestionCount) {
-                                if (cancelTtsRef.current) cancelTtsRef.current();
-                                if (typeof window !== 'undefined' && window.speechSynthesis) {
-                                    window.speechSynthesis.cancel();
-                                }
-                                onFinishStudy(learnedWordsThisSession);
-                            }
-                        }}
-                        disabled={learnedWordsThisSession.length < testQuestionCount}
-                        className={`w-full py-4 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 ${learnedWordsThisSession.length < testQuestionCount
-                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-inner'
-                                : 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-teal-500/30 hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:shadow-md'
-                            }`}
-                    >
-                        테스트 보러가기 🚀
-                    </button>
-                </div>
             </div>
         </div>
     );

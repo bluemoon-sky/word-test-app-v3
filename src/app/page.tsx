@@ -6,7 +6,6 @@ import QuizViewer from '@/components/student/QuizViewer';
 import WrongNoteViewer from '@/components/student/WrongNoteViewer';
 import PetAvatar from '@/components/student/PetAvatar';
 import DailyRoulette from '@/components/student/DailyRoulette';
-import BottomNav from '@/components/student/BottomNav';
 import { Word, User, TestRequest } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { Coins, LogOut, Loader2, BookOpen, Clock, CheckCircle, X, ArrowLeft, Lock, Star, Zap, Flame } from 'lucide-react';
@@ -34,8 +33,6 @@ export default function Home() {
   // 인앱 브라우저 감지
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [showInAppBanner, setShowInAppBanner] = useState(false);
-  // 하단 네비게이션 탭 상태
-  const [bottomTab, setBottomTab] = useState<'home' | 'wordbook' | 'wrong_notes' | 'mypage'>('home');
 
   // 시험 요청 상태 확인
   const checkTestRequest = useCallback(async (userId: string) => {
@@ -748,7 +745,6 @@ export default function Home() {
             </div>
           )}
         </div>
-        <BottomNav activeTab={bottomTab} onTabChange={setBottomTab} />
       </div>
     );
   }
@@ -899,7 +895,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <BottomNav activeTab={bottomTab} onTabChange={setBottomTab} />
     </div>
   );
 }
