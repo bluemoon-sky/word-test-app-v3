@@ -1,15 +1,95 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Word } from '@/types';
-import { ChevronLeft, ChevronRight, BookOpen, Eye, EyeOff, Volume2 } from 'lucide-react';
-import { speakWord } from '@/lib/tts';
+import { ChevronLeft, ChevronRight, BookOpen, Eye, Volume2, Headphones } from 'lucide-react';
 
 type Props = {
     words: Word[];
     onFinishStudy: () => void; // 학습 완료 후 콜백
     onBack: () => void; // 메인으로 돌아가기 콜백
 };
+
+// TTS 순차 재생 헬퍼: 영단어 → 한국어 발음 → 뜻1, 뜻2
+function speakSequence(
+    word: Word,
+    onStart: () => void,
+    onEnd: () => void
+): () => void {
+    // 브라우저 TTS 사용 불가 시 즉시 완료
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+        onEnd();
+        return () => { };
+    }
+
+    window.speechSynthesis.cancel();
+    onStart();
+
+    const parts: { text: string; lang: string }[] = [];
+
+    // 1순위: 영단어 (en-US)
+    if (word.word) {
+        parts.push({ text: word.word, lang: 'en-US' });
+    }
+
+    // 2순위: 한국어 발음 (ko-KR)
+    if (word.korean_pronunciation) {
+        parts.push({ text: word.korean_pronunciation, lang: 'ko-KR' });
+    }
+
+    // 3순위: 뜻1, 뜻2 (ko-KR)
+    const meanings = [word.meaning_1, word.meaning_2].filter(Boolean);
+    if (meanings.length > 0) {
+        parts.push({ text: meanings.join(', '), lang: 'ko-KR' });
+    }
+
+    if (parts.length === 0) {
+        onEnd();
+        return () => { };
+    }
+
+    let partIndex = 0;
+    let cancelled = false;
+
+    const playNext = () => {
+        if (cancelled || partIndex >= parts.length) {
+            if (!cancelled) onEnd();
+            return;
+        }
+
+        const { text, lang } = parts[partIndex];
+        partIndex++;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+
+        utterance.onend = () => {
+            if (cancelled) return;
+            // 다음 파트 전 0.5초 텀
+            setTimeout(() => {
+                if (!cancelled) playNext();
+            }, 500);
+        };
+
+        utterance.onerror = () => {
+            if (cancelled) return;
+            setTimeout(() => {
+                if (!cancelled) playNext();
+            }, 300);
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    playNext();
+
+    // 취소 함수 반환
+    return () => {
+        cancelled = true;
+        window.speechSynthesis.cancel();
+    };
+}
 
 // 학생이 단어를 카드 형태로 학습하는 컴포넌트
 export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
@@ -19,30 +99,93 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
+    // TTS 스킵 방지 상태
+    const [isNextEnabled, setIsNextEnabled] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [showSkipWarning, setShowSkipWarning] = useState(false);
+
+    // 취소 함수 ref
+    const cancelTtsRef = useRef<(() => void) | null>(null);
+    const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+
     // Hydration 불일치 방지
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
+    // 카드 변경 시 자동 TTS 재생
+    useEffect(() => {
+        if (!isMounted || words.length === 0) return;
+
+        // 이전 음성 취소
+        if (cancelTtsRef.current) {
+            cancelTtsRef.current();
+        }
+
+        setIsNextEnabled(false);
+        setShowSkipWarning(false);
+
+        const currentWord = words[currentIndex];
+
+        // 약간의 딜레이 후 재생 (카드 전환 애니메이션 후)
+        const startTimer = setTimeout(() => {
+            const cancel = speakSequence(
+                currentWord,
+                () => setIsPlaying(true),
+                () => {
+                    setIsPlaying(false);
+                    setIsNextEnabled(true);
+                }
+            );
+            cancelTtsRef.current = cancel;
+        }, 400);
+
+        return () => {
+            clearTimeout(startTimer);
+            if (cancelTtsRef.current) {
+                cancelTtsRef.current();
+                cancelTtsRef.current = null;
+            }
+        };
+    }, [currentIndex, isMounted, words]);
+
+    // 컴포넌트 언마운트 시 TTS 정지
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            if (cancelTtsRef.current) {
+                cancelTtsRef.current();
+            }
+        };
+    }, []);
+
     const currentWord = words[currentIndex];
     const isLast = currentIndex === words.length - 1;
 
-    const handleNext = () => {
-        if (isLast) return;
-        triggerAnimation();
+    const handleNext = useCallback(() => {
+        if (isLast || !isNextEnabled) return;
+        // 음성 정지
+        if (cancelTtsRef.current) cancelTtsRef.current();
+        setIsAnimating(true);
         setTimeout(() => {
             setShowMeaning(false);
             setCurrentIndex(i => i + 1);
             setStudiedCount(s => Math.max(s, currentIndex + 1));
+            setIsAnimating(false);
         }, 150);
-    };
+    }, [isLast, isNextEnabled, currentIndex]);
 
     const handlePrev = () => {
         if (currentIndex === 0) return;
-        triggerAnimation();
+        // 음성 정지
+        if (cancelTtsRef.current) cancelTtsRef.current();
+        setIsAnimating(true);
         setTimeout(() => {
             setShowMeaning(false);
             setCurrentIndex(i => i - 1);
+            setIsAnimating(false);
         }, 150);
     };
 
@@ -53,9 +196,29 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         }
     };
 
-    const triggerAnimation = () => {
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 300);
+    // 스킵 시도 시 경고 표시
+    const handleSkipAttempt = () => {
+        setShowSkipWarning(true);
+        if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+        warningTimerRef.current = setTimeout(() => setShowSkipWarning(false), 2000);
+    };
+
+    const handleBack = () => {
+        // 뒤로가기 시 TTS 정지
+        if (cancelTtsRef.current) cancelTtsRef.current();
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        onBack();
+    };
+
+    const handleFinishStudy = () => {
+        // 학습 완료 시 TTS 정지
+        if (cancelTtsRef.current) cancelTtsRef.current();
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        onFinishStudy();
     };
 
     const progress = Math.round(((studiedCount) / words.length) * 100);
@@ -67,7 +230,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
             {/* 상단 네비게이션바 (뒤로가기 포함) */}
             <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <button
-                    onClick={onBack}
+                    onClick={handleBack}
                     className="p-2 sm:p-2.5 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl sm:rounded-2xl shadow-sm transition-all flex items-center gap-1.5 font-bold text-xs sm:text-sm"
                 >
                     <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" /> 메인으로
@@ -90,6 +253,14 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* TTS 재생 상태 표시 */}
+            {isPlaying && (
+                <div className="flex items-center justify-center gap-2 mb-3 animate-pulse">
+                    <Headphones className="w-4 h-4 text-indigo-500" />
+                    <span className="text-xs font-bold text-indigo-500">🎧 음성 재생 중... 잘 들어보세요!</span>
+                </div>
+            )}
 
             {/* 플래시카드 영역 (3D 효과 & 애니메이션 추가) */}
             <div className="perspective-1000 relative mb-5 sm:mb-8">
@@ -118,7 +289,17 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
                     <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex items-center gap-2">
                         <button
-                            onClick={(e) => { e.stopPropagation(); speakWord(currentWord.word); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                // 수동 TTS: 영단어만 재생
+                                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                                    window.speechSynthesis.cancel();
+                                    const u = new SpeechSynthesisUtterance(currentWord.word);
+                                    u.lang = 'en-US';
+                                    u.rate = 0.9;
+                                    window.speechSynthesis.speak(u);
+                                }
+                            }}
                             className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-100 hover:bg-blue-200 text-blue-500 rounded-full flex items-center justify-center transition-colors"
                             title="발음 듣기"
                         >
@@ -168,6 +349,15 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 </div>
             </div>
 
+            {/* 스킵 방지 경고 메시지 */}
+            {showSkipWarning && (
+                <div className="mb-3 text-center animate-in fade-in zoom-in-95 duration-300">
+                    <div className="inline-block bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold shadow-sm">
+                        🎧 끝까지 들어야 다음으로 넘어갈 수 있어요!
+                    </div>
+                </div>
+            )}
+
             {/* 하단 컨트롤 (이전/다음) */}
             <div className="flex gap-3 sm:gap-4">
                 <button
@@ -180,18 +370,25 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
                 {isLast ? (
                     <button
-                        onClick={onFinishStudy}
-                        className="flex-1 h-14 sm:h-16 bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-black text-lg sm:text-xl rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1 transition-all active:scale-95"
+                        onClick={isNextEnabled ? handleFinishStudy : handleSkipAttempt}
+                        className={`flex-1 h-14 sm:h-16 font-black text-lg sm:text-xl rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
+                                ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            }`}
                     >
-                        ✨ 학습 완료! ✨
+                        {isNextEnabled ? '✨ 학습 완료! ✨' : '🎧 듣는 중...'}
                     </button>
                 ) : (
                     <button
-                        onClick={handleNext}
-                        disabled={isAnimating}
-                        className="flex-1 h-14 sm:h-16 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-black text-base sm:text-lg rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all active:scale-95"
+                        onClick={isNextEnabled ? handleNext : handleSkipAttempt}
+                        className={`flex-1 h-14 sm:h-16 font-black text-base sm:text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            }`}
                     >
-                        다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" />
+                        {isNextEnabled ? (
+                            <>다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" /></>
+                        ) : '🎧 듣는 중...'}
                     </button>
                 )}
             </div>
