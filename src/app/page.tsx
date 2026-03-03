@@ -361,6 +361,12 @@ export default function Home() {
   if (mode === 'test') {
     // 학습한 단어에서만 출제: 문항 수를 학습 단어 수 이하로 제한
     const questionCount = Math.min(user.test_question_count || 30, words.length);
+
+    // 현재 Day의 전체 단어 중 아직 મા스터하지 않은 단어 목록 계산
+    const totalDayWords = allWords.filter(w => w.category === selectedDay).map(w => w.word);
+    const currentMastered = new Set(masteryMap[selectedDayNum] || []);
+    const unmasteredWords = totalDayWords.filter(w => !currentMastered.has(w));
+
     return (
       <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
         <QuizViewer
@@ -369,6 +375,7 @@ export default function Home() {
           questionCount={questionCount}
           isReviewMode={isReviewMode}
           dayNumber={selectedDayNum}
+          unmasteredWords={unmasteredWords}
           onFinish={async (earnedFromQuiz, wrongWordIds, score, correctWords) => {
             // ─── 보상 분기 ───
             let actualEarned = 0;

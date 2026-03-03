@@ -13,6 +13,7 @@ type Props = {
     questionCount?: number;
     isReviewMode?: boolean;
     dayNumber?: number;
+    unmasteredWords?: string[];
     onFinish: (earnedTokens: number, wrongWordIds: string[], score: number, correctWords: string[]) => void;
 };
 
@@ -21,7 +22,7 @@ type Question = {
     type: 'en_to_ko' | 'ko_to_en';
 };
 
-export default function QuizViewer({ words, userId, questionCount = 30, isReviewMode = false, dayNumber = 0, onFinish }: Props) {
+export default function QuizViewer({ words, userId, questionCount = 30, isReviewMode = false, dayNumber = 0, unmasteredWords = [], onFinish }: Props) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [input, setInput] = useState('');
@@ -132,7 +133,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                 {/* 타이틀 */}
                 <h2 className={`text-2xl sm:text-3xl font-black mb-2 ${isReviewMode ? 'text-amber-600' : 'text-emerald-600'
                     }`}>
-                    {isReviewMode ? '복습 완료! 🔁' : '🎉 최초 통과 축하! 🎉'}
+                    {isReviewMode ? '복습 완료! 🔁' : '🎉 테스트 완료! 🎉'}
                 </h2>
 
                 <p className="text-base sm:text-lg text-slate-600 font-medium mb-1">
@@ -152,9 +153,15 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                     <div className="mt-4 mb-6 sm:mb-8 space-y-2">
                         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 py-3 sm:py-4 px-4 sm:px-6 rounded-2xl font-bold flex items-center justify-center text-sm sm:text-base border border-emerald-200">
                             <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500 fill-yellow-500" />
-                            최초 통과 보상: +{displayTokens} 토큰! 🏆
+                            테스트 완료 보상: +{displayTokens} 토큰! 🏆
                         </div>
-                        <p className="text-xs text-emerald-500 font-medium">💡 다음 Day가 해제되었어! 계속 도전해봐! 🚀</p>
+                        {unmasteredWords.length > 0 && correctWords.filter(w => unmasteredWords.includes(w)).length >= unmasteredWords.length ? (
+                            <p className="text-sm font-black text-emerald-600 animate-pulse">✨ 100% 클리어! 다음 Day가 해제되었어! 🚀</p>
+                        ) : (
+                            <p className="text-xs font-bold text-slate-500">
+                                아직 다 외우지 못한 단어가 남았어. 완벽해질 때까지 파이팅! 💪
+                            </p>
+                        )}
                     </div>
                 )}
 
