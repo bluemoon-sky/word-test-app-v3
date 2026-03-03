@@ -358,38 +358,48 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
                 </div>
             )}
 
-            {/* 하단 컨트롤 (이전/다음) */}
-            <div className="flex gap-3 sm:gap-4">
-                <button
-                    onClick={handlePrev}
-                    disabled={currentIndex === 0 || isAnimating}
-                    className="flex-1 h-14 sm:h-16 bg-white shadow-md shadow-slate-200/50 text-slate-500 font-bold text-base sm:text-lg rounded-2xl flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:shadow-lg hover:-translate-y-1 hover:text-slate-800 transition-all active:scale-95"
-                >
-                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-1" /> 이전 카드
-                </button>
-
-                {isLast ? (
+            {/* 하단 컨트롤 (이전/다음 통합) */}
+            <div className={`w-full h-14 sm:h-16 flex rounded-2xl overflow-hidden shadow-lg transition-all ${!isNextEnabled
+                    ? 'bg-slate-200 cursor-not-allowed text-slate-400'
+                    : 'bg-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.3)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.4)] hover:-translate-y-0.5'
+                }`}>
+                {!isNextEnabled ? (
                     <button
-                        onClick={isNextEnabled ? handleFinishStudy : handleSkipAttempt}
-                        className={`flex-1 h-14 sm:h-16 font-black text-lg sm:text-xl rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
-                            ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1'
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                            }`}
+                        onClick={handleSkipAttempt}
+                        className="w-full h-full font-black text-base sm:text-lg flex items-center justify-center cursor-not-allowed transition-all"
                     >
-                        {isNextEnabled ? '✨ 학습 완료! ✨' : '🎧 듣는 중...'}
+                        🎧 듣는 중...
                     </button>
                 ) : (
-                    <button
-                        onClick={isNextEnabled ? handleNext : handleSkipAttempt}
-                        className={`flex-1 h-14 sm:h-16 font-black text-base sm:text-lg rounded-2xl flex items-center justify-center transition-all active:scale-95 ${isNextEnabled
-                            ? 'bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.5)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.6)] hover:-translate-y-1'
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                            }`}
-                    >
-                        {isNextEnabled ? (
-                            <>다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" /></>
-                        ) : '🎧 듣는 중...'}
-                    </button>
+                    <>
+                        <button
+                            onClick={handlePrev}
+                            disabled={currentIndex === 0 || isAnimating}
+                            className={`flex-1 flex items-center justify-center font-bold text-base sm:text-lg transition-colors
+                                ${currentIndex === 0
+                                    ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
+                                    : 'text-slate-600 bg-white hover:bg-slate-50 active:bg-slate-100'}`}
+                        >
+                            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-1" /> 이전 카드
+                        </button>
+
+                        {isLast ? (
+                            <button
+                                onClick={handleFinishStudy}
+                                className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-base sm:text-lg flex items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)]"
+                            >
+                                ✨ 학습 완료! ✨
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleNext}
+                                disabled={isAnimating}
+                                className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-base sm:text-lg flex items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)]"
+                            >
+                                다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" />
+                            </button>
+                        )}
+                    </>
                 )}
             </div>
         </div>
