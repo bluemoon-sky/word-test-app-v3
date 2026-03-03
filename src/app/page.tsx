@@ -658,7 +658,17 @@ export default function Home() {
           </button>
 
           {/* 펫 아바타 */}
-          <PetAvatar currentDay={unlockedDay} />
+          {(() => {
+            const totalMasteredCount = Object.values(masteryMap).reduce(
+              (sum, set) => sum + set.size, 0
+            );
+            return (
+              <PetAvatar
+                currentStreak={user.current_streak || 0}
+                totalMasteredCount={totalMasteredCount}
+              />
+            );
+          })()}
 
           {/* 럭키 보물상자 팝업 */}
           {showRoulette && (

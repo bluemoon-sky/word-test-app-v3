@@ -61,3 +61,16 @@ textarea,
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* 펫 아바타 둥둥 떠다니는 애니메이션 */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
