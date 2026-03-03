@@ -10,12 +10,9 @@ type Props = {
     onTokensEarned: (tokens: number) => void;
 };
 
-// 보상 확률: 1토큰(60%), 3토큰(30%), 5토큰(10%)
+// 보상: 1~5 토큰 랜덤
 function rollReward(): number {
-    const rand = Math.random();
-    if (rand < 0.10) return 5;
-    if (rand < 0.40) return 3;
-    return 1;
+    return Math.floor(Math.random() * 5) + 1;
 }
 
 export default function DailyRoulette({ userId, onClose, onTokensEarned }: Props) {
@@ -58,12 +55,7 @@ export default function DailyRoulette({ userId, onClose, onTokensEarned }: Props
                     <>
                         <div className="text-6xl sm:text-7xl mb-4 animate-bounce" style={{ animationDuration: '2s' }}>🎁</div>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">오늘의 보물상자!</h2>
-                        <p className="text-sm text-slate-500 font-medium mb-6">매일 한 번! 랜덤 보너스 토큰을 받아가세요!</p>
-                        <div className="flex justify-center gap-3 mb-6 text-xs font-bold">
-                            <span className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full border border-yellow-200">60% → 1토큰</span>
-                            <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full border border-blue-200">30% → 3토큰</span>
-                            <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full border border-purple-200">10% → 5토큰</span>
-                        </div>
+                        <p className="text-sm text-slate-500 font-medium mb-6">매일 한 번! 1~5 랜덤 보너스 토큰을 받아가세요! 🎲</p>
                         <button onClick={handleOpen}
                             className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-300/50 hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95">
                             🎁 보물상자 열기!

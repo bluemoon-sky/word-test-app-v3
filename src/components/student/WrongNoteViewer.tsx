@@ -67,6 +67,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
         setTestStatus('playing');
         setTestScore(0);
         setCorrectWordIds([]);
+        setIsFinishing(false);
         setMode('test');
     };
 
