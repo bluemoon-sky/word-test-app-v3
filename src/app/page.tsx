@@ -127,6 +127,9 @@ export default function Home() {
     if (!nickname.trim()) return;
 
     setLoading(true);
+    // 외부 접근이든 사설 내장 접근이든 로그인 성공을 원한다면 배너를 치웁니다.
+    setShowInAppBanner(false);
+
     try {
       let { data: existingUser, error: findError } = await supabase
         .from('users')
@@ -137,7 +140,7 @@ export default function Home() {
       if (findError && findError.code !== 'PGRST116') throw findError;
 
       if (!existingUser) {
-        alert('등록되지 않은 이름이에요! 부모님이나 선생님께 여쭤보세요.');
+        alert('등록되지 않은 이름이에요! 부모님께 여쭤보세요.');
         return;
       }
 
