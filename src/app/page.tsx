@@ -362,7 +362,7 @@ export default function Home() {
           <p className="text-sm sm:text-base text-slate-500 font-medium mb-6 sm:mb-8">내 이름을 입력하고 단어 시험을 시작해 봐!</p>
           <form onSubmit={handleLogin} className="space-y-4">
             <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="여기에 이름 입력..."
-              className="w-full text-center text-lg sm:text-xl font-bold py-3 sm:py-4 px-4 sm:px-6 bg-slate-50 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:bg-white focus:outline-none transition-all" required />
+              className="w-full text-center text-slate-900 text-lg sm:text-xl font-bold py-3 sm:py-4 px-4 sm:px-6 bg-slate-50 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:bg-white focus:outline-none transition-all" required />
             <button type="submit" disabled={loading}
               className="w-full py-3 sm:py-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold text-lg sm:text-xl rounded-2xl shadow-md transition-colors flex items-center justify-center disabled:opacity-70">
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : '접속하기!'}
