@@ -29,6 +29,9 @@ export default function Home() {
   const [showRoulette, setShowRoulette] = useState(false);
   // 단어별 마스터 추적: { dayNumber: Set<word> }
   const [masteryMap, setMasteryMap] = useState<Record<number, Set<string>>>({});
+  // 인앱 브라우저 감지
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [showInAppBanner, setShowInAppBanner] = useState(false);
 
   // 시험 요청 상태 확인
   const checkTestRequest = useCallback(async (userId: string) => {
@@ -65,6 +68,59 @@ export default function Home() {
       return a.localeCompare(b);
     });
   }, [allWords]);
+
+  // 인앱 브라우저 감지 (카카오톡, 라인, 페이스북, 인스타그램, 네이버 등)
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent || '';
+      const inAppPatterns = /KAKAOTALK|NAVER|Line\/|FBAN|FBAV|Instagram|FB_IAB|Twitter/i;
+      if (inAppPatterns.test(ua)) {
+        setIsInAppBrowser(true);
+        setShowInAppBanner(true);
+      }
+    }
+  }, []);
+
+  // 인앱 브라우저 안내 배너 컴포넌트
+  const InAppBrowserBanner = () => {
+    if (!showInAppBanner) return null;
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const handleOpenExternal = () => {
+      // 안드로이드: intent 스킴으로 크롬에서 열기 시도
+      const ua = navigator.userAgent || '';
+      if (/android/i.test(ua)) {
+        const intentUrl = `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+        window.location.href = intentUrl;
+      } else {
+        // iOS: 사파리로 직접 열기 시도
+        window.open(currentUrl, '_blank');
+      }
+    };
+    return (
+      <div className="fixed top-0 left-0 right-0 z-[100] animate-in slide-in-from-top duration-300">
+        <div className="bg-amber-500 text-white px-4 py-3 shadow-lg">
+          <div className="max-w-lg mx-auto flex items-center gap-3">
+            <div className="text-2xl shrink-0">🔊</div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm">음성 재생을 위해 외부 브라우저로 열어주세요!</p>
+              <p className="text-xs text-amber-100 mt-0.5">인앱 브라우저에서는 TTS 음성이 재생되지 않아요.</p>
+            </div>
+            <button onClick={() => setShowInAppBanner(false)} className="p-1 hover:bg-amber-600 rounded-lg transition shrink-0">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="max-w-lg mx-auto mt-2 flex gap-2">
+            <button onClick={handleOpenExternal} className="flex-1 bg-white text-amber-700 font-bold text-sm py-2 rounded-xl hover:bg-amber-50 transition">
+              🌐 외부 브라우저로 열기
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(currentUrl); alert('링크가 복사되었어요! 크롬이나 사파리에 붙여넣기 해주세요.'); }} className="bg-amber-600 text-white font-bold text-sm py-2 px-4 rounded-xl hover:bg-amber-700 transition">
+              📋 링크 복사
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,6 +335,7 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-[100dvh] bg-slate-50 flex flex-col p-4 text-center">
+        <InAppBrowserBanner />
         <div className="m-auto max-w-md w-full bg-white rounded-3xl shadow-xl border-4 border-blue-200 p-6 sm:p-8 animate-in zoom-in-95 duration-500">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-inner text-3xl sm:text-4xl">🚀</div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">영단어 마스터!</h1>
@@ -528,6 +585,7 @@ export default function Home() {
 
     return (
       <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-4 md:p-8 pb-12">
+        <InAppBrowserBanner />
         <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
 
           {/* 헤더 */}
@@ -664,6 +722,7 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-4 md:p-8 pb-12">
+      <InAppBrowserBanner />
       <div className="max-w-5xl mx-auto space-y-5 sm:space-y-8">
 
         {/* 헤더 */}
