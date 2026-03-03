@@ -69,6 +69,12 @@ export default function Home() {
     });
   }, [allWords]);
 
+  // 배너 닫기 공통 함수 (localStorage에 저장하여 새로고침 후에도 유지)
+  const dismissBanner = () => {
+    setShowInAppBanner(false);
+    try { localStorage.setItem('inAppBannerDismissed', 'true'); } catch { }
+  };
+
   // 인앱 브라우저 감지 (카카오톡, 라인, 페이스북, 인스타그램, 네이버 등)
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
@@ -76,7 +82,14 @@ export default function Home() {
       const inAppPatterns = /KAKAOTALK|NAVER|Line\/|FBAN|FBAV|Instagram|FB_IAB|Twitter/i;
       if (inAppPatterns.test(ua)) {
         setIsInAppBrowser(true);
-        setShowInAppBanner(true);
+        // localStorage에 닫기 기록이 없을 때만 배너 표시
+        try {
+          if (!localStorage.getItem('inAppBannerDismissed')) {
+            setShowInAppBanner(true);
+          }
+        } catch {
+          setShowInAppBanner(true);
+        }
       }
     }
   }, []);
@@ -86,6 +99,8 @@ export default function Home() {
     if (!showInAppBanner) return null;
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const handleOpenExternal = () => {
+      // localStorage에 닫기 기록 저장 (새로고침 후에도 배너 숨김)
+      dismissBanner();
       // 안드로이드: intent 스킴으로 크롬에서 열기 시도
       const ua = navigator.userAgent || '';
       if (/android/i.test(ua)) {
@@ -105,15 +120,15 @@ export default function Home() {
               <p className="font-bold text-sm">음성 재생을 위해 외부 브라우저로 열어주세요!</p>
               <p className="text-xs text-amber-100 mt-0.5">인앱 브라우저에서는 TTS 음성이 재생되지 않아요.</p>
             </div>
-            <button onClick={() => setShowInAppBanner(false)} className="p-1 hover:bg-amber-600 rounded-lg transition shrink-0">
+            <button onClick={dismissBanner} className="p-1 hover:bg-amber-600 rounded-lg transition shrink-0">
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="max-w-lg mx-auto mt-2 flex gap-2">
-            <button onClick={() => { setShowInAppBanner(false); handleOpenExternal(); }} className="flex-1 bg-white text-amber-700 font-bold text-sm py-2 rounded-xl hover:bg-amber-50 transition">
+            <button onClick={handleOpenExternal} className="flex-1 bg-white text-amber-700 font-bold text-sm py-2 rounded-xl hover:bg-amber-50 transition">
               🌐 외부 브라우저로 열기
             </button>
-            <button onClick={() => { navigator.clipboard.writeText(currentUrl); alert('링크가 복사되었어요! 크롬이나 사파리에 붙여넣기 해주세요.'); }} className="bg-amber-600 text-white font-bold text-sm py-2 px-4 rounded-xl hover:bg-amber-700 transition">
+            <button onClick={() => { dismissBanner(); navigator.clipboard.writeText(currentUrl); alert('링크가 복사되었어요! 크롬이나 사파리에 붙여넣기 해주세요.'); }} className="bg-amber-600 text-white font-bold text-sm py-2 px-4 rounded-xl hover:bg-amber-700 transition">
               📋 링크 복사
             </button>
           </div>
