@@ -221,7 +221,7 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
         onFinishStudy();
     };
 
-    const progress = Math.round(((studiedCount) / words.length) * 100);
+    const progress = Math.round(((currentIndex + 1) / words.length) * 100);
 
     if (!isMounted) return null;
 
@@ -360,8 +360,8 @@ export default function WordStudy({ words, onFinishStudy, onBack }: Props) {
 
             {/* 하단 컨트롤 (이전/다음 통합) */}
             <div className={`w-full h-14 sm:h-16 flex rounded-2xl overflow-hidden shadow-lg transition-all ${!isNextEnabled
-                    ? 'bg-slate-200 cursor-not-allowed text-slate-400'
-                    : 'bg-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.3)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.4)] hover:-translate-y-0.5'
+                ? 'bg-slate-200 cursor-not-allowed text-slate-400'
+                : 'bg-white shadow-[0_8px_20px_-6px_rgba(88,101,242,0.3)] hover:shadow-[0_12px_24px_-8px_rgba(88,101,242,0.4)] hover:-translate-y-0.5'
                 }`}>
                 {!isNextEnabled ? (
                     <button
