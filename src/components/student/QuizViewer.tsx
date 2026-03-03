@@ -251,6 +251,11 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                             onChange={(e) => setInput(e.target.value)}
                             disabled={status !== 'playing'}
                             autoFocus
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
+                            autoComplete="off"
+                            onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                             className="w-full text-center text-xl sm:text-2xl font-bold py-3 sm:py-4 px-4 sm:px-6 border-4 border-slate-200 rounded-2xl focus:border-blue-400 focus:outline-none transition-colors disabled:bg-slate-50 disabled:text-slate-500"
                             placeholder={currentQ.type === 'en_to_ko' ? "뜻 입력..." : "영어 입력..."}
                         />

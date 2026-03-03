@@ -258,6 +258,8 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                     <form onSubmit={handleTestSubmit} className="space-y-3">
                         <input type="text" value={testInput} onChange={e => setTestInput(e.target.value)}
                             disabled={testStatus !== 'playing'} autoFocus
+                            autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off"
+                            onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                             className="w-full text-center text-xl font-bold py-3 px-4 border-4 border-slate-200 rounded-2xl focus:border-orange-400 focus:outline-none transition-colors disabled:bg-slate-50"
                             placeholder="한글 뜻 또는 영어 입력..." />
 

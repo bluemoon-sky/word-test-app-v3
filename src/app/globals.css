@@ -19,12 +19,30 @@
   }
 }
 
+/* ─── 글로벌 모바일 터치 최적화 ─── */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-  /* 모바일에서 텍스트 선택 시 파란색 하이라이트 방지 */
+  /* 모바일 터치 하이라이트 제거 */
   -webkit-tap-highlight-color: transparent;
+  /* 길게 누르기 팝업 방지 (iOS) */
+  -webkit-touch-callout: none;
+  /* 더블탭 확대 방지 */
+  touch-action: manipulation;
+}
+
+/* 텍스트 선택 방지 (전역) - input/textarea는 예외 허용 */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* 스크롤바 숨기기 (관리자 탭 가로 스크롤 등) */
@@ -32,14 +50,14 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
 /* 모바일 안전 영역 (노치/하단바 대응) */
 @supports (padding: env(safe-area-inset-bottom)) {
-  .min-h-screen {
-    min-height: calc(100vh - env(safe-area-inset-bottom));
+  .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
