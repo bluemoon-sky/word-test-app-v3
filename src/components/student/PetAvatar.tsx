@@ -439,7 +439,7 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
                     </div>
 
                     {/* 레벨 뱃지 */}
-                    <div className={`absolute -bottom-1 -right-1 px-2 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-0.5 z-20`}>
+                    <div className={`absolute -bottom-3 -right-2 px-2 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-0.5 z-20`}>
                         <Star className={`w-3 h-3 ${theme.icon} fill-current`} />
                         Lv.{stage.level}
                     </div>
