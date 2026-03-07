@@ -393,9 +393,23 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                             {!showMeaning && (
                                 <div className="space-y-1.5 sm:space-y-2 mt-4 sm:mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     {currentWord.korean_pronunciation && (
-                                        <div className="inline-block bg-blue-50 text-blue-600 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-bold text-base sm:text-lg shadow-sm border border-blue-100">
-                                            🔊 {currentWord.korean_pronunciation}
-                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (cancelTtsRef.current) cancelTtsRef.current();
+                                                const cancel = speakSequence(
+                                                    currentWord,
+                                                    () => setIsPlaying(true),
+                                                    () => setIsPlaying(false)
+                                                );
+                                                cancelTtsRef.current = cancel;
+                                            }}
+                                            className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-600 px-4 py-1.5 sm:py-2 rounded-full font-bold text-sm sm:text-base border border-blue-200 shadow-sm transition-colors"
+                                            title="한국어 뜻/발음 반복 학습"
+                                        >
+                                            <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                                            한국어 발음
+                                        </button>
                                     )}
                                 </div>
                             )}
