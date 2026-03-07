@@ -675,16 +675,6 @@ export default function Home() {
 
           <TokenModal />
 
-          {/* 오답 노트 버튼 */}
-          <button onClick={() => setMode('wrong_note')}
-            className="w-full bg-white hover:bg-red-50 rounded-2xl shadow-sm border-2 border-red-100 hover:border-red-300 p-3 sm:p-4 flex items-center gap-3 transition-all active:scale-[0.98]">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-xl flex items-center justify-center text-xl sm:text-2xl shrink-0">📝</div>
-            <div className="text-left">
-              <p className="font-black text-slate-800 text-sm sm:text-base">내 오답 노트</p>
-              <p className="text-[10px] sm:text-xs text-slate-500 font-medium">틀린 단어를 다시 학습하고 테스트해 봐!</p>
-            </div>
-          </button>
-
           {/* 펫 아바타 */}
           {(() => {
             const totalMasteredCount = Object.values(masteryMap).reduce(
@@ -697,6 +687,16 @@ export default function Home() {
               />
             );
           })()}
+
+          {/* 오답 노트 버튼 */}
+          <button onClick={() => setMode('wrong_note')}
+            className="w-full bg-white hover:bg-red-50 rounded-2xl shadow-sm border-2 border-red-100 hover:border-red-300 p-3 sm:p-4 flex items-center gap-3 transition-all active:scale-[0.98]">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-xl flex items-center justify-center text-xl sm:text-2xl shrink-0">📝</div>
+            <div className="text-left">
+              <p className="font-black text-slate-800 text-sm sm:text-base">내 오답 노트</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium">틀린 단어를 다시 학습하고 테스트해 봐!</p>
+            </div>
+          </button>
 
           {/* 럭키 보물상자 팝업 */}
           {showRoulette && (
