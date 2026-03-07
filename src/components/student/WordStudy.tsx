@@ -377,10 +377,10 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
 
                         <div className="text-center w-full mt-4">
                             <h2 className={`
-                            font-black tracking-tight mb-3 sm:mb-4 transition-all duration-300
+                            font-black tracking-tight mb-3 sm:mb-5 transition-all duration-300
                             ${showMeaning
-                                    ? 'text-3xl sm:text-5xl text-slate-800'
-                                    : 'text-3xl sm:text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600'}
+                                    ? 'text-4xl sm:text-6xl text-slate-800'
+                                    : 'text-5xl sm:text-7xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600'}
                         `}>
                                 {showMeaning ? (
                                     <span>
