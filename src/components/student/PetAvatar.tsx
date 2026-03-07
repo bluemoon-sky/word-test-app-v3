@@ -6,7 +6,7 @@ import { Sparkles, CalendarHeart, Flame, Star, Trophy } from 'lucide-react';
 // ============================================================================
 // 1. 20단계 햄스터 진화 로직
 // ============================================================================
-export const HAMSTER_STAGES = [
+const HAMSTER_STAGES = [
     // 🐣 브론즈 (Lv 1~5)
     { level: 1, minDays: 0, minWords: 0, title: '갓 태어난', name: '점박이 햄스터' },
     { level: 2, minDays: 1, minWords: 5, title: '눈을 뜬', name: '호기심 햄스터' },
