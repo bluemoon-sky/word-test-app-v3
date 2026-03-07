@@ -242,10 +242,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                 </div>
                 <div className="p-5 sm:p-8 pb-6">
                     <div className="text-center mb-5">
-                        <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mb-3">
-                            이 단어의 뜻을 입력하세요
-                        </span>
-                        <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight break-all px-2">
+                        <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight break-all px-2 mt-4">
                             {currentQ.words.word}
                         </h2>
                         <button type="button" onClick={() => speakWord(currentQ.words.word)}
@@ -260,7 +257,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                             autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off"
                             onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                             className="w-full text-center text-xl font-bold py-3 px-4 border-4 border-slate-200 rounded-2xl focus:border-orange-400 focus:outline-none transition-colors disabled:bg-slate-50"
-                            placeholder="한글 뜻을 입력하세요" />
+                            placeholder="단어의 뜻을 입력하세요" />
 
                         {testStatus === 'playing' ? (
                             <button type="submit"
