@@ -79,13 +79,12 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
         const currentWord = testQuestions[testIndex].words;
         const normalizedInput = testInput.trim().replace(/\s+/g, '').toLowerCase();
 
-        // 한글 → 영어 (영어 입력) 또는 영어 → 한글 (한글 입력) 랜덤
+        // 한글 뜻만 정답으로 인정
         const m1 = currentWord.meaning_1.replace(/\s+/g, '').toLowerCase();
         const m2 = currentWord.meaning_2 ? currentWord.meaning_2.replace(/\s+/g, '').toLowerCase() : null;
         const m3 = currentWord.meaning_3 ? currentWord.meaning_3.replace(/\s+/g, '').toLowerCase() : null;
-        const enWord = currentWord.word.replace(/\s+/g, '').toLowerCase();
 
-        const isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2) || (m3 !== null && normalizedInput === m3) || normalizedInput === enWord;
+        const isCorrect = normalizedInput === m1 || (m2 !== null && normalizedInput === m2) || (m3 !== null && normalizedInput === m3);
 
         if (isCorrect) {
             setTestStatus('correct');
@@ -261,7 +260,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                             autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off"
                             onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                             className="w-full text-center text-xl font-bold py-3 px-4 border-4 border-slate-200 rounded-2xl focus:border-orange-400 focus:outline-none transition-colors disabled:bg-slate-50"
-                            placeholder="한글 뜻 또는 영어 입력..." />
+                            placeholder="한글 뜻을 입력하세요" />
 
                         {testStatus === 'playing' ? (
                             <button type="submit"
