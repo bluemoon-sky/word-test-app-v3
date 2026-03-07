@@ -149,102 +149,120 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
             {/* ============================================================ */}
 
             {/* ── 브론즈 티어 (Lv 2~5) ── */}
-            {/* Lv2: 머리 위 나뭇잎 🍃 */}
+            {/* Lv2: 머리 위 나뭇잎 🍃 (크기 증가, 잎맥 추가) */}
             {level >= 2 && (
                 <g>
-                    <ellipse cx="72" cy="24" rx="6" ry="3.5" fill="#66CC66" transform="rotate(-30,72,24)" />
-                    <line x1="72" y1="24" x2="75" y2="20" stroke="#448844" strokeWidth="1" />
+                    <ellipse cx="68" cy="20" rx="8" ry="4.5" fill="#4ade80" transform="rotate(-30,68,20)" stroke="#22c55e" strokeWidth="1" />
+                    <line x1="68" y1="20" x2="72" y2="16" stroke="#16a34a" strokeWidth="1.5" />
+                    <line x1="65" y1="22" x2="68" y2="19" stroke="#16a34a" strokeWidth="1" />
                 </g>
             )}
-            {/* Lv3: 목에 리본 🎀 */}
+            {/* Lv3: 목에 리본 🎀 (크기 증가, 디테일 추가) */}
             {level >= 3 && (
                 <g>
-                    <polygon points="54,76 60,80 66,76 60,72" fill="#FF69B4" stroke="#FF1493" strokeWidth="0.8" />
-                    <circle cx="60" cy="76" r="2" fill="#FF1493" />
+                    <path d="M50 78 C50 72, 58 75, 60 78 C62 75, 70 72, 70 78 C70 82, 65 80, 60 78 C55 80, 50 82, 50 78 Z" fill="#f472b6" stroke="#db2777" strokeWidth="1.5" strokeLinejoin="round" />
+                    <circle cx="60" cy="78" r="3" fill="#fbcfe8" stroke="#db2777" strokeWidth="1" />
                 </g>
             )}
-            {/* Lv4: 오른손에 해바라기씨 🌻 */}
+            {/* Lv4: 오른손에 별 캔디 🌻 (크기 및 디테일업) */}
             {level >= 4 && (
                 <g>
-                    <ellipse cx="88" cy="75" rx="5" ry="3" fill="#8B6914" transform="rotate(20,88,75)" />
-                    <ellipse cx="88" cy="75" rx="3" ry="1.5" fill="#A0824A" transform="rotate(20,88,75)" />
+                    <ellipse cx="88" cy="75" rx="6" ry="4" fill="#fbbf24" stroke="#b45309" strokeWidth="1" transform="rotate(20,88,75)" />
+                    <ellipse cx="88" cy="75" rx="4" ry="2" fill="#fcd34d" transform="rotate(20,88,75)" />
+                    <line x1="86" y1="73" x2="90" y2="77" stroke="#b45309" strokeWidth="0.5" />
                 </g>
             )}
-            {/* Lv5: 볼 빵빵 (볼 크기 확대) */}
+            {/* Lv5: 볼 빵빵 (더 귀엽게) */}
             {level >= 5 && (
                 <g>
-                    <circle cx="38" cy="62" r="4" fill={theme.cheek} opacity="0.8" />
-                    <circle cx="82" cy="62" r="4" fill={theme.cheek} opacity="0.8" />
+                    <circle cx="37" cy="62" r="5.5" fill={theme.cheek} opacity="0.9" />
+                    <circle cx="83" cy="62" r="5.5" fill={theme.cheek} opacity="0.9" />
+                    <circle cx="35" cy="60" r="1.5" fill="white" opacity="0.6" />
+                    <circle cx="81" cy="60" r="1.5" fill="white" opacity="0.6" />
                 </g>
             )}
 
             {/* ── 실버 티어 (Lv 6~10) ── */}
-            {/* Lv6: 머리띠 */}
+            {/* Lv6: 머리띠 (두껍고 선명하게) */}
             {level >= 6 && (
-                <rect x="36" y="30" width="48" height="4" rx="2" fill="#FF6B6B" opacity="0.9" />
+                <g>
+                    <rect x="34" y="28" width="52" height="6" rx="3" fill="#ef4444" opacity="0.95" />
+                    <rect x="34" y="30" width="52" height="2" fill="#fca5a5" opacity="0.8" />
+                </g>
             )}
-            {/* Lv7: 안경 🤓 */}
+            {/* Lv7: 안경 🤓 (뿔테 안경 디테일) */}
             {level >= 7 && (
                 <g>
-                    <circle cx="50" cy="50" r="7" fill="none" stroke="#555" strokeWidth="1.5" />
-                    <circle cx="70" cy="50" r="7" fill="none" stroke="#555" strokeWidth="1.5" />
-                    <line x1="57" y1="50" x2="63" y2="50" stroke="#555" strokeWidth="1.5" />
-                    <line x1="43" y1="49" x2="36" y2="46" stroke="#555" strokeWidth="1" />
-                    <line x1="77" y1="49" x2="84" y2="46" stroke="#555" strokeWidth="1" />
+                    <circle cx="50" cy="50" r="8" fill="none" stroke="#1f2937" strokeWidth="2.5" />
+                    <circle cx="70" cy="50" r="8" fill="none" stroke="#1f2937" strokeWidth="2.5" />
+                    <line x1="58" y1="50" x2="62" y2="50" stroke="#1f2937" strokeWidth="2.5" />
+                    <line x1="42" y1="48" x2="34" y2="44" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="78" y1="48" x2="86" y2="44" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M46 45 Q50 43 54 45" stroke="white" strokeWidth="1" fill="none" opacity="0.8" />
+                    <path d="M66 45 Q70 43 74 45" stroke="white" strokeWidth="1" fill="none" opacity="0.8" />
                 </g>
             )}
-            {/* Lv8: 왼손에 돋보기 🔍 */}
+            {/* Lv8: 왼손에 돋보기 🔍 (입체감 추가) */}
             {level >= 8 && (
                 <g>
-                    <circle cx="28" cy="78" r="6" fill="none" stroke="#888" strokeWidth="1.5" />
-                    <circle cx="28" cy="78" r="6" fill="#CCDDFF" opacity="0.3" />
-                    <line x1="33" y1="83" x2="38" y2="90" stroke="#888" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="26" cy="76" r="7" fill="#e0f2fe" stroke="#94a3b8" strokeWidth="2" opacity="0.8" />
+                    <path d="M23 73 l 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
+                    <line x1="31" y1="81" x2="38" y2="88" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
                 </g>
             )}
-            {/* Lv9: 등에 배낭 🎒 */}
+            {/* Lv9: 등에 배낭 🎒 (크기 증가, 주머니 디테일) */}
             {level >= 9 && (
                 <g>
-                    <rect x="80" y="58" width="12" height="16" rx="3" fill="#CC6633" stroke="#AA5522" strokeWidth="1" />
-                    <rect x="82" y="62" width="8" height="4" rx="1" fill="#DDAA77" />
-                    <circle cx="86" cy="68" r="1.5" fill="#AA5522" />
+                    <rect x="78" y="55" width="16" height="20" rx="4" fill="#d97706" stroke="#92400e" strokeWidth="1.5" />
+                    <rect x="80" y="60" width="12" height="6" rx="2" fill="#f59e0b" />
+                    <circle cx="86" cy="68" r="2" fill="#fbbf24" />
+                    <line x1="82" y1="55" x2="82" y2="60" stroke="#92400e" strokeWidth="1" />
+                    <line x1="90" y1="55" x2="90" y2="60" stroke="#92400e" strokeWidth="1" />
                 </g>
             )}
-            {/* Lv10: 오른손에 책 📖 */}
+            {/* Lv10: 오른손에 책 📖 (색상 변경, 디테일) */}
             {level >= 10 && (
                 <g>
-                    <rect x="86" y="73" width="10" height="8" rx="1" fill="#4488CC" stroke="#336699" strokeWidth="0.8" />
-                    <line x1="91" y1="73" x2="91" y2="81" stroke="#336699" strokeWidth="0.8" />
-                    <rect x="88" y="74" width="3" height="1" rx="0.5" fill="white" opacity="0.6" />
-                    <rect x="92" y="75" width="3" height="1" rx="0.5" fill="white" opacity="0.6" />
+                    <rect x="85" y="73" width="14" height="10" rx="1.5" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="1" transform="rotate(-10,85,73)" />
+                    <line x1="92" y1="73" x2="92" y2="83" stroke="#1e3a8a" strokeWidth="1" transform="rotate(-10,85,73)" />
+                    <rect x="87" y="75" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
+                    <rect x="87" y="78" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
+                    <rect x="93" y="75" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
                 </g>
             )}
 
             {/* ── 골드 티어 (Lv 11~15) ── */}
-            {/* Lv11: 마법사 모자 🎩 */}
+            {/* Lv11: 마법사 모자 🎩 (크기 및 문양 추가) */}
             {level >= 11 && (
                 <g>
-                    <polygon points="60,2 44,32 76,32" fill="#3B3B98" stroke="#FFD700" strokeWidth="1.5" />
-                    <rect x="44" y="29" width="32" height="4" rx="2" fill="#FFD700" />
+                    <polygon points="60,-5 40,32 80,32" fill="#4f46e5" stroke="#fef08a" strokeWidth="2" strokeLinejoin="round" />
+                    <rect x="38" y="28" width="44" height="6" rx="3" fill="#facc15" stroke="#ca8a04" strokeWidth="1" />
+                    <text x="56" y="20" fontSize="12" opacity="0.8">✨</text>
                 </g>
             )}
-            {/* Lv12: 모자 꼭대기 별 ⭐ */}
+            {/* Lv12: 모자 꼭대기 큰 별 ⭐ */}
             {level >= 12 && (
-                <text x="55" y="10" fontSize="10">⭐</text>
+                <text x="52" y="5" fontSize="16" style={{ transformOrigin: '60px 0px' }}>
+                    <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="2s" repeatCount="indefinite" />
+                    ⭐
+                </text>
             )}
-            {/* Lv13: 마법 지팡이 🪄 */}
+            {/* Lv13: 마법 지팡이 🪄 (화려하게) */}
             {level >= 13 && (
                 <g>
-                    <line x1="92" y1="60" x2="100" y2="40" stroke="#8B4513" strokeWidth="2.5" strokeLinecap="round" />
-                    <circle cx="100" cy="38" r="3.5" fill="#FFD700" opacity="0.8">
-                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+                    <line x1="94" y1="64" x2="108" y2="36" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="108" cy="36" r="5" fill="#fef08a" stroke="#ca8a04" strokeWidth="1" />
+                    <circle cx="108" cy="36" r="7" fill="#fef08a" opacity="0.5">
+                        <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite" />
                     </circle>
+                    <text x="102" y="32" fontSize="12">✨</text>
                 </g>
             )}
-            {/* Lv14: 망토 */}
+            {/* Lv14: 마법 망토 */}
             {level >= 14 && (
                 <g>
-                    <path d="M35 65 Q30 85 38 100 L60 95 L82 100 Q90 85 85 65" fill="#6A0DAD" opacity="0.4" />
-                    <path d="M35 65 Q30 85 38 100 L60 95 L82 100 Q90 85 85 65" fill="none" stroke="#8B00FF" strokeWidth="0.8" opacity="0.6" />
+                    <path d="M30 65 Q20 85 30 102 L60 95 L90 102 Q100 85 90 65" fill="#6d28d9" opacity="0.8" />
+                    <path d="M30 65 Q20 85 30 102 L60 95 L90 102 Q100 85 90 65" fill="none" stroke="#fde047" strokeWidth="2" opacity="0.9" />
                 </g>
             )}
             {/* Lv15: 반짝이 파티클 */}
@@ -259,18 +277,20 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
             )}
 
             {/* ── 무지개 티어 (Lv 16~20) ── */}
-            {/* Lv16: 왕관으로 교체 (모자 위에) 👑 */}
+            {/* Lv16: 왕관으로 교체 (모자 위에, 더 크고 화려하게) 👑 */}
             {level >= 16 && (
                 <g>
-                    <polygon points="42,30 45,18 50,26 55,12 60,26 65,12 70,26 75,18 78,30" fill="#FFD700" stroke="#FFA500" strokeWidth="1" />
+                    <polygon points="38,32 42,12 50,24 60,6 70,24 78,12 82,32" fill="#facc15" stroke="#b45309" strokeWidth="1.5" strokeLinejoin="round" />
+                    <rect x="36" y="28" width="48" height="6" rx="2" fill="#eab308" />
                 </g>
             )}
-            {/* Lv17: 왕관 보석 💎 */}
+            {/* Lv17: 왕관 보석 💎 (반짝임 추가) */}
             {level >= 17 && (
                 <g>
-                    <circle cx="55" cy="22" r="2" fill="#FF4444" />
-                    <circle cx="60" cy="18" r="2.5" fill="#4444FF" />
-                    <circle cx="65" cy="22" r="2" fill="#44CC44" />
+                    <circle cx="50" cy="20" r="3.5" fill="#ef4444" stroke="#7f1d1d" strokeWidth="0.5" />
+                    <circle cx="60" cy="14" r="4.5" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="0.5" />
+                    <circle cx="70" cy="20" r="3.5" fill="#22c55e" stroke="#14532d" strokeWidth="0.5" />
+                    <circle cx="59" cy="13" r="1.5" fill="white" opacity="0.8" />
                 </g>
             )}
             {/* Lv18: 후광 오라 */}
@@ -287,31 +307,27 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
                     </defs>
                 </>
             )}
-            {/* Lv19: 궤도 도는 별들 ⭐ */}
+            {/* Lv19: 궤도 도는 큰 별들 ⭐ */}
             {level >= 19 && (
                 <g>
-                    <text x="15" y="50" fontSize="7">⭐</text>
-                    <text x="100" y="60" fontSize="7">
-                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" />
-                        ⭐
+                    <text x="10" y="50" fontSize="12" opacity="0.9">⭐
+                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
                     </text>
-                    <text x="55" y="110" fontSize="6">🌟</text>
+                    <text x="100" y="55" fontSize="14" opacity="0.9">🌟
+                        <animate attributeName="y" values="55;45;55" dur="2s" repeatCount="indefinite" />
+                    </text>
+                    <text x="50" y="115" fontSize="10">✨</text>
                 </g>
             )}
-            {/* Lv20: 무지개 아치 + 신성한 빛 🌈 */}
+            {/* Lv20: 대형 무지개 아치 🌈 (굵기 증가 및 네온 효과) */}
             {level >= 20 && (
                 <g>
-                    <path d="M20 50 Q60 -10 100 50" fill="none" stroke="url(#rainbowGrad)" strokeWidth="3" opacity="0.5" />
-                    <defs>
-                        <linearGradient id="rainbowGrad">
-                            <stop offset="0%" stopColor="#FF0000" />
-                            <stop offset="20%" stopColor="#FF8800" />
-                            <stop offset="40%" stopColor="#FFFF00" />
-                            <stop offset="60%" stopColor="#00FF00" />
-                            <stop offset="80%" stopColor="#0088FF" />
-                            <stop offset="100%" stopColor="#8800FF" />
-                        </linearGradient>
-                    </defs>
+                    <path d="M10 100 A50 50 0 0 1 110 100" fill="none" stroke="#ef4444" strokeWidth="4" opacity="0.8" />
+                    <path d="M14 100 A46 46 0 0 1 106 100" fill="none" stroke="#f59e0b" strokeWidth="4" opacity="0.8" />
+                    <path d="M18 100 A42 42 0 0 1 102 100" fill="none" stroke="#eab308" strokeWidth="4" opacity="0.8" />
+                    <path d="M22 100 A38 38 0 0 1 98 100" fill="none" stroke="#22c55e" strokeWidth="4" opacity="0.8" />
+                    <path d="M26 100 A34 34 0 0 1 94 100" fill="none" stroke="#3b82f6" strokeWidth="4" opacity="0.8" />
+                    <path d="M30 100 A30 30 0 0 1 90 100" fill="none" stroke="#8b5cf6" strokeWidth="4" opacity="0.8" />
                 </g>
             )}
 
