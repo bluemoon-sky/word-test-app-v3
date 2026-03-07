@@ -23,7 +23,6 @@ export default function AdminWordsPage() {
     const [newWord, setNewWord] = useState('');
     const [newMeaning, setNewMeaning] = useState('');
     const [newMeaning2, setNewMeaning2] = useState('');
-    const [newPronun, setNewPronun] = useState('');
     const [newMeaning3, setNewMeaning3] = useState('');
     const [newKoreanPronun, setNewKoreanPronun] = useState('');
     const [newCategory, setNewCategory] = useState('');
@@ -136,7 +135,6 @@ export default function AdminWordsPage() {
                     meaning_1: newMeaning.trim(),
                     meaning_2: newMeaning2.trim() || null,
                     meaning_3: newMeaning3.trim() || null,
-                    phonetic: newPronun.trim() || null,
                     korean_pronunciation: newKoreanPronun.trim() || null,
                     category: newCategory.trim() || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
@@ -147,7 +145,7 @@ export default function AdminWordsPage() {
             if (error) throw error;
             setWords([data as Word, ...words]);
             setNewWord(''); setNewMeaning(''); setNewMeaning2(''); setNewMeaning3('');
-            setNewPronun(''); setNewKoreanPronun('');
+            setNewKoreanPronun('');
         } catch (error) {
             console.error('추가 에러:', error);
             alert('단어 추가 중 오류가 발생했습니다.');
@@ -236,7 +234,6 @@ export default function AdminWordsPage() {
             if (nh === '뜻1' || nh.includes('첫번째뜻')) headerMap['m1'] = idx;
             if (nh === '뜻2' || nh.includes('두번째뜻')) headerMap['m2'] = idx;
             if (nh === '뜻3' || nh.includes('세번째뜻') || nh === '뜻') headerMap['m3'] = idx;
-            if (nh.includes('발음기호')) headerMap['phon'] = idx;
             if (nh.includes('한국어발음') || nh.includes('한글발음')) headerMap['kpro'] = idx;
         });
 
@@ -249,15 +246,15 @@ export default function AdminWordsPage() {
 
             const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
 
-            let w = '', m1 = '', m2 = '', m3 = '', phon = '', kPro = '', cat = csvCategory.trim();
+            let w = '', m1 = '', m2 = '', m3 = '', kPro = '', cat = csvCategory.trim();
 
             if (useFallback) {
                 // 기존 하드코딩 백폴 로직
                 if (cols.length >= 6) {
                     if (clean(cols[0])) cat = clean(cols[0]);
-                    w = clean(cols[1]); m1 = clean(cols[2]); m2 = clean(cols[3]); phon = clean(cols[4]); kPro = clean(cols[5]);
+                    w = clean(cols[1]); m1 = clean(cols[2]); m2 = clean(cols[3]); kPro = clean(cols[4]);
                 } else {
-                    w = clean(cols[0]); m1 = clean(cols[1]); m2 = clean(cols[2]); phon = clean(cols[3]); kPro = clean(cols[4]);
+                    w = clean(cols[0]); m1 = clean(cols[1]); m2 = clean(cols[2]); kPro = clean(cols[3]);
                 }
             } else {
                 // 헤더 매핑 기반 추출
@@ -266,7 +263,6 @@ export default function AdminWordsPage() {
                 if (headerMap['m1'] !== undefined) m1 = clean(cols[headerMap['m1']]);
                 if (headerMap['m2'] !== undefined) m2 = clean(cols[headerMap['m2']]);
                 if (headerMap['m3'] !== undefined) m3 = clean(cols[headerMap['m3']]);
-                if (headerMap['phon'] !== undefined) phon = clean(cols[headerMap['phon']]);
                 if (headerMap['kpro'] !== undefined) kPro = clean(cols[headerMap['kpro']]);
             }
 
@@ -276,7 +272,6 @@ export default function AdminWordsPage() {
                     meaning_1: m1,
                     meaning_2: m2 || null,
                     meaning_3: m3 || null,
-                    phonetic: phon || null,
                     korean_pronunciation: kPro || null,
                     category: cat || null,
                     user_id: selectedStudentId === 'all' ? null : selectedStudentId
@@ -434,11 +429,6 @@ export default function AdminWordsPage() {
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm" placeholder="세 번째 뜻 (선택)" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">발음 기호</label>
-                                    <input type="text" value={newPronun} onChange={e => setNewPronun(e.target.value)}
-                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm" placeholder="[æpl]" />
-                                </div>
-                                <div>
                                     <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">한국어 발음</label>
                                     <input type="text" value={newKoreanPronun} onChange={e => setNewKoreanPronun(e.target.value)}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-sm" placeholder="애플" />
@@ -486,7 +476,7 @@ export default function AdminWordsPage() {
                             </div>
 
                             <p className="text-xs text-slate-500">
-                                CSV 열 순서: <strong>영단어, 뜻1(필수), 뜻2, 발음기호, 한국어발음</strong>. 카테고리는 위 입력란에서 일괄 지정됩니다.
+                                CSV 열 순서: <strong>영단어, 뜻1(필수), 뜻2, 한국어발음</strong>. 카테고리는 위 입력란에서 일괄 지정됩니다.
                             </p>
 
                             {/* 방법 1: 파일 업로드 */}
@@ -544,7 +534,6 @@ export default function AdminWordsPage() {
                                         <th className="px-3 py-2 text-slate-600">뜻1</th>
                                         <th className="px-3 py-2 text-slate-600">뜻2</th>
                                         <th className="px-3 py-2 text-slate-600">뜻3</th>
-                                        <th className="px-3 py-2 text-slate-600">발음기호</th>
                                         <th className="px-3 py-2 text-slate-600">한국어발음</th>
                                         <th className="px-3 py-2 text-slate-600">카테고리</th>
                                     </tr>
@@ -556,7 +545,6 @@ export default function AdminWordsPage() {
                                             <td className="px-3 py-2 text-slate-600">{word.meaning_1}</td>
                                             <td className="px-3 py-2 text-slate-500">{word.meaning_2 || '-'}</td>
                                             <td className="px-3 py-2 text-slate-500">{word.meaning_3 || '-'}</td>
-                                            <td className="px-3 py-2 text-slate-500">{word.phonetic || '-'}</td>
                                             <td className="px-3 py-2 text-blue-600">{word.korean_pronunciation || '-'}</td>
                                             <td className="px-3 py-2 text-purple-600">{word.category || '-'}</td>
                                         </tr>
@@ -624,7 +612,6 @@ export default function AdminWordsPage() {
                                                 <div>
                                                     <span className="font-bold text-slate-800">{word.word}</span>
                                                     {word.korean_pronunciation && <span className="ml-1.5 text-[10px] font-bold text-blue-500">[{word.korean_pronunciation}]</span>}
-                                                    {word.phonetic && <span className="ml-1 text-[10px] text-slate-400">{word.phonetic}</span>}
                                                 </div>
                                             )}
                                         </td>

@@ -240,9 +240,6 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                         </h2>
                         {currentQ.type === 'en_to_ko' && (
                             <div className="flex justify-center gap-2 mt-2">
-                                {currentQ.word.phonetic && (
-                                    <p className="text-slate-400 font-medium text-sm sm:text-base">[{currentQ.word.phonetic}]</p>
-                                )}
                                 {currentQ.word.korean_pronunciation && (
                                     <p className="text-slate-400 font-medium text-sm sm:text-base">{currentQ.word.korean_pronunciation}</p>
                                 )}

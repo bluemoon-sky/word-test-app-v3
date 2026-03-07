@@ -29,12 +29,7 @@ function speakSequence(
 
     const parts: { text: string; lang: string }[] = [];
 
-    // 1순위: 영단어 (en-US)
-    if (word.word) {
-        parts.push({ text: word.word, lang: 'en-US' });
-    }
-
-    // 2순위: 한국어 발음 (ko-KR)
+    // 1순위: 한국어 발음 (ko-KR)
     if (word.korean_pronunciation) {
         parts.push({ text: word.korean_pronunciation, lang: 'ko-KR' });
     }
@@ -369,7 +364,7 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                                     }
                                 }}
                                 className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-100 hover:bg-blue-200 text-blue-500 rounded-full flex items-center justify-center transition-colors"
-                                title="발음 듣기"
+                                title="원어민 발음 듣기"
                             >
                                 <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
@@ -401,9 +396,6 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                                         <div className="inline-block bg-blue-50 text-blue-600 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-bold text-base sm:text-lg shadow-sm border border-blue-100">
                                             🔊 {currentWord.korean_pronunciation}
                                         </div>
-                                    )}
-                                    {currentWord.phonetic && (
-                                        <p className="text-slate-400 font-medium text-base sm:text-lg mt-1.5 sm:mt-2">[{currentWord.phonetic}]</p>
                                     )}
                                 </div>
                             )}
