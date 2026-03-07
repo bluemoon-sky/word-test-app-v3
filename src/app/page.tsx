@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import WordStudy from '@/components/student/WordStudy';
+import ActivePractice from '@/components/student/ActivePractice';
 import QuizViewer from '@/components/student/QuizViewer';
 import WrongNoteViewer from '@/components/student/WrongNoteViewer';
 import PetAvatar from '@/components/student/PetAvatar';
@@ -20,10 +21,11 @@ export default function Home() {
   const [selectedDayNum, setSelectedDayNum] = useState<number>(0);
   const [isReviewMode, setIsReviewMode] = useState(false);
 
-  // 학생 플로우: day_select → dashboard → study → request_sent → test → wrong_note
-  const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'request_sent' | 'test' | 'wrong_note'>('day_select');
+  // 학생 플로우: day_select → dashboard → study/practice → request_sent → test → wrong_note
+  const [mode, setMode] = useState<'day_select' | 'dashboard' | 'study' | 'practice' | 'request_sent' | 'test' | 'wrong_note'>('day_select');
   const [studyCompleted, setStudyCompleted] = useState(false);
   const [sessionWords, setSessionWords] = useState<Word[]>([]);
+  const [practicedWords, setPracticedWords] = useState<Word[]>([]);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
   const [isRequestingTest, setIsRequestingTest] = useState(false);
@@ -259,6 +261,7 @@ export default function Home() {
     setStudyCompleted(false);
     setTestRequest(null);
     setSessionWords([]);
+    setPracticedWords([]);
 
     setMode('dashboard');
     if (user) checkTestRequest(user.id);
@@ -401,6 +404,22 @@ export default function Home() {
     );
   }
 
+  // ─── 연습 모드 화면 (2단계) ───
+  if (mode === 'practice') {
+    return (
+      <div className="min-h-[100dvh] bg-slate-50 pt-8 sm:pt-12 p-3 sm:p-4">
+        <ActivePractice
+          words={words}
+          onFinish={(practiced) => {
+            setPracticedWords(practiced);
+            setMode('dashboard');
+          }}
+          onBack={() => setMode('dashboard')}
+        />
+      </div>
+    );
+  }
+
   // ─── 시험 요청 대기 화면 ───
   if (mode === 'request_sent') {
     const isApproved = testRequest?.status === 'approved';
@@ -452,8 +471,8 @@ export default function Home() {
 
   // ─── 퀴즈(테스트) 화면 ───
   if (mode === 'test') {
-    // 세션 단어가 있으면 그 안에서만 출제, 없으면 Day 전체(words)에서 출제
-    const testWordsPool = sessionWords.length > 0 ? sessionWords : words;
+    // 2단계 연습 완료된 단어에서 출제 (없으면 sessionWords, 그것도 없으면 Day 전체)
+    const testWordsPool = practicedWords.length > 0 ? practicedWords : sessionWords.length > 0 ? sessionWords : words;
     // 문항 수를 학습 단어 풀 이하로 제한
     const questionCount = Math.min(user.test_question_count || 30, testWordsPool.length);
 
@@ -607,6 +626,7 @@ export default function Home() {
             setMode('day_select');
             setStudyCompleted(false);
             setSessionWords([]);
+            setPracticedWords([]);
             setTestRequest(null);
             // 현재 user_id에 쌓인 모든 잔여 시험 승인 요청 기록 초기화 (무한 응시 버그 수정)
             await supabase.from('test_requests').delete().eq('user_id', user.id);
@@ -829,14 +849,13 @@ export default function Home() {
           <div className="lg:col-span-1">
             {words.length > 0 ? (
               <div className="space-y-3 sm:space-y-4">
-                {/* 1단계: 단어 학습 */}
+                {/* 1단계: 눈으로 학습하기 */}
                 <button onClick={() => {
-                  // 브라우저 TTS 잠금 해제 (사용자 제스처 필요)
-                  // 안드로이드 크롬은 완전한 빈 공백(' ')을 무시하는 버그가 있으므로 모음('a') 사용
+                  // 브라우저 TTS 잠금 해제
                   if (typeof window !== 'undefined' && window.speechSynthesis) {
                     const unlock = new SpeechSynthesisUtterance('a');
                     unlock.volume = 0;
-                    unlock.rate = 2; // 가장 빠르게 재생
+                    unlock.rate = 2;
                     window.speechSynthesis.speak(unlock);
                   }
                   setMode('study');
@@ -847,7 +866,7 @@ export default function Home() {
                       {studyCompleted ? <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" /> : <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500" />}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-base sm:text-xl font-black text-slate-800">{studyCompleted ? '✅ 학습 완료!' : '📖 1단계: 단어 학습하기'}</h3>
+                      <h3 className="text-base sm:text-xl font-black text-slate-800">{studyCompleted ? '✅ 학습 완료!' : '📖 1단계: 눈으로 학습하기'}</h3>
                       <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
                         {studyCompleted ? '잘했어! 다시 학습하려면 눌러봐.' : `카드를 넘기며 ${words.length}개의 단어를 공부해 봐!`}
                       </p>
@@ -855,25 +874,72 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 2단계: 시험 */}
-                {studyCompleted && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    {testRequest?.status === 'approved' ? (
+                {/* 2단계: 손으로 연습하기 */}
+                <button onClick={() => {
+                  if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    const unlock = new SpeechSynthesisUtterance('a');
+                    unlock.volume = 0;
+                    unlock.rate = 2;
+                    window.speechSynthesis.speak(unlock);
+                  }
+                  setMode('practice');
+                }}
+                  className={`w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 p-5 sm:p-8 text-left transition-all group ${practicedWords.length >= (user.test_question_count || 30)
+                    ? 'border-emerald-200 opacity-80'
+                    : 'border-teal-200 hover:shadow-lg hover:border-teal-300'
+                    }`}>
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${practicedWords.length >= (user.test_question_count || 30) ? 'bg-emerald-100' : 'bg-teal-100'
+                      }`}>
+                      {practicedWords.length >= (user.test_question_count || 30)
+                        ? <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" />
+                        : <span className="text-2xl sm:text-3xl">✍️</span>
+                      }
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-base sm:text-xl font-black text-slate-800">
+                        {practicedWords.length >= (user.test_question_count || 30)
+                          ? `✅ 연습 완료! (${practicedWords.length}개)`
+                          : '✍️ 2단계: 손으로 연습하기'
+                        }
+                      </h3>
+                      <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
+                        {practicedWords.length > 0
+                          ? `${practicedWords.length}개 연습 완료! 더 연습하려면 눌러봐.`
+                          : '영단어 따라치기 + 뜻 맞추기 연습을 해 봐!'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* 3단계: 실전 테스트 보기 */}
+                {(() => {
+                  const testQuestionCount = user.test_question_count || 30;
+                  const canTest = practicedWords.length >= testQuestionCount;
+                  const remaining = testQuestionCount - practicedWords.length;
+
+                  if (canTest && testRequest?.status === 'approved') {
+                    return (
                       <button onClick={() => setMode('test')}
-                        className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-2xl sm:rounded-3xl shadow-lg shadow-orange-500/20 p-5 sm:p-8 text-left hover:shadow-xl transition-all group">
+                        className="w-full bg-gradient-to-r from-orange-400 to-amber-500 rounded-2xl sm:rounded-3xl shadow-lg shadow-orange-500/20 p-5 sm:p-8 text-left hover:shadow-xl transition-all group animate-in fade-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">🚀</div>
                           <div className="min-w-0">
-                            <h3 className="text-base sm:text-xl font-black text-white">⚡ 2단계: 시험 시작!</h3>
+                            <h3 className="text-base sm:text-xl font-black text-white">⚡ 3단계: 시험 시작!</h3>
                             <p className="text-xs sm:text-base text-orange-100 font-medium mt-0.5 sm:mt-1">
-                              {isReviewMode ? '복습 시험! 정답 5개당 1토큰' : `승인 완료! ${user.test_question_count || 30}문제 도전!`}
+                              {isReviewMode ? '복습 시험! 정답 5개당 1토큰' : `승인 완료! ${testQuestionCount}문제 도전!`}
                             </p>
                           </div>
                         </div>
                       </button>
-                    ) : testRequest?.status === 'pending' ? (
+                    );
+                  }
+
+                  if (canTest && testRequest?.status === 'pending') {
+                    return (
                       <button onClick={() => setMode('request_sent')}
-                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-amber-200 p-5 sm:p-8 text-left hover:shadow-lg transition-all group">
+                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-amber-200 p-5 sm:p-8 text-left hover:shadow-lg transition-all group animate-in fade-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0"><Clock className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" /></div>
                           <div className="min-w-0">
@@ -882,32 +948,45 @@ export default function Home() {
                           </div>
                         </div>
                       </button>
-                    ) : (
+                    );
+                  }
+
+                  if (canTest) {
+                    return (
                       <button onClick={handleRequestTest} disabled={isRequestingTest}
-                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group disabled:opacity-70 disabled:cursor-not-allowed">
+                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group disabled:opacity-70 disabled:cursor-not-allowed animate-in fade-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">
-                            {isRequestingTest ? <Loader2 className="w-8 h-8 animate-spin text-blue-500" /> : '📝'}
+                            {isRequestingTest ? <Loader2 className="w-8 h-8 animate-spin text-blue-500" /> : '🏆'}
                           </div>
                           <div className="min-w-0">
                             <h3 className="text-base sm:text-xl font-black text-slate-800">
-                              {isRequestingTest ? '요청 보내는 중...' : '📝 2단계: 시험 요청하기'}
+                              {isRequestingTest ? '요청 보내는 중...' : '🏆 3단계: 실전 테스트 보기'}
                             </h3>
                             <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
-                              {isRequestingTest ? '잠시만 기다려 줘!' : '학습을 마쳤어! 시험 승인을 요청해 봐!'}
+                              {isRequestingTest ? '잠시만 기다려 줘!' : '연습을 마쳤어! 시험 승인을 요청해 봐!'}
                             </p>
                           </div>
                         </div>
                       </button>
-                    )}
-                  </div>
-                )}
+                    );
+                  }
 
-                {!studyCompleted && (
-                  <div className="bg-slate-50 rounded-xl sm:rounded-2xl border-2 border-dashed border-slate-200 p-4 sm:p-6 text-center">
-                    <p className="text-xs sm:text-base text-slate-400 font-bold">🔒 먼저 단어를 학습해야 시험을 볼 수 있어!</p>
-                  </div>
-                )}
+                  // 조건 미달: 비활성화 상태
+                  return (
+                    <div className="w-full bg-slate-50 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 p-5 sm:p-8 text-left">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-200 rounded-xl sm:rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0 opacity-50">🔒</div>
+                        <div className="min-w-0">
+                          <h3 className="text-base sm:text-xl font-black text-slate-400">🏆 3단계: 실전 테스트 보기</h3>
+                          <p className="text-xs sm:text-base text-slate-400 font-bold mt-0.5 sm:mt-1">
+                            2단계 연습을 먼저 <span className="text-emerald-500">{remaining}개</span> 더 완료해 주세요!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 text-center flex flex-col items-center">
