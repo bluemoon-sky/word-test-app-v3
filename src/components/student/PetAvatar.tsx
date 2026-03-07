@@ -86,63 +86,80 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
         >
 
 
-            {/* 귀 (왼쪽) */}
-            <ellipse cx="38" cy="30" rx="12" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="1.5">
-                <animateTransform attributeName="transform" type="rotate" values="-3,38,30;3,38,30;-3,38,30" dur="3s" repeatCount="indefinite" />
-            </ellipse>
-            <ellipse cx="38" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.5" />
+            {/* ── 햄스터 꼬리 ── */}
+            <path d="M85 85 Q92 82 90 90" fill="none" stroke={theme.body} strokeWidth="12" strokeLinecap="round">
+                <animateTransform attributeName="transform" type="rotate" values="-5,85,85;10,85,85;-5,85,85" dur="2s" repeatCount="indefinite" />
+            </path>
 
-            {/* 귀 (오른쪽) */}
-            <ellipse cx="82" cy="30" rx="12" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="1.5">
-                <animateTransform attributeName="transform" type="rotate" values="3,82,30;-3,82,30;3,82,30" dur="3s" repeatCount="indefinite" />
-            </ellipse>
-            <ellipse cx="82" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.5" />
+            {/* ── 귀 (왼쪽) ── */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="-3,35,35;3,35,35;-3,35,35" dur="3s" repeatCount="indefinite" />
+                <ellipse cx="36" cy="30" rx="13" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="2" transform="rotate(-15, 36, 30)" />
+                <ellipse cx="36" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.6" transform="rotate(-15, 36, 30)" />
+            </g>
 
-            {/* 몸통 */}
-            <ellipse cx="60" cy="72" rx="35" ry="30" fill={theme.body} />
-            {/* 배 */}
-            <ellipse cx="60" cy="78" rx="22" ry="18" fill={theme.belly} />
+            {/* ── 귀 (오른쪽) ── */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="3,85,35;-3,85,35;3,85,35" dur="3s" repeatCount="indefinite" />
+                <ellipse cx="84" cy="30" rx="13" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="2" transform="rotate(15, 84, 30)" />
+                <ellipse cx="84" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.6" transform="rotate(15, 84, 30)" />
+            </g>
 
-            {/* 얼굴 */}
-            <circle cx="60" cy="55" r="28" fill={theme.body} />
+            {/* ── 몸통 (호빵처럼 둥글고 푸근하게) ── */}
+            <ellipse cx="60" cy="74" rx="36" ry="32" fill={theme.body} />
 
-            {/* 볼 터치 (장미빛 볼) */}
-            <circle cx="40" cy="62" r="7" fill={theme.cheek} opacity="0.6" />
-            <circle cx="80" cy="62" r="7" fill={theme.cheek} opacity="0.6" />
+            {/* ── 배 (하얀색, 살짝 아래로) ── */}
+            <ellipse cx="60" cy="80" rx="24" ry="18" fill={theme.belly} />
 
-            {/* 눈 (깜빡임 애니메이션) */}
+            {/* ── 머리/얼굴 윤곽 ── */}
+            <circle cx="60" cy="54" r="28" fill={theme.body} />
+
+            {/* ── 볼 터치 ── */}
+            <ellipse cx="40" cy="62" rx="8" ry="5" fill={theme.cheek} opacity="0.8" />
+            <ellipse cx="80" cy="62" rx="8" ry="5" fill={theme.cheek} opacity="0.8" />
+
+            {/* ── 눈 (초롱초롱한 눈망울) ── */}
             {blink ? (
                 <>
-                    <line x1="48" y1="52" x2="56" y2="52" stroke="#333" strokeWidth="2.5" strokeLinecap="round" />
-                    <line x1="64" y1="52" x2="72" y2="52" stroke="#333" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M46 52 Q50 50 54 52" fill="none" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M66 52 Q70 50 74 52" fill="none" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" />
                 </>
             ) : (
                 <>
-                    <circle cx="50" cy="50" r="4.5" fill="#333" />
-                    <circle cx="70" cy="50" r="4.5" fill="#333" />
-                    {/* 눈 하이라이트 */}
-                    <circle cx="52" cy="48" r="1.5" fill="white" />
-                    <circle cx="72" cy="48" r="1.5" fill="white" />
+                    <circle cx="50" cy="50" r="5.5" fill="#2D3748" />
+                    <circle cx="70" cy="50" r="5.5" fill="#2D3748" />
+                    {/* 반짝이는 하이라이트 */}
+                    <circle cx="51.5" cy="48" r="2" fill="white" />
+                    <circle cx="48" cy="51.5" r="1.2" fill="white" opacity="0.9" />
+                    <circle cx="71.5" cy="48" r="2" fill="white" />
+                    <circle cx="68" cy="51.5" r="1.2" fill="white" opacity="0.9" />
                 </>
             )}
 
-            {/* 코 */}
-            <ellipse cx="60" cy="58" rx="3" ry="2.5" fill="#FF7777" />
+            {/* ── 코 ── */}
+            <path d="M58 58 Q60 59.5 62 58 L60 60.5 Z" fill="#FF7777" />
 
-            {/* 입 */}
-            <path d="M56 62 Q60 66 64 62" fill="none" stroke="#CC6666" strokeWidth="1.5" strokeLinecap="round" />
+            {/* ── 입 (고양이상 입매) ── */}
+            <path d="M54 62 Q57 65 60 61 Q63 65 66 62" fill="none" stroke="#CC6666" strokeWidth="1.5" strokeLinecap="round" />
 
-            {/* 수염 (왼쪽) */}
-            <line x1="32" y1="58" x2="44" y2="56" stroke="#CCAA88" strokeWidth="1" opacity="0.6" />
-            <line x1="30" y1="62" x2="44" y2="60" stroke="#CCAA88" strokeWidth="1" opacity="0.6" />
+            {/* ── 수염 ── */}
+            <line x1="32" y1="56" x2="42" y2="58" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
+            <line x1="30" y1="60" x2="42" y2="61" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
 
-            {/* 수염 (오른쪽) */}
-            <line x1="76" y1="56" x2="88" y2="58" stroke="#CCAA88" strokeWidth="1" opacity="0.6" />
-            <line x1="76" y1="60" x2="90" y2="62" stroke="#CCAA88" strokeWidth="1" opacity="0.6" />
+            <line x1="78" y1="58" x2="88" y2="56" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
+            <line x1="78" y1="61" x2="90" y2="60" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
 
-            {/* 발 */}
-            <ellipse cx="45" cy="97" rx="10" ry="5" fill={theme.ear} />
-            <ellipse cx="75" cy="97" rx="10" ry="5" fill={theme.ear} />
+            {/* ── 손 (귀엽게 모은 손 두 짝) ── */}
+            <ellipse cx="53" cy="67" rx="4.5" ry="6" fill={theme.body} stroke="#E0E0E0" strokeWidth="0.5" />
+            <ellipse cx="67" cy="67" rx="4.5" ry="6" fill={theme.body} stroke="#E0E0E0" strokeWidth="0.5" />
+
+            {/* ── 발 (통통한 발) ── */}
+            <ellipse cx="45" cy="98" rx="10" ry="6" fill={theme.ear} />
+            <path d="M39 100 L51 100" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+
+            <ellipse cx="75" cy="98" rx="10" ry="6" fill={theme.ear} />
+            <path d="M69 100 L81 100" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+
 
             {/* ============================================================ */}
             {/* 레벨별 누적 아이템 (레벨이 올라갈수록 하나씩 추가됨!)         */}
@@ -408,22 +425,22 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
 
                 {/* SVG 캐릭터 영역 */}
                 <div
-                    className="relative shrink-0 cursor-pointer group"
+                    className="relative shrink-0 cursor-pointer group flex flex-col items-center"
                     onClick={handleInteract}
                     title="저를 터치해주세요 찌찍!"
                 >
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center relative">
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center relative">
                         <HamsterSVG level={stage.level} bounce={bounce} blink={blink} />
                     </div>
 
                     {/* 터치 유도 */}
-                    <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Sparkles className="w-5 h-5 text-yellow-400 rotate-12" strokeWidth={3} />
                     </div>
 
-                    {/* 레벨 뱃지 */}
-                    <div className={`absolute -bottom-1 -right-1 px-2 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-0.5 z-20`}>
-                        <Star className={`w-3 h-3 ${theme.icon} fill-current`} />
+                    {/* 레벨 뱃지 (캐릭터 중앙 아래) */}
+                    <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-1 z-20 whitespace-nowrap`}>
+                        <Star className={`w-3.5 h-3.5 ${theme.icon} fill-current`} />
                         Lv.{stage.level}
                     </div>
                 </div>
