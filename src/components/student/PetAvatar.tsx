@@ -86,79 +86,99 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
         >
 
 
-            {/* ── 햄스터 꼬리 ── */}
-            <path d="M85 85 Q92 82 90 90" fill="none" stroke={theme.body} strokeWidth="12" strokeLinecap="round">
-                <animateTransform attributeName="transform" type="rotate" values="-5,85,85;10,85,85;-5,85,85" dur="2s" repeatCount="indefinite" />
-            </path>
+            {/* ═══════════════════════════════════════════════ */}
+            {/* ── 카와이 2등신 햄스터 ── */}
+            {/* ═══════════════════════════════════════════════ */}
 
-            {/* ── 귀 (왼쪽) ── */}
+            {/* ── 꼬리 (살랑살랑) ── */}
+            <circle cx="88" cy="92" r="5" fill={theme.ear} opacity="0.9">
+                <animateTransform attributeName="transform" type="rotate" values="-8,88,92;8,88,92;-8,88,92" dur="1.8s" repeatCount="indefinite" />
+            </circle>
+
+            {/* ── 귀 (왼쪽, 크고 둥글게) ── */}
             <g>
-                <animateTransform attributeName="transform" type="rotate" values="-3,35,35;3,35,35;-3,35,35" dur="3s" repeatCount="indefinite" />
-                <ellipse cx="36" cy="30" rx="13" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="2" transform="rotate(-15, 36, 30)" />
-                <ellipse cx="36" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.6" transform="rotate(-15, 36, 30)" />
+                <animateTransform attributeName="transform" type="rotate" values="-2,38,28;4,38,28;-2,38,28" dur="2.5s" repeatCount="indefinite" />
+                <ellipse cx="34" cy="22" rx="14" ry="18" fill={theme.ear} stroke={theme.body} strokeWidth="1.5" transform="rotate(-20, 34, 22)" />
+                <ellipse cx="34" cy="22" rx="8" ry="12" fill={theme.cheek} opacity="0.5" transform="rotate(-20, 34, 22)" />
             </g>
 
-            {/* ── 귀 (오른쪽) ── */}
+            {/* ── 귀 (오른쪽, 크고 둥글게) ── */}
             <g>
-                <animateTransform attributeName="transform" type="rotate" values="3,85,35;-3,85,35;3,85,35" dur="3s" repeatCount="indefinite" />
-                <ellipse cx="84" cy="30" rx="13" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="2" transform="rotate(15, 84, 30)" />
-                <ellipse cx="84" cy="30" rx="7" ry="10" fill={theme.cheek} opacity="0.6" transform="rotate(15, 84, 30)" />
+                <animateTransform attributeName="transform" type="rotate" values="2,82,28;-4,82,28;2,82,28" dur="2.5s" repeatCount="indefinite" />
+                <ellipse cx="86" cy="22" rx="14" ry="18" fill={theme.ear} stroke={theme.body} strokeWidth="1.5" transform="rotate(20, 86, 22)" />
+                <ellipse cx="86" cy="22" rx="8" ry="12" fill={theme.cheek} opacity="0.5" transform="rotate(20, 86, 22)" />
             </g>
 
-            {/* ── 몸통 (호빵처럼 둥글고 푸근하게) ── */}
-            <ellipse cx="60" cy="74" rx="36" ry="32" fill={theme.body} />
+            {/* ── 몸통 (작고 통통) ── */}
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0,0;0,-1;0,0" dur="2s" repeatCount="indefinite" />
+                <ellipse cx="60" cy="88" rx="26" ry="18" fill={theme.body} />
+                {/* 배 (하얀색) */}
+                <ellipse cx="60" cy="90" rx="18" ry="12" fill={theme.belly} />
+            </g>
 
-            {/* ── 배 (하얀색, 살짝 아래로) ── */}
-            <ellipse cx="60" cy="80" rx="24" ry="18" fill={theme.belly} />
+            {/* ── 손 (동글동글 앞발) ── */}
+            <ellipse cx="38" cy="84" rx="6" ry="5" fill={theme.body} stroke="#E8E8E8" strokeWidth="0.8" />
+            <ellipse cx="82" cy="84" rx="6" ry="5" fill={theme.body} stroke="#E8E8E8" strokeWidth="0.8" />
 
-            {/* ── 머리/얼굴 윤곽 ── */}
-            <circle cx="60" cy="54" r="28" fill={theme.body} />
+            {/* ── 발 (통통한 발바닥) ── */}
+            <ellipse cx="46" cy="101" rx="9" ry="5" fill={theme.ear} />
+            <ellipse cx="74" cy="101" rx="9" ry="5" fill={theme.ear} />
+            {/* 발바닥 패드 */}
+            <circle cx="44" cy="102" r="1.5" fill={theme.cheek} opacity="0.5" />
+            <circle cx="48" cy="102" r="1.5" fill={theme.cheek} opacity="0.5" />
+            <circle cx="72" cy="102" r="1.5" fill={theme.cheek} opacity="0.5" />
+            <circle cx="76" cy="102" r="1.5" fill={theme.cheek} opacity="0.5" />
 
-            {/* ── 볼 터치 ── */}
-            <ellipse cx="40" cy="62" rx="8" ry="5" fill={theme.cheek} opacity="0.8" />
-            <ellipse cx="80" cy="62" rx="8" ry="5" fill={theme.cheek} opacity="0.8" />
+            {/* ── 머리 (크고 둥근 2등신 머리) ── */}
+            <circle cx="60" cy="52" r="32" fill={theme.body} />
 
-            {/* ── 눈 (초롱초롱한 눈망울) ── */}
+            {/* ── 볼 터치 (빵빵하고 핑크핑크) ── */}
+            <ellipse cx="35" cy="60" rx="10" ry="7" fill={theme.cheek} opacity="0.7" />
+            <ellipse cx="85" cy="60" rx="10" ry="7" fill={theme.cheek} opacity="0.7" />
+            {/* 볼 하이라이트 */}
+            <ellipse cx="33" cy="58" rx="3" ry="2" fill="white" opacity="0.4" />
+            <ellipse cx="83" cy="58" rx="3" ry="2" fill="white" opacity="0.4" />
+
+            {/* ── 눈 (크고 초롱초롱) ── */}
             {blink ? (
                 <>
-                    <path d="M46 52 Q50 50 54 52" fill="none" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" />
-                    <path d="M66 52 Q70 50 74 52" fill="none" stroke="#2D3748" strokeWidth="3" strokeLinecap="round" />
+                    {/* 감은 눈 (행복한 표정 ^^) */}
+                    <path d="M43 50 Q48 46 53 50" fill="none" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M67 50 Q72 46 77 50" fill="none" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" />
                 </>
             ) : (
                 <>
-                    <circle cx="50" cy="50" r="5.5" fill="#2D3748" />
-                    <circle cx="70" cy="50" r="5.5" fill="#2D3748" />
-                    {/* 반짝이는 하이라이트 */}
-                    <circle cx="51.5" cy="48" r="2" fill="white" />
-                    <circle cx="48" cy="51.5" r="1.2" fill="white" opacity="0.9" />
-                    <circle cx="71.5" cy="48" r="2" fill="white" />
-                    <circle cx="68" cy="51.5" r="1.2" fill="white" opacity="0.9" />
+                    {/* 눈알 (큰 동그란 눈) */}
+                    <circle cx="48" cy="48" r="7" fill="#1A202C" />
+                    <circle cx="72" cy="48" r="7" fill="#1A202C" />
+                    {/* 큰 하이라이트 */}
+                    <circle cx="50" cy="45" r="3" fill="white" />
+                    <circle cx="74" cy="45" r="3" fill="white" />
+                    {/* 작은 하이라이트 */}
+                    <circle cx="46" cy="50" r="1.5" fill="white" opacity="0.8" />
+                    <circle cx="70" cy="50" r="1.5" fill="white" opacity="0.8" />
                 </>
             )}
 
-            {/* ── 코 ── */}
-            <path d="M58 58 Q60 59.5 62 58 L60 60.5 Z" fill="#FF7777" />
+            {/* ── 눈썹 (귀여운 작은 눈썹) ── */}
+            <path d="M44 39 Q48 37 52 39" fill="none" stroke="#C4A882" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+            <path d="M68 39 Q72 37 76 39" fill="none" stroke="#C4A882" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
 
-            {/* ── 입 (고양이상 입매) ── */}
-            <path d="M54 62 Q57 65 60 61 Q63 65 66 62" fill="none" stroke="#CC6666" strokeWidth="1.5" strokeLinecap="round" />
+            {/* ── 코 (하트 모양 코) ── */}
+            <path d="M58 56 Q59 55 60 56 Q61 55 62 56 Q61 58 60 59 Q59 58 58 56 Z" fill="#FF8888" />
 
-            {/* ── 수염 ── */}
-            <line x1="32" y1="56" x2="42" y2="58" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
-            <line x1="30" y1="60" x2="42" y2="61" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
+            {/* ── 입 (ω 모양 입매) ── */}
+            <path d="M53 61 Q56 64 60 60 Q64 64 67 61" fill="none" stroke="#E8A0A0" strokeWidth="1.8" strokeLinecap="round" />
 
-            <line x1="78" y1="58" x2="88" y2="56" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
-            <line x1="78" y1="61" x2="90" y2="60" stroke="#CCAA88" strokeWidth="1" opacity="0.5" />
+            {/* ── 수염 (얇고 귀엽게) ── */}
+            <line x1="28" y1="54" x2="40" y2="56" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
+            <line x1="26" y1="58" x2="40" y2="59" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
+            <line x1="27" y1="62" x2="40" y2="62" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
 
-            {/* ── 손 (귀엽게 모은 손 두 짝) ── */}
-            <ellipse cx="53" cy="67" rx="4.5" ry="6" fill={theme.body} stroke="#E0E0E0" strokeWidth="0.5" />
-            <ellipse cx="67" cy="67" rx="4.5" ry="6" fill={theme.body} stroke="#E0E0E0" strokeWidth="0.5" />
-
-            {/* ── 발 (통통한 발) ── */}
-            <ellipse cx="45" cy="98" rx="10" ry="6" fill={theme.ear} />
-            <path d="M39 100 L51 100" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
-
-            <ellipse cx="75" cy="98" rx="10" ry="6" fill={theme.ear} />
-            <path d="M69 100 L81 100" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+            <line x1="80" y1="56" x2="92" y2="54" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
+            <line x1="80" y1="59" x2="94" y2="58" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
+            <line x1="80" y1="62" x2="93" y2="62" stroke="#D4B896" strokeWidth="0.8" opacity="0.4" />
 
 
             {/* ============================================================ */}
