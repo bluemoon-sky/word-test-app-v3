@@ -875,43 +875,55 @@ export default function Home() {
                 </button>
 
                 {/* 2단계: 손으로 연습하기 */}
-                <button onClick={() => {
-                  if (typeof window !== 'undefined' && window.speechSynthesis) {
-                    const unlock = new SpeechSynthesisUtterance('a');
-                    unlock.volume = 0;
-                    unlock.rate = 2;
-                    window.speechSynthesis.speak(unlock);
-                  }
-                  setMode('practice');
-                }}
-                  className={`w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 p-5 sm:p-8 text-left transition-all group ${practicedWords.length >= (user.test_question_count || 30)
-                    ? 'border-emerald-200 opacity-80'
-                    : 'border-teal-200 hover:shadow-lg hover:border-teal-300'
-                    }`}>
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${practicedWords.length >= (user.test_question_count || 30) ? 'bg-emerald-100' : 'bg-teal-100'
+                {studyCompleted ? (
+                  <button onClick={() => {
+                    if (typeof window !== 'undefined' && window.speechSynthesis) {
+                      const unlock = new SpeechSynthesisUtterance('a');
+                      unlock.volume = 0;
+                      unlock.rate = 2;
+                      window.speechSynthesis.speak(unlock);
+                    }
+                    setMode('practice');
+                  }}
+                    className={`w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 p-5 sm:p-8 text-left transition-all group ${practicedWords.length >= (user.test_question_count || 30)
+                      ? 'border-emerald-200 opacity-80'
+                      : 'border-teal-200 hover:shadow-lg hover:border-teal-300'
                       }`}>
-                      {practicedWords.length >= (user.test_question_count || 30)
-                        ? <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" />
-                        : <span className="text-2xl sm:text-3xl">✍️</span>
-                      }
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-base sm:text-xl font-black text-slate-800">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${practicedWords.length >= (user.test_question_count || 30) ? 'bg-emerald-100' : 'bg-teal-100'
+                        }`}>
                         {practicedWords.length >= (user.test_question_count || 30)
-                          ? `✅ 연습 완료! (${practicedWords.length}개)`
-                          : '✍️ 2단계: 손으로 연습하기'
+                          ? <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" />
+                          : <span className="text-2xl sm:text-3xl">✍️</span>
                         }
-                      </h3>
-                      <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
-                        {practicedWords.length > 0
-                          ? `${practicedWords.length}개 연습 완료! 더 연습하려면 눌러봐.`
-                          : '영단어 따라치기 + 뜻 맞추기 연습을 해 봐!'
-                        }
-                      </p>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-xl font-black text-slate-800">
+                          {practicedWords.length >= (user.test_question_count || 30)
+                            ? `✅ 연습 완료! (${practicedWords.length}개)`
+                            : '✍️ 2단계: 손으로 연습하기'
+                          }
+                        </h3>
+                        <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
+                          {practicedWords.length > 0
+                            ? `${practicedWords.length}개 연습 완료! 더 연습하려면 눌러봐.`
+                            : '영단어 따라치기 + 뜻 맞추기 연습을 해 봐!'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ) : (
+                  <div className="w-full bg-slate-50 rounded-2xl sm:rounded-3xl border-4 border-dashed border-slate-200 p-5 sm:p-8 text-left opacity-60">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-200 rounded-xl sm:rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0 opacity-50">🔒</div>
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-xl font-black text-slate-400">✍️ 2단계: 손으로 연습하기</h3>
+                        <p className="text-xs sm:text-base text-slate-400 font-bold mt-0.5 sm:mt-1">1단계 학습을 먼저 완료해 주세요!</p>
+                      </div>
                     </div>
                   </div>
-                </button>
+                )}
 
                 {/* 3단계: 실전 테스트 보기 */}
                 {(() => {
