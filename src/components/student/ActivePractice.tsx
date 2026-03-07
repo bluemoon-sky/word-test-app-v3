@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useSwipeable } from 'react-swipeable';
+
 import { Word } from '@/types';
-import { ChevronLeft, ChevronRight, Headphones, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Headphones, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 // TTS 순차 재생 헬퍼 (한국어 발음 → 뜻)
 function speakSequence(
