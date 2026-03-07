@@ -64,10 +64,12 @@ const BUBBLE_MESSAGES = [
 // 3. 티어별 테마 (배경/색상/게이지 등)
 // ============================================================================
 const getTheme = (level: number) => {
-    if (level <= 5) return { bg: 'from-amber-50 via-orange-50/50 to-yellow-50/30', ring: 'border-orange-200', bar: 'from-orange-400 to-amber-500', title: 'text-orange-600', icon: 'text-orange-500', body: '#FFB347', belly: '#FFEACC', cheek: '#FF9999', ear: '#FFA07A' };
-    if (level <= 10) return { bg: 'from-slate-50 via-blue-50/50 to-indigo-50/30', ring: 'border-blue-200', bar: 'from-blue-400 to-indigo-500', title: 'text-blue-600', icon: 'text-blue-500', body: '#A8C8E8', belly: '#DDE8F5', cheek: '#FFB0B0', ear: '#8BB8DE' };
-    if (level <= 15) return { bg: 'from-yellow-50 via-amber-100/30 to-rose-50/30', ring: 'border-amber-300 shadow-lg', bar: 'from-amber-400 via-yellow-400 to-orange-500', title: 'text-amber-600', icon: 'text-amber-500', body: '#FFD700', belly: '#FFF5CC', cheek: '#FF8888', ear: '#FFB800' };
-    return { bg: 'from-violet-50 via-fuchsia-50/50 to-cyan-50/50', ring: 'border-fuchsia-300 shadow-xl', bar: 'from-violet-500 via-fuchsia-500 to-cyan-500', title: 'text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600', icon: 'text-fuchsia-500', body: '#C8A2FF', belly: '#EDE0FF', cheek: '#FFB0D0', ear: '#B88AE8' };
+    // 햄스터 본체는 흰색 계열 고정, 배경 테마만 티어별 변경
+    const hamster = { body: '#F8F8F8', belly: '#FFFFFF', cheek: '#FFB0B0', ear: '#F0E0E0' };
+    if (level <= 5) return { ...hamster, bg: 'from-amber-50 via-orange-50/50 to-yellow-50/30', ring: 'border-orange-200', bar: 'from-orange-400 to-amber-500', title: 'text-orange-600', icon: 'text-orange-500' };
+    if (level <= 10) return { ...hamster, bg: 'from-slate-50 via-blue-50/50 to-indigo-50/30', ring: 'border-blue-200', bar: 'from-blue-400 to-indigo-500', title: 'text-blue-600', icon: 'text-blue-500' };
+    if (level <= 15) return { ...hamster, bg: 'from-yellow-50 via-amber-100/30 to-rose-50/30', ring: 'border-amber-300 shadow-lg', bar: 'from-amber-400 via-yellow-400 to-orange-500', title: 'text-amber-600', icon: 'text-amber-500' };
+    return { ...hamster, bg: 'from-violet-50 via-fuchsia-50/50 to-cyan-50/50', ring: 'border-fuchsia-300 shadow-xl', bar: 'from-violet-500 via-fuchsia-500 to-cyan-500', title: 'text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600', icon: 'text-fuchsia-500' };
 };
 
 // ============================================================================
