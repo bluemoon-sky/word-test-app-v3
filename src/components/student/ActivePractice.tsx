@@ -146,15 +146,6 @@ export default function ActivePractice({ words, onFinish, onBack }: Props) {
             setTypingError(false);
             setPhase('quiz');
             generateQuizOptions(currentWord);
-
-            // 뒷면에서 한국어 발음+뜻 TTS
-            if (cancelTtsRef.current) cancelTtsRef.current();
-            const cancel = speakSequence(
-                currentWord,
-                () => setIsPlaying(true),
-                () => setIsPlaying(false)
-            );
-            cancelTtsRef.current = cancel;
         } else {
             // 오답 → 흔들기 애니메이션
             setTypingError(true);
@@ -371,8 +362,8 @@ export default function ActivePractice({ words, onFinish, onBack }: Props) {
 
                 {/* 하단 컨트롤 */}
                 <div className={`w-full h-14 sm:h-16 flex rounded-2xl overflow-hidden shadow-lg transition-all ${phase === 'typing' || selectedAnswer === null
-                        ? 'bg-slate-200 cursor-not-allowed text-slate-400'
-                        : 'bg-white shadow-[0_8px_20px_-6px_rgba(16,185,129,0.3)]'
+                    ? 'bg-slate-200 cursor-not-allowed text-slate-400'
+                    : 'bg-white shadow-[0_8px_20px_-6px_rgba(16,185,129,0.3)]'
                     }`}>
                     {phase === 'typing' ? (
                         <div className="w-full h-full font-black text-base sm:text-lg flex items-center justify-center text-slate-400">
