@@ -459,9 +459,12 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                                     );
                                     cancelTtsRef.current = cancel;
                                 }}
-                                disabled={isAnimating}
-                                className="flex-1 flex flex-col sm:flex-row items-center justify-center font-black text-xs sm:text-base transition-colors py-2 sm:py-0 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border-x border-slate-100"
-                                title="카드 처음부터 다시 학습하기"
+                                disabled={isAnimating || isPlaying}
+                                className={`flex-1 flex flex-col sm:flex-row items-center justify-center font-black text-xs sm:text-base border-x border-slate-100 transition-colors py-2 sm:py-0
+                                ${isAnimating || isPlaying
+                                        ? 'text-indigo-300 bg-indigo-50/50 cursor-not-allowed'
+                                        : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200'}`}
+                                title={isPlaying ? "음성 재생 중입니다" : "카드 처음부터 다시 학습하기"}
                             >
                                 <span className="text-base sm:text-lg sm:mr-1 mb-0.5 sm:mb-0">🔄</span> 복습
                             </button>
