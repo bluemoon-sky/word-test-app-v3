@@ -98,3 +98,10 @@ textarea,
     transform: translateX(4px);
   }
 }
+
+/* 펫 아바타 게이지 바 반짝임 애니메이션 */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
