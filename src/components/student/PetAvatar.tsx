@@ -100,17 +100,17 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
                 </circle>
 
                 {/* ── 귀 (왼쪽, 큰 핑크 귀) ── */}
-                <g transform="translate(30, 32)">
-                    <animateTransform attributeName="transform" type="rotate" values="-4;4;-4" dur="3s" repeatCount="indefinite" />
-                    <circle cx="0" cy="0" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
-                    <circle cx="0" cy="1" r="9" fill="#FFCACA" />
+                <g>
+                    <animateTransform attributeName="transform" type="rotate" values="-4,30,32;4,30,32;-4,30,32" dur="3s" repeatCount="indefinite" />
+                    <circle cx="30" cy="32" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
+                    <circle cx="30" cy="33" r="9" fill="#FFCACA" />
                 </g>
 
                 {/* ── 귀 (오른쪽, 큰 핑크 귀) ── */}
-                <g transform="translate(90, 32)">
-                    <animateTransform attributeName="transform" type="rotate" values="4;-4;4" dur="3s" repeatCount="indefinite" />
-                    <circle cx="0" cy="0" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
-                    <circle cx="0" cy="1" r="9" fill="#FFCACA" />
+                <g>
+                    <animateTransform attributeName="transform" type="rotate" values="4,90,32;-4,90,32;4,90,32" dur="3s" repeatCount="indefinite" />
+                    <circle cx="90" cy="32" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
+                    <circle cx="90" cy="33" r="9" fill="#FFCACA" />
                 </g>
 
                 {/* ── 메인 바디 (아주 통통하고 둥근 호빵) ── */}
