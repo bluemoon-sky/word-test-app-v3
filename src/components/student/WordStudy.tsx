@@ -466,7 +466,7 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                                         : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200'}`}
                                 title={isPlaying ? "음성 재생 중입니다" : "카드 처음부터 다시 학습하기"}
                             >
-                                <span className="text-base sm:text-lg sm:mr-1 mb-0.5 sm:mb-0">🔄</span> 복습
+                                <span className="text-base sm:text-lg sm:mr-1 mb-0.5 sm:mb-0">🔄</span> 다시듣기
                             </button>
 
                             {isLast ? (
