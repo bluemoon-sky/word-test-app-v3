@@ -11,33 +11,33 @@ import { Sparkles, CalendarHeart, Flame, Star, Trophy } from 'lucide-react';
 // 베이스 이미지와 파츠 이미지를 레이어링: base: 1~5, item: 레벨별 고유 파일
 // ----------------------------------------------------------------------------
 export const HAMSTER_STAGES = [
-    // 🐣 티어 1: 브론즈 구간 (Lv 1 ~ 5) - 초급
-    { level: 1, minDays: 0, minWords: 0, title: '갓 태어난', name: '점박이 햄스터', base: 1, item: null },
-    { level: 2, minDays: 1, minWords: 5, title: '눈을 뜬', name: '호기심 햄스터', base: 1, item: 'leaf' },
-    { level: 3, minDays: 2, minWords: 15, title: '뒤뚱뒤뚱', name: '아기 햄스터', base: 1, item: 'pacifier' },
-    { level: 4, minDays: 3, minWords: 30, title: '해바라기씨', name: '발견자 햄스터', base: 2, item: 'seed' },
-    { level: 5, minDays: 4, minWords: 50, title: '볼따구 빵빵', name: '먹보 햄스터', base: 2, item: 'bag' },
+    // 🐣 티어 1: 브론즈 구간 (Lv 1 ~ 5) - 초급 (img: 기존 lv1~lv10.png 매핑)
+    { level: 1, minDays: 0, minWords: 0, title: '갓 태어난', name: '점박이 햄스터', img: 1 },
+    { level: 2, minDays: 1, minWords: 5, title: '눈을 뜬', name: '호기심 햄스터', img: 1 },
+    { level: 3, minDays: 2, minWords: 15, title: '뒤뚱뒤뚱', name: '아기 햄스터', img: 2 },
+    { level: 4, minDays: 3, minWords: 30, title: '해바라기씨', name: '발견자 햄스터', img: 2 },
+    { level: 5, minDays: 4, minWords: 50, title: '볼따구 빵빵', name: '먹보 햄스터', img: 3 },
 
     // 🥈 티어 2: 실버 구간 (Lv 6 ~ 10) - 중급
-    { level: 6, minDays: 6, minWords: 80, title: '체력 증진', name: '런닝 햄스터', base: 2, item: 'headband' },
-    { level: 7, minDays: 8, minWords: 120, title: '잔머리 굴리는', name: '천재 햄스터', base: 3, item: 'glasses' },
-    { level: 8, minDays: 11, minWords: 170, title: '호기심 천국', name: '탐정 햄스터', base: 3, item: 'hat_detective' },
-    { level: 9, minDays: 14, minWords: 230, title: '야외 체질', name: '탐험가 햄스터', base: 3, item: 'hat_explorer' },
-    { level: 10, minDays: 17, minWords: 300, title: '열공 모드', name: '선비 햄스터', base: 4, item: 'hat_scholar' },
+    { level: 6, minDays: 6, minWords: 80, title: '체력 증진', name: '런닝 햄스터', img: 3 },
+    { level: 7, minDays: 8, minWords: 120, title: '잔머리 굴리는', name: '천재 햄스터', img: 4 },
+    { level: 8, minDays: 11, minWords: 170, title: '호기심 천국', name: '탐정 햄스터', img: 5 },
+    { level: 9, minDays: 14, minWords: 230, title: '야외 체질', name: '탐험가 햄스터', img: 5 },
+    { level: 10, minDays: 17, minWords: 300, title: '열공 모드', name: '선비 햄스터', img: 6 },
 
     // 🥇 티어 3: 골드 구간 (Lv 11 ~ 15) - 고급
-    { level: 11, minDays: 21, minWords: 380, title: '해리포터 지망생', name: '마법 신입생 햄스터', base: 4, item: 'wand' },
-    { level: 12, minDays: 25, minWords: 470, title: '지식의 수호자', name: '사서 햄스터', base: 4, item: 'book' },
-    { level: 13, minDays: 30, minWords: 570, title: '우주로 향하는', name: '로켓 햄스터', base: 5, item: 'helmet' },
-    { level: 14, minDays: 35, minWords: 680, title: '번개를 부르는', name: '마법사 햄스터', base: 5, item: 'cape' },
-    { level: 15, minDays: 40, minWords: 800, title: '전설의 입문', name: '기사 햄스터', base: 5, item: 'sword' },
+    { level: 11, minDays: 21, minWords: 380, title: '해리포터 지망생', name: '마법 신입생 햄스터', img: 6 },
+    { level: 12, minDays: 25, minWords: 470, title: '지식의 수호자', name: '사서 햄스터', img: 7 },
+    { level: 13, minDays: 30, minWords: 570, title: '우주로 향하는', name: '로켓 햄스터', img: 7 },
+    { level: 14, minDays: 35, minWords: 680, title: '번개를 부르는', name: '마법사 햄스터', img: 8 },
+    { level: 15, minDays: 40, minWords: 800, title: '전설의 입문', name: '기사 햄스터', img: 8 },
 
     // 🌈 티어 4: 무지개 구간 (Lv 16 ~ 20) - 마스터
-    { level: 16, minDays: 46, minWords: 950, title: '시간을 거스르는', name: '현자 햄스터', base: 6, item: 'staff' },
-    { level: 17, minDays: 52, minWords: 1100, title: '모든 것을 아는', name: '대현자 햄스터', base: 6, item: 'crystal' },
-    { level: 18, minDays: 59, minWords: 1250, title: '빛나는 왕관', name: '왕실 햄스터', base: 6, item: 'crown' },
-    { level: 19, minDays: 67, minWords: 1400, title: '우주를 정복한', name: '은하계 햄스터', base: 7, item: 'aura' },
-    { level: 20, minDays: 75, minWords: 1600, title: '신화가 된', name: '단어의 신 햄스터', base: 7, item: 'god_crown' },
+    { level: 16, minDays: 46, minWords: 950, title: '시간을 거스르는', name: '현자 햄스터', img: 9 },
+    { level: 17, minDays: 52, minWords: 1100, title: '모든 것을 아는', name: '대현자 햄스터', img: 9 },
+    { level: 18, minDays: 59, minWords: 1250, title: '빛나는 왕관', name: '왕실 햄스터', img: 10 },
+    { level: 19, minDays: 67, minWords: 1400, title: '우주를 정복한', name: '은하계 햄스터', img: 10 },
+    { level: 20, minDays: 75, minWords: 1600, title: '신화가 된', name: '단어의 신 햄스터', img: 10 },
 ];
 
 function getStage(streak: number, words: number) {
@@ -176,29 +176,13 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/80 backdrop-blur-sm rounded-[2rem] flex items-center justify-center shadow-inner overflow-visible relative border border-white/60">
                         {/* 둥둥 떠다니기 + 클릭 시 점프 */}
                         <div className={`relative w-16 h-16 sm:w-20 sm:h-20 transition-transform ${bounce ? 'animate-[bounce_0.5s_ease-out]' : 'animate-[float_3s_ease-in-out_infinite]'}`}>
-
-                            {/* Layer 1: Base Body */}
                             <Image
-                                src={`/images/pets/hamster/base_${stage.base}.png`}
-                                alt="Hamster Base"
+                                src={`/images/pets/hamster/lv${stage.img}.png`}
+                                alt={stage.name}
                                 fill
                                 className="object-contain drop-shadow-md"
                                 sizes="80px"
-                                // 이미지가 없다면 fallback으로 원래 있던 lv.1 이미지를 띄움
-                                onError={(e) => { e.currentTarget.setAttribute('src', `/images/pets/hamster/lv1.png`) }}
                             />
-
-                            {/* Layer 2: Item Add-on (레벨별 고유 아이템 장착) */}
-                            {stage.item && (
-                                <Image
-                                    src={`/images/pets/hamster/item_${stage.item}.png`}
-                                    alt="Hamster Item"
-                                    fill
-                                    className="object-contain drop-shadow-lg z-10"
-                                    sizes="80px"
-                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                />
-                            )}
                         </div>
                     </div>
 
