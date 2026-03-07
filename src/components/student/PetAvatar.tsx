@@ -1,36 +1,36 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Sparkles, CalendarHeart, Flame, Star, Trophy } from 'lucide-react';
 
 // ============================================================================
-// 1. 20단계 햄스터 진화 로직
+// 1. 20?④퀎 ?꾩뒪??吏꾪솕 濡쒖쭅
 // ============================================================================
 const HAMSTER_STAGES = [
-    // 🐣 브론즈 (Lv 1~5)
-    { level: 1, minDays: 0, minWords: 0, title: '갓 태어난', name: '점박이 햄스터' },
-    { level: 2, minDays: 1, minWords: 5, title: '눈을 뜬', name: '호기심 햄스터' },
-    { level: 3, minDays: 2, minWords: 15, title: '뒤뚱뒤뚱', name: '아기 햄스터' },
-    { level: 4, minDays: 3, minWords: 30, title: '해바라기씨', name: '발견자 햄스터' },
-    { level: 5, minDays: 4, minWords: 50, title: '볼따구 빵빵', name: '먹보 햄스터' },
-    // 🥈 실버 (Lv 6~10)
-    { level: 6, minDays: 6, minWords: 80, title: '체력 증진', name: '런닝 햄스터' },
-    { level: 7, minDays: 8, minWords: 120, title: '잔머리 굴리는', name: '천재 햄스터' },
-    { level: 8, minDays: 11, minWords: 170, title: '호기심 천국', name: '탐정 햄스터' },
-    { level: 9, minDays: 14, minWords: 230, title: '야외 체질', name: '탐험가 햄스터' },
-    { level: 10, minDays: 17, minWords: 300, title: '열공 모드', name: '선비 햄스터' },
-    // 🥇 골드 (Lv 11~15)
-    { level: 11, minDays: 21, minWords: 380, title: '마법학교', name: '신입생 햄스터' },
-    { level: 12, minDays: 25, minWords: 470, title: '지식의 수호자', name: '사서 햄스터' },
-    { level: 13, minDays: 30, minWords: 570, title: '우주로 향하는', name: '로켓 햄스터' },
-    { level: 14, minDays: 35, minWords: 680, title: '번개를 부르는', name: '마법사 햄스터' },
-    { level: 15, minDays: 40, minWords: 800, title: '전설의 입문', name: '기사 햄스터' },
-    // 🌈 무지개 (Lv 16~20)
-    { level: 16, minDays: 46, minWords: 950, title: '시간을 거스르는', name: '현자 햄스터' },
-    { level: 17, minDays: 52, minWords: 1100, title: '모든 것을 아는', name: '대현자 햄스터' },
-    { level: 18, minDays: 59, minWords: 1250, title: '빛나는 왕관', name: '왕실 햄스터' },
-    { level: 19, minDays: 67, minWords: 1400, title: '우주를 정복한', name: '은하계 햄스터' },
-    { level: 20, minDays: 75, minWords: 1600, title: '신화가 된', name: '단어의 신 햄스터' },
+    // ?맋 釉뚮줎利?(Lv 1~5)
+    { level: 1, minDays: 0, minWords: 0, title: '媛??쒖뼱??, name: '?먮컯???꾩뒪?? },
+    { level: 2, minDays: 1, minWords: 5, title: '?덉쓣 ??, name: '?멸린???꾩뒪?? },
+    { level: 3, minDays: 2, minWords: 15, title: '?ㅻ슧?ㅻ슧', name: '?꾧린 ?꾩뒪?? },
+    { level: 4, minDays: 3, minWords: 30, title: '?대컮?쇨린??, name: '諛쒓껄???꾩뒪?? },
+    { level: 5, minDays: 4, minWords: 50, title: '蹂쇰뵲援?鍮듬뭇', name: '癒밸낫 ?꾩뒪?? },
+    // ?쪎 ?ㅻ쾭 (Lv 6~10)
+    { level: 6, minDays: 6, minWords: 80, title: '泥대젰 利앹쭊', name: '?곕떇 ?꾩뒪?? },
+    { level: 7, minDays: 8, minWords: 120, title: '?붾㉧由?援대━??, name: '泥쒖옱 ?꾩뒪?? },
+    { level: 8, minDays: 11, minWords: 170, title: '?멸린??泥쒓뎅', name: '?먯젙 ?꾩뒪?? },
+    { level: 9, minDays: 14, minWords: 230, title: '?쇱쇅 泥댁쭏', name: '?먰뿕媛 ?꾩뒪?? },
+    { level: 10, minDays: 17, minWords: 300, title: '?닿났 紐⑤뱶', name: '?좊퉬 ?꾩뒪?? },
+    // ?쪍 怨⑤뱶 (Lv 11~15)
+    { level: 11, minDays: 21, minWords: 380, title: '留덈쾿?숆탳', name: '?좎엯???꾩뒪?? },
+    { level: 12, minDays: 25, minWords: 470, title: '吏?앹쓽 ?섑샇??, name: '?ъ꽌 ?꾩뒪?? },
+    { level: 13, minDays: 30, minWords: 570, title: '?곗＜濡??ν븯??, name: '濡쒖폆 ?꾩뒪?? },
+    { level: 14, minDays: 35, minWords: 680, title: '踰덇컻瑜?遺瑜대뒗', name: '留덈쾿???꾩뒪?? },
+    { level: 15, minDays: 40, minWords: 800, title: '?꾩꽕???낅Ц', name: '湲곗궗 ?꾩뒪?? },
+    // ?뙂 臾댁?媛?(Lv 16~20)
+    { level: 16, minDays: 46, minWords: 950, title: '?쒓컙??嫄곗뒪瑜대뒗', name: '?꾩옄 ?꾩뒪?? },
+    { level: 17, minDays: 52, minWords: 1100, title: '紐⑤뱺 寃껋쓣 ?꾨뒗', name: '??꾩옄 ?꾩뒪?? },
+    { level: 18, minDays: 59, minWords: 1250, title: '鍮쏅굹???뺢?', name: '?뺤떎 ?꾩뒪?? },
+    { level: 19, minDays: 67, minWords: 1400, title: '?곗＜瑜??뺣났??, name: '??섍퀎 ?꾩뒪?? },
+    { level: 20, minDays: 75, minWords: 1600, title: '?좏솕媛 ??, name: '?⑥뼱?????꾩뒪?? },
 ];
 
 function getStage(streak: number, words: number) {
@@ -47,25 +47,25 @@ function getNextStage(streak: number, words: number) {
 }
 
 // ============================================================================
-// 2. 말풍선 랜덤 대사
+// 2. 留먰뭾???쒕뜡 ???
 // ============================================================================
 const BUBBLE_MESSAGES = [
-    "앗, 간지러워 찌찍! >_<",
-    "오늘도 단어 공부 파이팅!",
-    "해바라기씨 먹고 싶다 뇸뇸",
-    "다음 레벨로 가볼까요?!",
-    "쓰다듬어줘서 고마워요 🐹",
-    "찍찍! 천재가 된 기분이에요!",
-    "조금만 더 하면 진화해요 🔥",
-    "게이지가 쑥쑥 올라요!",
+    "?? 媛꾩??ъ썙 李뚯컢! >_<",
+    "?ㅻ뒛???⑥뼱 怨듬? ?뚯씠??",
+    "?대컮?쇨린??癒밴퀬 ?띕떎 ?몃눡",
+    "?ㅼ쓬 ?덈꺼濡?媛蹂쇨퉴??!",
+    "?곕떎?ъ뼱以섏꽌 怨좊쭏?뚯슂 ?맲",
+    "李띿컢! 泥쒖옱媛 ??湲곕텇?댁뿉??",
+    "議곌툑留????섎㈃ 吏꾪솕?댁슂 ?뵦",
+    "寃뚯씠吏媛 ?μ뫁 ?щ씪??",
 ];
 
 // ============================================================================
-// 3. 티어별 테마 (배경/색상/게이지 등)
+// 3. ?곗뼱蹂??뚮쭏 (諛곌꼍/?됱긽/寃뚯씠吏 ??
 // ============================================================================
 const getTheme = (level: number) => {
-    // 햄스터 본체는 흰색 계열 고정, 배경 테마만 티어별 변경
-    const hamster = { body: '#F8F8F8', belly: '#FFFFFF', cheek: '#FFB0B0', ear: '#F0E0E0' };
+    // ?꾩뒪??蹂몄껜: ?곕쑜???щ┝/踰좎씠吏 ?? 諛곌꼍 ?뚮쭏留??곗뼱蹂?蹂寃?
+    const hamster = { body: '#FFF5E6', belly: '#FFFFFF', cheek: '#FFB0B0', ear: '#F5D6B8', earInner: '#FFCACA', outline: '#D4A574' };
     if (level <= 5) return { ...hamster, bg: 'from-amber-50 via-orange-50/50 to-yellow-50/30', ring: 'border-orange-200', bar: 'from-orange-400 to-amber-500', title: 'text-orange-600', icon: 'text-orange-500' };
     if (level <= 10) return { ...hamster, bg: 'from-slate-50 via-blue-50/50 to-indigo-50/30', ring: 'border-blue-200', bar: 'from-blue-400 to-indigo-500', title: 'text-blue-600', icon: 'text-blue-500' };
     if (level <= 15) return { ...hamster, bg: 'from-yellow-50 via-amber-100/30 to-rose-50/30', ring: 'border-amber-300 shadow-lg', bar: 'from-amber-400 via-yellow-400 to-orange-500', title: 'text-amber-600', icon: 'text-amber-500' };
@@ -73,303 +73,306 @@ const getTheme = (level: number) => {
 };
 
 // ============================================================================
-// 4. SVG 햄스터 캐릭터 컴포넌트 (순수 코드로 렌더링)
+// 4. SVG ?꾩뒪??罹먮┃??而댄룷?뚰듃 (?쒖닔 肄붾뱶濡??뚮뜑留?
 // ============================================================================
 function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; blink: boolean }) {
     const theme = getTheme(level);
 
     return (
         <svg
-            viewBox="0 0 120 120"
+            viewBox="0 0 500 500"
             className={`w-full h-full transition-transform duration-300 ${bounce ? 'scale-110' : ''}`}
-            style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
+            style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))' }}
         >
 
 
-            {/* ═══════════════════════════════════════════════ */}
-            {/* ── 버전 1 업그레이드: 최상급 귀염둥이 하얀 햄찌 ── */}
-            {/* ═══════════════════════════════════════════════ */}
 
-            {/* 전체 들숨날숨 (숨쉬기 애니메이션) */}
-            <g>
-                <animateTransform attributeName="transform" type="translate" values="0,0; 0,-2; 0,0" dur="2s" repeatCount="indefinite" />
+            {/* ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??*/}
+            {/* ?? ?꾨줈?섏뀛??移댁???2?깆떊 ?꾩컡 (500x500) ?? */}
+            {/* ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??*/}
 
-                {/* ── 꼬리 (오른쪽 솜뭉치 꼬리) ── */}
-                <circle cx="88" cy="85" r="10" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2">
-                    <animateTransform attributeName="transform" type="rotate" values="-5,88,85;10,88,85;-5,88,85" dur="1.5s" repeatCount="indefinite" />
-                </circle>
-
-                {/* ── 귀 (왼쪽, 큰 핑크 귀) ── */}
-                <g>
-                    <animateTransform attributeName="transform" type="rotate" values="-4,30,32;4,30,32;-4,30,32" dur="3s" repeatCount="indefinite" />
-                    <circle cx="30" cy="32" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
-                    <circle cx="30" cy="33" r="9" fill="#FFCACA" />
-                </g>
-
-                {/* ── 귀 (오른쪽, 큰 핑크 귀) ── */}
-                <g>
-                    <animateTransform attributeName="transform" type="rotate" values="4,90,32;-4,90,32;4,90,32" dur="3s" repeatCount="indefinite" />
-                    <circle cx="90" cy="32" r="16" fill="#FFFFFF" stroke="#F0F0F0" strokeWidth="2" />
-                    <circle cx="90" cy="33" r="9" fill="#FFCACA" />
-                </g>
-
-                {/* ── 메인 바디 (아주 통통하고 둥근 호빵) ── */}
-                {/* 외곽 그림자 & 테두리 역할을 하는 제일 넓은 원형 */}
-                <path d="M 22 68 C 22 25, 98 25, 98 68 C 98 105, 22 105, 22 68 Z" fill="#FFFFFF" stroke="#EAEAEA" strokeWidth="3" />
-
-                {/* ── 볼 터치 (가로로 긴 연분홍) ── */}
-                <ellipse cx="34" cy="65" rx="12" ry="8" fill="#FFADAD" opacity="0.65" />
-                <ellipse cx="86" cy="65" rx="12" ry="8" fill="#FFADAD" opacity="0.65" />
-
-                {/* ── 눈 (초롱초롱 은하수 눈동자) ── */}
-                {blink ? (
-                    <>
-                        <path d="M 44 52 Q 48 49 52 52" fill="none" stroke="#2D3748" strokeWidth="3.5" strokeLinecap="round" />
-                        <path d="M 68 52 Q 72 49 76 52" fill="none" stroke="#2D3748" strokeWidth="3.5" strokeLinecap="round" />
-                    </>
-                ) : (
-                    <>
-                        <circle cx="48" cy="53" r="6" fill="#2C3338" />
-                        <circle cx="72" cy="53" r="6" fill="#2C3338" />
-                        {/* 하이라이트 */}
-                        <circle cx="46" cy="51" r="2" fill="#FFFFFF" />
-                        <circle cx="50" cy="55" r="1" fill="#FFFFFF" opacity="0.9" />
-                        <circle cx="70" cy="51" r="2" fill="#FFFFFF" />
-                        <circle cx="74" cy="55" r="1" fill="#FFFFFF" opacity="0.9" />
-                    </>
+            {/* ?? defs: 洹몃┝?? 洹몃씪?붿뼵???? */}
+            <defs>
+                <filter id="hamsterShadow" x="-10%" y="-5%" width="120%" height="130%">
+                    <feDropShadow dx="0" dy="8" stdDeviation="12" floodColor="#D4A574" floodOpacity="0.25" />
+                </filter>
+                <radialGradient id="bodyGrad" cx="50%" cy="40%" r="55%">
+                    <stop offset="0%" stopColor="#FFFAF3" />
+                    <stop offset="100%" stopColor={theme.body} />
+                </radialGradient>
+                <radialGradient id="headGrad" cx="50%" cy="35%" r="55%">
+                    <stop offset="0%" stopColor="#FFFCF5" />
+                    <stop offset="100%" stopColor={theme.body} />
+                </radialGradient>
+                <radialGradient id="cheekGradL" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#FFBABA" />
+                    <stop offset="100%" stopColor="#FFD4D4" stopOpacity="0" />
+                </radialGradient>
+                <radialGradient id="cheekGradR" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#FFBABA" />
+                    <stop offset="100%" stopColor="#FFD4D4" stopOpacity="0" />
+                </radialGradient>
+                {level >= 18 && (
+                    <radialGradient id="auraGrad18">
+                        <stop offset="0%" stopColor={theme.body} />
+                        <stop offset="100%" stopColor="transparent" />
+                    </radialGradient>
                 )}
+            </defs>
 
-                {/* ── 코 (조그만 핑크 하트) ── */}
-                <path d="M 58.5 59 Q 60 61 61.5 59 L 60 61 Z" fill="#FF8888" stroke="#FF8888" strokeWidth="1" />
+            {/* ?꾩껜 ?⑥돩湲??좊땲硫붿씠??*/}
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0,0; 0,-6; 0,0" dur="2.2s" repeatCount="indefinite" />
 
-                {/* ── 입 (통통한 햄찌 입매 ω) ── */}
-                <path d="M 56 62 Q 58 65 60 62 Q 62 65 64 62" fill="none" stroke="#CC6666" strokeWidth="1.8" strokeLinecap="round" />
+                {/* ?? id="shadow": 諛붾떏 洹몃┝???? */}
+                <g id="shadow">
+                    <ellipse cx="250" cy="460" rx="120" ry="18" fill="#D4A574" opacity="0.15">
+                        <animate attributeName="rx" values="120;110;120" dur="2.2s" repeatCount="indefinite" />
+                    </ellipse>
+                </g>
 
-                {/* ── 수염 (짧고 여린 수염 2가닥씩) ── */}
-                <line x1="28" y1="58" x2="38" y2="59" stroke="#E0C8B0" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
-                <line x1="26" y1="63" x2="38" y2="62" stroke="#E0C8B0" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+                {/* ?? id="body": 紐명넻 (?묎퀬 ?κ렐 李뱀??? ?? */}
+                <g id="body">
+                    <ellipse cx="250" cy="370" rx="110" ry="85" fill="url(#bodyGrad)" stroke={theme.outline} strokeWidth="4" strokeLinejoin="round" filter="url(#hamsterShadow)" />
+                    {/* 諛?(?섏? 諛? */}
+                    <ellipse cx="250" cy="380" rx="75" ry="55" fill={theme.belly} opacity="0.9" />
+                </g>
 
-                <line x1="82" y1="59" x2="92" y2="58" stroke="#E0C8B0" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
-                <line x1="82" y1="62" x2="94" y2="63" stroke="#E0C8B0" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+                {/* ?? id="paws": ?욌컻/?룸컻 ?? */}
+                <g id="paws">
+                    {/* ?룸컻 (?쇱そ) */}
+                    <ellipse cx="180" cy="440" rx="42" ry="22" fill={theme.ear} stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                    <ellipse cx="180" cy="442" rx="16" ry="8" fill="#FFCACA" opacity="0.5" />
+                    {/* ?룸컻 (?ㅻⅨ履? */}
+                    <ellipse cx="320" cy="440" rx="42" ry="22" fill={theme.ear} stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                    <ellipse cx="320" cy="442" rx="16" ry="8" fill="#FFCACA" opacity="0.5" />
+                    {/* ?욌컻 (媛?댁뿉 紐⑥? ???? */}
+                    <g>
+                        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-3; 0,0" dur="2.2s" repeatCount="indefinite" />
+                        <ellipse cx="215" cy="360" rx="22" ry="28" fill="url(#bodyGrad)" stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                        <ellipse cx="285" cy="360" rx="22" ry="28" fill="url(#bodyGrad)" stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                    </g>
+                </g>
 
-                {/* ── 발 (넓적하고 귀여운 하단 발) ── */}
-                <ellipse cx="42" cy="100" rx="12" ry="7" fill="#FDFDFD" stroke="#EAEAEA" strokeWidth="2" />
-                <path d="M 36 102 L 48 102" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+                {/* ?? id="head": 癒몃━ (?ш퀬 ?κ렐 2?깆떊 癒몃━) ?? */}
+                <g id="head">
+                    <circle cx="250" cy="220" r="130" fill="url(#headGrad)" stroke={theme.outline} strokeWidth="4" strokeLinejoin="round" />
+                </g>
 
-                <ellipse cx="78" cy="100" rx="12" ry="7" fill="#FDFDFD" stroke="#EAEAEA" strokeWidth="2" />
-                <path d="M 72 102 L 84 102" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+                {/* ?? id="ears": 洹 (?묎퀬 ?숆??숆?) ?? */}
+                <g id="ears">
+                    {/* ?쇱そ 洹 */}
+                    <g>
+                        <animateTransform attributeName="transform" type="rotate" values="-3,155,110;3,155,110;-3,155,110" dur="3s" repeatCount="indefinite" />
+                        <ellipse cx="155" cy="110" rx="40" ry="48" fill={theme.ear} stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                        <ellipse cx="155" cy="114" rx="22" ry="30" fill={theme.earInner} />
+                    </g>
+                    {/* ?ㅻⅨ履?洹 */}
+                    <g>
+                        <animateTransform attributeName="transform" type="rotate" values="3,345,110;-3,345,110;3,345,110" dur="3s" repeatCount="indefinite" />
+                        <ellipse cx="345" cy="110" rx="40" ry="48" fill={theme.ear} stroke={theme.outline} strokeWidth="3" strokeLinejoin="round" />
+                        <ellipse cx="345" cy="114" rx="22" ry="30" fill={theme.earInner} />
+                    </g>
+                </g>
 
-                {/* ── 양손 (가슴팍에 다소곳이 모은 예쁜 손) ── */}
-                <g>
-                    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-1; 0,0" dur="2s" repeatCount="indefinite" />
-                    <ellipse cx="51" cy="69" rx="6" ry="8" fill="#FFFFFF" stroke="#EAEAEA" strokeWidth="1.5" />
-                    <ellipse cx="69" cy="69" rx="6" ry="8" fill="#FFFFFF" stroke="#EAEAEA" strokeWidth="1.5" />
+                {/* ?? id="face": ?쇨뎬 (??肄???蹂??섏뿼) ?? */}
+                <g id="face">
+                    {/* 蹂??곗튂 (鍮듬뭇?섍퀬 ?щ옉?ㅻ윭???뚯뒪???묓겕) */}
+                    <ellipse cx="155" cy="255" rx="50" ry="32" fill="url(#cheekGradL)" opacity="0.7" />
+                    <ellipse cx="345" cy="255" rx="50" ry="32" fill="url(#cheekGradR)" opacity="0.7" />
+
+                    {/* ??(珥덈”珥덈”, 而ㅻ떎? 源뚮쭔 ?덈룞?? */}
+                    {blink ? (
+                        <>
+                            <path d="M 195 210 Q 210 195 225 210" fill="none" stroke="#3D2C22" strokeWidth="8" strokeLinecap="round" />
+                            <path d="M 275 210 Q 290 195 305 210" fill="none" stroke="#3D2C22" strokeWidth="8" strokeLinecap="round" />
+                        </>
+                    ) : (
+                        <>
+                            {/* ?덉븣 */}
+                            <circle cx="210" cy="210" r="24" fill="#2C1810" />
+                            <circle cx="290" cy="210" r="24" fill="#2C1810" />
+                            {/* ?섏씠?쇱씠??1 (硫붿씤 鍮? */}
+                            <circle cx="200" cy="200" r="9" fill="#FFFFFF" />
+                            <circle cx="280" cy="200" r="9" fill="#FFFFFF" />
+                            {/* ?섏씠?쇱씠??2 (蹂댁“ 鍮? */}
+                            <circle cx="218" cy="218" r="5" fill="#FFFFFF" opacity="0.8" />
+                            <circle cx="298" cy="218" r="5" fill="#FFFFFF" opacity="0.8" />
+                            {/* ?섏씠?쇱씠??3 (誘몃땲) */}
+                            <circle cx="205" cy="220" r="3" fill="#FFFFFF" opacity="0.5" />
+                            <circle cx="285" cy="220" r="3" fill="#FFFFFF" opacity="0.5" />
+                        </>
+                    )}
+
+                    {/* 肄?(議곌렇留??쇨컖 肄? */}
+                    <path d="M 244 248 Q 250 256 256 248 L 250 253 Z" fill="#E8876B" stroke="#E8876B" strokeWidth="2" strokeLinejoin="round" />
+
+                    {/* ??(??紐⑥뼇 = ? ?낅ℓ) */}
+                    <path d="M 236 258 Q 243 270 250 258 Q 257 270 264 258" fill="none" stroke="#CC7766" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+
+                    {/* ?섏뿼 (?묒そ 2媛?? */}
+                    <line x1="110" y1="235" x2="165" y2="245" stroke="#E0C8B0" strokeWidth="3" opacity="0.45" strokeLinecap="round" />
+                    <line x1="105" y1="255" x2="165" y2="252" stroke="#E0C8B0" strokeWidth="3" opacity="0.45" strokeLinecap="round" />
+                    <line x1="335" y1="245" x2="390" y2="235" stroke="#E0C8B0" strokeWidth="3" opacity="0.45" strokeLinecap="round" />
+                    <line x1="335" y1="252" x2="395" y2="255" stroke="#E0C8B0" strokeWidth="3" opacity="0.45" strokeLinecap="round" />
+                </g>
+
+                {/* ?? id="accessories": ?덈꺼蹂??꾩쟻 ?꾩씠???? */}
+                <g id="accessories">
+                    {/* ?? 釉뚮줎利??곗뼱 (Lv 2~5) ?? */}
+                    {level >= 2 && (
+                        <g>
+                            <ellipse cx="290" cy="85" rx="28" ry="15" fill="#4ade80" transform="rotate(-30,290,85)" stroke="#22c55e" strokeWidth="3" />
+                            <line x1="290" y1="85" x2="300" y2="72" stroke="#16a34a" strokeWidth="4" strokeLinecap="round" />
+                            <line x1="282" y1="90" x2="290" y2="80" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" />
+                        </g>
+                    )}
+                    {level >= 3 && (
+                        <g>
+                            <path d="M200 330 C200 310, 230 318, 250 330 C270 318, 300 310, 300 330 C300 345, 280 340, 250 330 C220 340, 200 345, 200 330 Z" fill="#f472b6" stroke="#db2777" strokeWidth="4" strokeLinejoin="round" />
+                            <circle cx="250" cy="330" r="10" fill="#fbcfe8" stroke="#db2777" strokeWidth="3" />
+                        </g>
+                    )}
+                    {level >= 4 && (
+                        <g>
+                            <ellipse cx="370" cy="330" rx="22" ry="14" fill="#fbbf24" stroke="#b45309" strokeWidth="3" transform="rotate(20,370,330)" />
+                            <ellipse cx="370" cy="330" rx="14" ry="7" fill="#fcd34d" transform="rotate(20,370,330)" />
+                        </g>
+                    )}
+                    {level >= 5 && (
+                        <g>
+                            <circle cx="148" cy="250" r="18" fill={theme.cheek} opacity="0.85" />
+                            <circle cx="352" cy="250" r="18" fill={theme.cheek} opacity="0.85" />
+                            <circle cx="142" cy="244" r="5" fill="white" opacity="0.5" />
+                            <circle cx="346" cy="244" r="5" fill="white" opacity="0.5" />
+                        </g>
+                    )}
+
+                    {/* ?? ?ㅻ쾭 ?곗뼱 (Lv 6~10) ?? */}
+                    {level >= 6 && (
+                        <g>
+                            <rect x="140" y="115" width="220" height="18" rx="9" fill="#ef4444" opacity="0.95" />
+                            <rect x="140" y="122" width="220" height="6" fill="#fca5a5" opacity="0.8" />
+                        </g>
+                    )}
+                    {level >= 7 && (
+                        <g>
+                            <circle cx="210" cy="210" r="30" fill="none" stroke="#1f2937" strokeWidth="7" />
+                            <circle cx="290" cy="210" r="30" fill="none" stroke="#1f2937" strokeWidth="7" />
+                            <line x1="240" y1="210" x2="260" y2="210" stroke="#1f2937" strokeWidth="7" />
+                            <line x1="180" y1="200" x2="145" y2="185" stroke="#1f2937" strokeWidth="5" strokeLinecap="round" />
+                            <line x1="320" y1="200" x2="355" y2="185" stroke="#1f2937" strokeWidth="5" strokeLinecap="round" />
+                        </g>
+                    )}
+                    {level >= 8 && (
+                        <g>
+                            <circle cx="108" cy="320" r="24" fill="#e0f2fe" stroke="#94a3b8" strokeWidth="5" />
+                            <line x1="128" y1="340" x2="150" y2="370" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
+                        </g>
+                    )}
+                    {level >= 9 && (
+                        <g>
+                            <rect x="340" y="290" width="52" height="60" rx="12" fill="#d97706" stroke="#92400e" strokeWidth="4" />
+                            <rect x="346" y="305" width="40" height="18" rx="6" fill="#f59e0b" />
+                            <circle cx="366" cy="335" r="6" fill="#fbbf24" />
+                        </g>
+                    )}
+                    {level >= 10 && (
+                        <g>
+                            <rect x="360" y="310" width="48" height="34" rx="4" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="3" transform="rotate(-10,384,327)" />
+                            <line x1="384" y1="310" x2="384" y2="344" stroke="#1e3a8a" strokeWidth="3" transform="rotate(-10,384,327)" />
+                        </g>
+                    )}
+
+                    {/* ?? 怨⑤뱶 ?곗뼱 (Lv 11~15) ?? */}
+                    {level >= 11 && (
+                        <g>
+                            <polygon points="250,10 170,130 330,130" fill="#4f46e5" stroke="#fef08a" strokeWidth="5" strokeLinejoin="round" />
+                            <rect x="156" y="118" width="188" height="18" rx="9" fill="#facc15" stroke="#ca8a04" strokeWidth="3" />
+                        </g>
+                    )}
+                    {level >= 12 && (
+                        <text x="220" y="25" fontSize="50" style={{ transformOrigin: '250px 10px' }}>
+                            <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="2s" repeatCount="indefinite" />
+                            狩?
+                        </text>
+                    )}
+                    {level >= 13 && (
+                        <g>
+                            <line x1="395" y1="270" x2="440" y2="150" stroke="#fbbf24" strokeWidth="8" strokeLinecap="round" />
+                            <circle cx="440" cy="150" r="16" fill="#fef08a" stroke="#ca8a04" strokeWidth="3" />
+                            <circle cx="440" cy="150" r="22" fill="#fef08a" opacity="0.4">
+                                <animate attributeName="r" values="18;28;18" dur="1s" repeatCount="indefinite" />
+                            </circle>
+                        </g>
+                    )}
+                    {level >= 14 && (
+                        <g>
+                            <path d="M125 290 Q80 360 125 435 L250 410 L375 435 Q420 360 375 290" fill="#6d28d9" opacity="0.75" />
+                            <path d="M125 290 Q80 360 125 435 L250 410 L375 435 Q420 360 375 290" fill="none" stroke="#fde047" strokeWidth="5" opacity="0.85" />
+                        </g>
+                    )}
+                    {level >= 15 && (
+                        <>
+                            <text x="70" y="100" fontSize="32" opacity="0.7">??/text>
+                            <text x="390" y="95" fontSize="28" opacity="0.5">
+                                <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite" />
+                                ??
+                            </text>
+                        </>
+                    )}
+
+                    {/* ?? 臾댁?媛??곗뼱 (Lv 16~20) ?? */}
+                    {level >= 16 && (
+                        <g>
+                            <polygon points="158,130 175,50 210,100 250,25 290,100 325,50 342,130" fill="#facc15" stroke="#b45309" strokeWidth="4" strokeLinejoin="round" />
+                            <rect x="150" y="118" width="200" height="18" rx="6" fill="#eab308" />
+                        </g>
+                    )}
+                    {level >= 17 && (
+                        <g>
+                            <circle cx="210" cy="80" r="12" fill="#ef4444" stroke="#7f1d1d" strokeWidth="2" />
+                            <circle cx="250" cy="55" r="15" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="2" />
+                            <circle cx="290" cy="80" r="12" fill="#22c55e" stroke="#14532d" strokeWidth="2" />
+                            <circle cx="248" cy="50" r="5" fill="white" opacity="0.8" />
+                        </g>
+                    )}
+                    {level >= 18 && (
+                        <circle cx="250" cy="280" r="210" fill="url(#auraGrad18)" opacity="0.18">
+                            <animate attributeName="r" values="200;220;200" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                    )}
+                    {level >= 19 && (
+                        <g>
+                            <text x="40" y="200" fontSize="36" opacity="0.9">狩?
+                                <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+                            </text>
+                            <text x="415" y="220" fontSize="42" opacity="0.9">?뙚
+                                <animate attributeName="y" values="220;190;220" dur="2s" repeatCount="indefinite" />
+                            </text>
+                        </g>
+                    )}
+                    {level >= 20 && (
+                        <g>
+                            <path d="M40 430 A210 210 0 0 1 460 430" fill="none" stroke="#ef4444" strokeWidth="10" opacity="0.8" />
+                            <path d="M55 430 A195 195 0 0 1 445 430" fill="none" stroke="#f59e0b" strokeWidth="10" opacity="0.8" />
+                            <path d="M70 430 A180 180 0 0 1 430 430" fill="none" stroke="#eab308" strokeWidth="10" opacity="0.8" />
+                            <path d="M85 430 A165 165 0 0 1 415 430" fill="none" stroke="#22c55e" strokeWidth="10" opacity="0.8" />
+                            <path d="M100 430 A150 150 0 0 1 400 430" fill="none" stroke="#3b82f6" strokeWidth="10" opacity="0.8" />
+                            <path d="M115 430 A135 135 0 0 1 385 430" fill="none" stroke="#8b5cf6" strokeWidth="10" opacity="0.8" />
+                        </g>
+                    )}
                 </g>
 
             </g>
 
-
-            {/* ============================================================ */}
-            {/* 레벨별 누적 아이템 (레벨이 올라갈수록 하나씩 추가됨!)         */}
-            {/* ============================================================ */}
-
-            {/* ── 브론즈 티어 (Lv 2~5) ── */}
-            {/* Lv2: 머리 위 나뭇잎 🍃 (크기 증가, 잎맥 추가) */}
-            {level >= 2 && (
-                <g>
-                    <ellipse cx="68" cy="20" rx="8" ry="4.5" fill="#4ade80" transform="rotate(-30,68,20)" stroke="#22c55e" strokeWidth="1" />
-                    <line x1="68" y1="20" x2="72" y2="16" stroke="#16a34a" strokeWidth="1.5" />
-                    <line x1="65" y1="22" x2="68" y2="19" stroke="#16a34a" strokeWidth="1" />
-                </g>
-            )}
-            {/* Lv3: 목에 리본 🎀 (크기 증가, 디테일 추가) */}
-            {level >= 3 && (
-                <g>
-                    <path d="M50 78 C50 72, 58 75, 60 78 C62 75, 70 72, 70 78 C70 82, 65 80, 60 78 C55 80, 50 82, 50 78 Z" fill="#f472b6" stroke="#db2777" strokeWidth="1.5" strokeLinejoin="round" />
-                    <circle cx="60" cy="78" r="3" fill="#fbcfe8" stroke="#db2777" strokeWidth="1" />
-                </g>
-            )}
-            {/* Lv4: 오른손에 별 캔디 🌻 (크기 및 디테일업) */}
-            {level >= 4 && (
-                <g>
-                    <ellipse cx="88" cy="75" rx="6" ry="4" fill="#fbbf24" stroke="#b45309" strokeWidth="1" transform="rotate(20,88,75)" />
-                    <ellipse cx="88" cy="75" rx="4" ry="2" fill="#fcd34d" transform="rotate(20,88,75)" />
-                    <line x1="86" y1="73" x2="90" y2="77" stroke="#b45309" strokeWidth="0.5" />
-                </g>
-            )}
-            {/* Lv5: 볼 빵빵 (더 귀엽게) */}
-            {level >= 5 && (
-                <g>
-                    <circle cx="37" cy="62" r="5.5" fill={theme.cheek} opacity="0.9" />
-                    <circle cx="83" cy="62" r="5.5" fill={theme.cheek} opacity="0.9" />
-                    <circle cx="35" cy="60" r="1.5" fill="white" opacity="0.6" />
-                    <circle cx="81" cy="60" r="1.5" fill="white" opacity="0.6" />
-                </g>
-            )}
-
-            {/* ── 실버 티어 (Lv 6~10) ── */}
-            {/* Lv6: 머리띠 (두껍고 선명하게) */}
-            {level >= 6 && (
-                <g>
-                    <rect x="34" y="28" width="52" height="6" rx="3" fill="#ef4444" opacity="0.95" />
-                    <rect x="34" y="30" width="52" height="2" fill="#fca5a5" opacity="0.8" />
-                </g>
-            )}
-            {/* Lv7: 안경 🤓 (뿔테 안경 디테일) */}
-            {level >= 7 && (
-                <g>
-                    <circle cx="50" cy="50" r="8" fill="none" stroke="#1f2937" strokeWidth="2.5" />
-                    <circle cx="70" cy="50" r="8" fill="none" stroke="#1f2937" strokeWidth="2.5" />
-                    <line x1="58" y1="50" x2="62" y2="50" stroke="#1f2937" strokeWidth="2.5" />
-                    <line x1="42" y1="48" x2="34" y2="44" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" />
-                    <line x1="78" y1="48" x2="86" y2="44" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M46 45 Q50 43 54 45" stroke="white" strokeWidth="1" fill="none" opacity="0.8" />
-                    <path d="M66 45 Q70 43 74 45" stroke="white" strokeWidth="1" fill="none" opacity="0.8" />
-                </g>
-            )}
-            {/* Lv8: 왼손에 돋보기 🔍 (입체감 추가) */}
-            {level >= 8 && (
-                <g>
-                    <circle cx="26" cy="76" r="7" fill="#e0f2fe" stroke="#94a3b8" strokeWidth="2" opacity="0.8" />
-                    <path d="M23 73 l 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
-                    <line x1="31" y1="81" x2="38" y2="88" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
-                </g>
-            )}
-            {/* Lv9: 등에 배낭 🎒 (크기 증가, 주머니 디테일) */}
-            {level >= 9 && (
-                <g>
-                    <rect x="78" y="55" width="16" height="20" rx="4" fill="#d97706" stroke="#92400e" strokeWidth="1.5" />
-                    <rect x="80" y="60" width="12" height="6" rx="2" fill="#f59e0b" />
-                    <circle cx="86" cy="68" r="2" fill="#fbbf24" />
-                    <line x1="82" y1="55" x2="82" y2="60" stroke="#92400e" strokeWidth="1" />
-                    <line x1="90" y1="55" x2="90" y2="60" stroke="#92400e" strokeWidth="1" />
-                </g>
-            )}
-            {/* Lv10: 오른손에 책 📖 (색상 변경, 디테일) */}
-            {level >= 10 && (
-                <g>
-                    <rect x="85" y="73" width="14" height="10" rx="1.5" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="1" transform="rotate(-10,85,73)" />
-                    <line x1="92" y1="73" x2="92" y2="83" stroke="#1e3a8a" strokeWidth="1" transform="rotate(-10,85,73)" />
-                    <rect x="87" y="75" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
-                    <rect x="87" y="78" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
-                    <rect x="93" y="75" width="4" height="1" rx="0.5" fill="#bfdbfe" transform="rotate(-10,85,73)" />
-                </g>
-            )}
-
-            {/* ── 골드 티어 (Lv 11~15) ── */}
-            {/* Lv11: 마법사 모자 🎩 (크기 및 문양 추가) */}
-            {level >= 11 && (
-                <g>
-                    <polygon points="60,-5 40,32 80,32" fill="#4f46e5" stroke="#fef08a" strokeWidth="2" strokeLinejoin="round" />
-                    <rect x="38" y="28" width="44" height="6" rx="3" fill="#facc15" stroke="#ca8a04" strokeWidth="1" />
-                    <text x="56" y="20" fontSize="12" opacity="0.8">✨</text>
-                </g>
-            )}
-            {/* Lv12: 모자 꼭대기 큰 별 ⭐ */}
-            {level >= 12 && (
-                <text x="52" y="5" fontSize="16" style={{ transformOrigin: '60px 0px' }}>
-                    <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="2s" repeatCount="indefinite" />
-                    ⭐
-                </text>
-            )}
-            {/* Lv13: 마법 지팡이 🪄 (화려하게) */}
-            {level >= 13 && (
-                <g>
-                    <line x1="94" y1="64" x2="108" y2="36" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round" />
-                    <circle cx="108" cy="36" r="5" fill="#fef08a" stroke="#ca8a04" strokeWidth="1" />
-                    <circle cx="108" cy="36" r="7" fill="#fef08a" opacity="0.5">
-                        <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite" />
-                    </circle>
-                    <text x="102" y="32" fontSize="12">✨</text>
-                </g>
-            )}
-            {/* Lv14: 마법 망토 */}
-            {level >= 14 && (
-                <g>
-                    <path d="M30 65 Q20 85 30 102 L60 95 L90 102 Q100 85 90 65" fill="#6d28d9" opacity="0.8" />
-                    <path d="M30 65 Q20 85 30 102 L60 95 L90 102 Q100 85 90 65" fill="none" stroke="#fde047" strokeWidth="2" opacity="0.9" />
-                </g>
-            )}
-            {/* Lv15: 반짝이 파티클 */}
-            {level >= 15 && (
-                <>
-                    <text x="18" y="28" fontSize="10" opacity="0.7">✨</text>
-                    <text x="92" y="25" fontSize="8" opacity="0.5">
-                        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite" />
-                        ✨
-                    </text>
-                </>
-            )}
-
-            {/* ── 무지개 티어 (Lv 16~20) ── */}
-            {/* Lv16: 왕관으로 교체 (모자 위에, 더 크고 화려하게) 👑 */}
-            {level >= 16 && (
-                <g>
-                    <polygon points="38,32 42,12 50,24 60,6 70,24 78,12 82,32" fill="#facc15" stroke="#b45309" strokeWidth="1.5" strokeLinejoin="round" />
-                    <rect x="36" y="28" width="48" height="6" rx="2" fill="#eab308" />
-                </g>
-            )}
-            {/* Lv17: 왕관 보석 💎 (반짝임 추가) */}
-            {level >= 17 && (
-                <g>
-                    <circle cx="50" cy="20" r="3.5" fill="#ef4444" stroke="#7f1d1d" strokeWidth="0.5" />
-                    <circle cx="60" cy="14" r="4.5" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="0.5" />
-                    <circle cx="70" cy="20" r="3.5" fill="#22c55e" stroke="#14532d" strokeWidth="0.5" />
-                    <circle cx="59" cy="13" r="1.5" fill="white" opacity="0.8" />
-                </g>
-            )}
-            {/* Lv18: 후광 오라 */}
-            {level >= 18 && (
-                <>
-                    <circle cx="60" cy="65" r="50" fill="url(#auraGrad18)" opacity="0.2">
-                        <animate attributeName="r" values="48;53;48" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    <defs>
-                        <radialGradient id="auraGrad18">
-                            <stop offset="0%" stopColor={theme.body} />
-                            <stop offset="100%" stopColor="transparent" />
-                        </radialGradient>
-                    </defs>
-                </>
-            )}
-            {/* Lv19: 궤도 도는 큰 별들 ⭐ */}
-            {level >= 19 && (
-                <g>
-                    <text x="10" y="50" fontSize="12" opacity="0.9">⭐
-                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
-                    </text>
-                    <text x="100" y="55" fontSize="14" opacity="0.9">🌟
-                        <animate attributeName="y" values="55;45;55" dur="2s" repeatCount="indefinite" />
-                    </text>
-                    <text x="50" y="115" fontSize="10">✨</text>
-                </g>
-            )}
-            {/* Lv20: 대형 무지개 아치 🌈 (굵기 증가 및 네온 효과) */}
-            {level >= 20 && (
-                <g>
-                    <path d="M10 100 A50 50 0 0 1 110 100" fill="none" stroke="#ef4444" strokeWidth="4" opacity="0.8" />
-                    <path d="M14 100 A46 46 0 0 1 106 100" fill="none" stroke="#f59e0b" strokeWidth="4" opacity="0.8" />
-                    <path d="M18 100 A42 42 0 0 1 102 100" fill="none" stroke="#eab308" strokeWidth="4" opacity="0.8" />
-                    <path d="M22 100 A38 38 0 0 1 98 100" fill="none" stroke="#22c55e" strokeWidth="4" opacity="0.8" />
-                    <path d="M26 100 A34 34 0 0 1 94 100" fill="none" stroke="#3b82f6" strokeWidth="4" opacity="0.8" />
-                    <path d="M30 100 A30 30 0 0 1 90 100" fill="none" stroke="#8b5cf6" strokeWidth="4" opacity="0.8" />
-                </g>
-            )}
-
-            {/* 숨쉬기 움직임 (작은 상하 운동) */}
-            <animateTransform
-                attributeName="transform"
-                type="translate"
-                values="0,0;0,-2;0,0"
-                dur="2.5s"
-                repeatCount="indefinite"
-            />
+        </svg>
         </svg>
     );
 }
 
 // ============================================================================
-// 5. 메인 PetAvatar 컴포넌트
+// 5. 硫붿씤 PetAvatar 而댄룷?뚰듃
 // ============================================================================
 type Props = {
     currentStreak: number;
@@ -388,7 +391,7 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
 
     useEffect(() => { setIsMounted(true); }, []);
 
-    // 주기적 눈 깜빡임 (3~5초 간격, 0.15초 감았다 뜸)
+    // 二쇨린????源쒕묀??(3~5珥?媛꾧꺽, 0.15珥?媛먯븯????
     useEffect(() => {
         const blinkLoop = () => {
             setBlink(true);
@@ -413,11 +416,11 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
     }, [bounce, msgIndex]);
 
     const getDefaultMsg = () => {
-        if (!next) return '우주 최강의 단어 마스터! 👑';
-        if (needDays > 0 && needWords > 0) return `${needDays}일 더 오고, 단어 ${needWords}개 외우자!`;
-        if (needDays > 0) return `단어는 완벽해! 출석 ${needDays}일 렛츠고! 🏃`;
-        if (needWords > 0) return `단어 ${needWords}개만 더 마스터하면 진화! ✨`;
-        return `조건 달성! 곧 진화해요! 🎉`;
+        if (!next) return '?곗＜ 理쒓컯???⑥뼱 留덉뒪?? ?몣';
+        if (needDays > 0 && needWords > 0) return `${needDays}?????ㅺ퀬, ?⑥뼱 ${needWords}媛??몄슦??`;
+        if (needDays > 0) return `?⑥뼱???꾨꼍?? 異쒖꽍 ${needDays}???쏆툩怨? ?룂`;
+        if (needWords > 0) return `?⑥뼱 ${needWords}媛쒕쭔 ??留덉뒪?고븯硫?吏꾪솕! ??;
+        return `議곌굔 ?ъ꽦! 怨?吏꾪솕?댁슂! ?럦`;
     };
 
     const displayMsg = msgIndex !== -1 ? BUBBLE_MESSAGES[msgIndex] : getDefaultMsg();
@@ -428,32 +431,32 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
         <div className={`relative overflow-hidden bg-gradient-to-br ${theme.bg} rounded-3xl border-[3px] ${theme.ring} p-4 sm:p-5 transition-colors duration-700`}>
             <div className="absolute inset-0 bg-white/10 z-0 pointer-events-none" />
 
-            {/* 상단: 캐릭터 + 정보 */}
+            {/* ?곷떒: 罹먮┃??+ ?뺣낫 */}
             <div className="relative z-10 flex items-center gap-4 sm:gap-5">
 
-                {/* SVG 캐릭터 영역 */}
+                {/* SVG 罹먮┃???곸뿭 */}
                 <div
                     className="relative shrink-0 cursor-pointer group flex flex-col items-center"
                     onClick={handleInteract}
-                    title="저를 터치해주세요 찌찍!"
+                    title="?瑜??곗튂?댁＜?몄슂 李뚯컢!"
                 >
                     <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center relative">
                         <HamsterSVG level={stage.level} bounce={bounce} blink={blink} />
                     </div>
 
-                    {/* 터치 유도 */}
+                    {/* ?곗튂 ?좊룄 */}
                     <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Sparkles className="w-5 h-5 text-yellow-400 rotate-12" strokeWidth={3} />
                     </div>
 
-                    {/* 레벨 뱃지 (캐릭터 중앙 아래) */}
+                    {/* ?덈꺼 諭껋? (罹먮┃??以묒븰 ?꾨옒) */}
                     <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-1 z-20 whitespace-nowrap`}>
                         <Star className={`w-3.5 h-3.5 ${theme.icon} fill-current`} />
                         Lv.{stage.level}
                     </div>
                 </div>
 
-                {/* 이름 + 말풍선 */}
+                {/* ?대쫫 + 留먰뭾??*/}
                 <div className="flex-1 min-w-0">
                     <div className="mb-1">
                         <span className="inline-block px-2 py-0.5 bg-white/70 rounded-md text-[10px] sm:text-xs font-bold text-slate-500 mb-1 shadow-sm border border-slate-100/50">
@@ -474,17 +477,17 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
                 </div>
             </div>
 
-            {/* 하단: 진행도 바 */}
+            {/* ?섎떒: 吏꾪뻾??諛?*/}
             {next && (
                 <div className="relative z-10 mt-5 space-y-3 bg-white/40 p-3 sm:p-4 rounded-2xl border border-white/50 shadow-inner">
                     <div>
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-1.5">
                                 <CalendarHeart className="w-4 h-4 text-rose-500" />
-                                <span className="text-xs font-bold text-slate-700">연속 출석</span>
+                                <span className="text-xs font-bold text-slate-700">?곗냽 異쒖꽍</span>
                             </div>
                             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500">
-                                <span className={daysPct >= 100 ? 'text-rose-600' : 'text-slate-800'}>{currentStreak}</span> / {next.minDays}일
+                                <span className={daysPct >= 100 ? 'text-rose-600' : 'text-slate-800'}>{currentStreak}</span> / {next.minDays}??
                             </span>
                         </div>
                         <div className="w-full h-3 sm:h-3.5 bg-slate-200/60 rounded-full overflow-hidden shadow-inner">
@@ -497,10 +500,10 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-1.5">
                                 <Flame className="w-4 h-4 text-orange-500" />
-                                <span className="text-xs font-bold text-slate-700">마스터 단어</span>
+                                <span className="text-xs font-bold text-slate-700">留덉뒪???⑥뼱</span>
                             </div>
                             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500">
-                                <span className={wordsPct >= 100 ? 'text-orange-600' : 'text-slate-800'}>{totalMasteredCount}</span> / {next.minWords}단어
+                                <span className={wordsPct >= 100 ? 'text-orange-600' : 'text-slate-800'}>{totalMasteredCount}</span> / {next.minWords}?⑥뼱
                             </span>
                         </div>
                         <div className="w-full h-3 sm:h-3.5 bg-slate-200/60 rounded-full overflow-hidden shadow-inner">
@@ -515,8 +518,8 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
             {!next && (
                 <div className="relative z-10 mt-5 bg-gradient-to-r from-amber-100/50 to-orange-100/50 p-4 rounded-2xl border border-amber-200 text-center">
                     <Trophy className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-                    <p className="font-black text-amber-700 text-sm">모든 진화 단계를 마스터했습니다!</p>
-                    <p className="font-bold text-amber-600/80 text-xs mt-0.5">앞으로도 꾸준히 공부해주세요!</p>
+                    <p className="font-black text-amber-700 text-sm">紐⑤뱺 吏꾪솕 ?④퀎瑜?留덉뒪?고뻽?듬땲??</p>
+                    <p className="font-bold text-amber-600/80 text-xs mt-0.5">?욎쑝濡쒕룄 袁몄???怨듬??댁＜?몄슂!</p>
                 </div>
             )}
         </div>
