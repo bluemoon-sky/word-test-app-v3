@@ -425,22 +425,22 @@ export default function PetAvatar({ currentStreak, totalMasteredCount }: Props) 
 
                 {/* SVG 캐릭터 영역 */}
                 <div
-                    className="relative shrink-0 cursor-pointer group"
+                    className="relative shrink-0 cursor-pointer group flex flex-col items-center"
                     onClick={handleInteract}
                     title="저를 터치해주세요 찌찍!"
                 >
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center relative">
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center relative">
                         <HamsterSVG level={stage.level} bounce={bounce} blink={blink} />
                     </div>
 
                     {/* 터치 유도 */}
-                    <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Sparkles className="w-5 h-5 text-yellow-400 rotate-12" strokeWidth={3} />
                     </div>
 
-                    {/* 레벨 뱃지 */}
-                    <div className={`absolute -bottom-3 -right-2 px-2 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-0.5 z-20`}>
-                        <Star className={`w-3 h-3 ${theme.icon} fill-current`} />
+                    {/* 레벨 뱃지 (캐릭터 중앙 아래) */}
+                    <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-white rounded-full text-[11px] sm:text-xs font-black text-slate-800 shadow-md border-[2px] ${theme.ring.split(' ')[0]} flex items-center gap-1 z-20 whitespace-nowrap`}>
+                        <Star className={`w-3.5 h-3.5 ${theme.icon} fill-current`} />
                         Lv.{stage.level}
                     </div>
                 </div>
