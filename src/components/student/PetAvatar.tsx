@@ -75,7 +75,6 @@ const getTheme = (level: number) => {
 // ============================================================================
 function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; blink: boolean }) {
     const theme = getTheme(level);
-    const tier = level <= 5 ? 1 : level <= 10 ? 2 : level <= 15 ? 3 : 4;
 
     return (
         <svg
@@ -83,32 +82,7 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
             className={`w-full h-full transition-transform duration-300 ${bounce ? 'scale-110' : ''}`}
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
         >
-            {/* 티어4: 후광 오라 효과 */}
-            {tier === 4 && (
-                <>
-                    <circle cx="60" cy="65" r="50" fill="url(#auraGrad)" opacity="0.3">
-                        <animate attributeName="r" values="48;52;48" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    <defs>
-                        <radialGradient id="auraGrad">
-                            <stop offset="0%" stopColor="#C8A2FF" />
-                            <stop offset="100%" stopColor="transparent" />
-                        </radialGradient>
-                    </defs>
-                </>
-            )}
 
-            {/* 티어3+: 별 반짝이 효과 */}
-            {tier >= 3 && (
-                <>
-                    <text x="18" y="28" fontSize="10" opacity="0.7">✨</text>
-                    <text x="92" y="35" fontSize="8" opacity="0.5">
-                        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite" />
-                        ✨
-                    </text>
-                    <text x="85" y="18" fontSize="6" opacity="0.4">⭐</text>
-                </>
-            )}
 
             {/* 귀 (왼쪽) */}
             <ellipse cx="38" cy="30" rx="12" ry="15" fill={theme.ear} stroke={theme.body} strokeWidth="1.5">
@@ -168,33 +142,174 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
             <ellipse cx="45" cy="97" rx="10" ry="5" fill={theme.ear} />
             <ellipse cx="75" cy="97" rx="10" ry="5" fill={theme.ear} />
 
-            {/* === 레벨별 악세서리 === */}
+            {/* ============================================================ */}
+            {/* 레벨별 누적 아이템 (레벨이 올라갈수록 하나씩 추가됨!)         */}
+            {/* ============================================================ */}
 
-            {/* 실버 티어(Lv6~10): 머리띠 */}
-            {tier === 2 && (
-                <rect x="36" y="30" width="48" height="5" rx="2.5" fill="#FF6B6B" opacity="0.9" />
-            )}
-
-            {/* 골드 티어(Lv11~15): 마법사 모자 */}
-            {tier === 3 && (
+            {/* ── 브론즈 티어 (Lv 2~5) ── */}
+            {/* Lv2: 머리 위 나뭇잎 🍃 */}
+            {level >= 2 && (
                 <g>
-                    {/* 모자 본체 */}
-                    <polygon points="60,2 42,32 78,32" fill="#3B3B98" stroke="#FFD700" strokeWidth="1.5" />
-                    {/* 모자 밴드 */}
-                    <rect x="42" y="29" width="36" height="5" rx="2" fill="#FFD700" />
-                    {/* 모자 꼭대기 별 */}
-                    <text x="55" y="12" fontSize="10">⭐</text>
+                    <ellipse cx="72" cy="24" rx="6" ry="3.5" fill="#66CC66" transform="rotate(-30,72,24)" />
+                    <line x1="72" y1="24" x2="75" y2="20" stroke="#448844" strokeWidth="1" />
+                </g>
+            )}
+            {/* Lv3: 목에 리본 🎀 */}
+            {level >= 3 && (
+                <g>
+                    <polygon points="54,76 60,80 66,76 60,72" fill="#FF69B4" stroke="#FF1493" strokeWidth="0.8" />
+                    <circle cx="60" cy="76" r="2" fill="#FF1493" />
+                </g>
+            )}
+            {/* Lv4: 오른손에 해바라기씨 🌻 */}
+            {level >= 4 && (
+                <g>
+                    <ellipse cx="88" cy="75" rx="5" ry="3" fill="#8B6914" transform="rotate(20,88,75)" />
+                    <ellipse cx="88" cy="75" rx="3" ry="1.5" fill="#A0824A" transform="rotate(20,88,75)" />
+                </g>
+            )}
+            {/* Lv5: 볼 빵빵 (볼 크기 확대) */}
+            {level >= 5 && (
+                <g>
+                    <circle cx="38" cy="62" r="4" fill={theme.cheek} opacity="0.8" />
+                    <circle cx="82" cy="62" r="4" fill={theme.cheek} opacity="0.8" />
                 </g>
             )}
 
-            {/* 무지개 티어(Lv16~20): 왕관 */}
-            {tier === 4 && (
+            {/* ── 실버 티어 (Lv 6~10) ── */}
+            {/* Lv6: 머리띠 */}
+            {level >= 6 && (
+                <rect x="36" y="30" width="48" height="4" rx="2" fill="#FF6B6B" opacity="0.9" />
+            )}
+            {/* Lv7: 안경 🤓 */}
+            {level >= 7 && (
                 <g>
-                    <polygon points="38,30 42,15 48,26 54,8 60,26 66,8 72,26 78,15 82,30" fill="#FFD700" stroke="#FFA500" strokeWidth="1" />
-                    {/* 보석 */}
-                    <circle cx="54" cy="22" r="2.5" fill="#FF4444" />
-                    <circle cx="60" cy="18" r="3" fill="#4444FF" />
-                    <circle cx="66" cy="22" r="2.5" fill="#44CC44" />
+                    <circle cx="50" cy="50" r="7" fill="none" stroke="#555" strokeWidth="1.5" />
+                    <circle cx="70" cy="50" r="7" fill="none" stroke="#555" strokeWidth="1.5" />
+                    <line x1="57" y1="50" x2="63" y2="50" stroke="#555" strokeWidth="1.5" />
+                    <line x1="43" y1="49" x2="36" y2="46" stroke="#555" strokeWidth="1" />
+                    <line x1="77" y1="49" x2="84" y2="46" stroke="#555" strokeWidth="1" />
+                </g>
+            )}
+            {/* Lv8: 왼손에 돋보기 🔍 */}
+            {level >= 8 && (
+                <g>
+                    <circle cx="28" cy="78" r="6" fill="none" stroke="#888" strokeWidth="1.5" />
+                    <circle cx="28" cy="78" r="6" fill="#CCDDFF" opacity="0.3" />
+                    <line x1="33" y1="83" x2="38" y2="90" stroke="#888" strokeWidth="2" strokeLinecap="round" />
+                </g>
+            )}
+            {/* Lv9: 등에 배낭 🎒 */}
+            {level >= 9 && (
+                <g>
+                    <rect x="80" y="58" width="12" height="16" rx="3" fill="#CC6633" stroke="#AA5522" strokeWidth="1" />
+                    <rect x="82" y="62" width="8" height="4" rx="1" fill="#DDAA77" />
+                    <circle cx="86" cy="68" r="1.5" fill="#AA5522" />
+                </g>
+            )}
+            {/* Lv10: 오른손에 책 📖 */}
+            {level >= 10 && (
+                <g>
+                    <rect x="86" y="73" width="10" height="8" rx="1" fill="#4488CC" stroke="#336699" strokeWidth="0.8" />
+                    <line x1="91" y1="73" x2="91" y2="81" stroke="#336699" strokeWidth="0.8" />
+                    <rect x="88" y="74" width="3" height="1" rx="0.5" fill="white" opacity="0.6" />
+                    <rect x="92" y="75" width="3" height="1" rx="0.5" fill="white" opacity="0.6" />
+                </g>
+            )}
+
+            {/* ── 골드 티어 (Lv 11~15) ── */}
+            {/* Lv11: 마법사 모자 🎩 */}
+            {level >= 11 && (
+                <g>
+                    <polygon points="60,2 44,32 76,32" fill="#3B3B98" stroke="#FFD700" strokeWidth="1.5" />
+                    <rect x="44" y="29" width="32" height="4" rx="2" fill="#FFD700" />
+                </g>
+            )}
+            {/* Lv12: 모자 꼭대기 별 ⭐ */}
+            {level >= 12 && (
+                <text x="55" y="10" fontSize="10">⭐</text>
+            )}
+            {/* Lv13: 마법 지팡이 🪄 */}
+            {level >= 13 && (
+                <g>
+                    <line x1="92" y1="60" x2="100" y2="40" stroke="#8B4513" strokeWidth="2.5" strokeLinecap="round" />
+                    <circle cx="100" cy="38" r="3.5" fill="#FFD700" opacity="0.8">
+                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+                    </circle>
+                </g>
+            )}
+            {/* Lv14: 망토 */}
+            {level >= 14 && (
+                <g>
+                    <path d="M35 65 Q30 85 38 100 L60 95 L82 100 Q90 85 85 65" fill="#6A0DAD" opacity="0.4" />
+                    <path d="M35 65 Q30 85 38 100 L60 95 L82 100 Q90 85 85 65" fill="none" stroke="#8B00FF" strokeWidth="0.8" opacity="0.6" />
+                </g>
+            )}
+            {/* Lv15: 반짝이 파티클 */}
+            {level >= 15 && (
+                <>
+                    <text x="18" y="28" fontSize="10" opacity="0.7">✨</text>
+                    <text x="92" y="25" fontSize="8" opacity="0.5">
+                        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite" />
+                        ✨
+                    </text>
+                </>
+            )}
+
+            {/* ── 무지개 티어 (Lv 16~20) ── */}
+            {/* Lv16: 왕관으로 교체 (모자 위에) 👑 */}
+            {level >= 16 && (
+                <g>
+                    <polygon points="42,30 45,18 50,26 55,12 60,26 65,12 70,26 75,18 78,30" fill="#FFD700" stroke="#FFA500" strokeWidth="1" />
+                </g>
+            )}
+            {/* Lv17: 왕관 보석 💎 */}
+            {level >= 17 && (
+                <g>
+                    <circle cx="55" cy="22" r="2" fill="#FF4444" />
+                    <circle cx="60" cy="18" r="2.5" fill="#4444FF" />
+                    <circle cx="65" cy="22" r="2" fill="#44CC44" />
+                </g>
+            )}
+            {/* Lv18: 후광 오라 */}
+            {level >= 18 && (
+                <>
+                    <circle cx="60" cy="65" r="50" fill="url(#auraGrad18)" opacity="0.2">
+                        <animate attributeName="r" values="48;53;48" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <defs>
+                        <radialGradient id="auraGrad18">
+                            <stop offset="0%" stopColor={theme.body} />
+                            <stop offset="100%" stopColor="transparent" />
+                        </radialGradient>
+                    </defs>
+                </>
+            )}
+            {/* Lv19: 궤도 도는 별들 ⭐ */}
+            {level >= 19 && (
+                <g>
+                    <text x="15" y="50" fontSize="7">⭐</text>
+                    <text x="100" y="60" fontSize="7">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" />
+                        ⭐
+                    </text>
+                    <text x="55" y="110" fontSize="6">🌟</text>
+                </g>
+            )}
+            {/* Lv20: 무지개 아치 + 신성한 빛 🌈 */}
+            {level >= 20 && (
+                <g>
+                    <path d="M20 50 Q60 -10 100 50" fill="none" stroke="url(#rainbowGrad)" strokeWidth="3" opacity="0.5" />
+                    <defs>
+                        <linearGradient id="rainbowGrad">
+                            <stop offset="0%" stopColor="#FF0000" />
+                            <stop offset="20%" stopColor="#FF8800" />
+                            <stop offset="40%" stopColor="#FFFF00" />
+                            <stop offset="60%" stopColor="#00FF00" />
+                            <stop offset="80%" stopColor="#0088FF" />
+                            <stop offset="100%" stopColor="#8800FF" />
+                        </linearGradient>
+                    </defs>
                 </g>
             )}
 
