@@ -26,6 +26,7 @@ export default function Home() {
   const [sessionWords, setSessionWords] = useState<Word[]>([]);
   const [testRequest, setTestRequest] = useState<TestRequest | null>(null);
   const [checkingRequest, setCheckingRequest] = useState(false);
+  const [isRequestingTest, setIsRequestingTest] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showRoulette, setShowRoulette] = useState(false);
   // 단어별 마스터 추적: { dayNumber: Set<word> }
@@ -265,9 +266,13 @@ export default function Home() {
 
   // 시험 요청 보내기
   const handleRequestTest = async () => {
-    if (!user) return;
+    if (!user || isRequestingTest) return;
     try {
+      setIsRequestingTest(true);
       if (testRequest && testRequest.status === 'pending') { setMode('request_sent'); return; }
+
+      // 기존 찌꺼기 요청 처리 (안전망)
+      await supabase.from('test_requests').delete().eq('user_id', user.id);
 
       const { data, error } = await supabase
         .from('test_requests')
@@ -281,6 +286,8 @@ export default function Home() {
     } catch (error) {
       console.error('Error requesting test:', error);
       alert('시험 요청 중 오류가 발생했어요.');
+    } finally {
+      setIsRequestingTest(false);
     }
   };
 
@@ -601,7 +608,8 @@ export default function Home() {
             setStudyCompleted(false);
             setSessionWords([]);
             setTestRequest(null);
-            if (testRequest) await supabase.from('test_requests').delete().eq('id', testRequest.id);
+            // 현재 user_id에 쌓인 모든 잔여 시험 승인 요청 기록 초기화 (무한 응시 버그 수정)
+            await supabase.from('test_requests').delete().eq('user_id', user.id);
             await refreshUser();
             if (streakBonusAlert) setTimeout(() => alert(streakBonusAlert), 300);
             if (limitAlert) setTimeout(() => alert(limitAlert), streakBonusAlert ? 1500 : 500);
@@ -875,13 +883,19 @@ export default function Home() {
                         </div>
                       </button>
                     ) : (
-                      <button onClick={handleRequestTest}
-                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group">
+                      <button onClick={handleRequestTest} disabled={isRequestingTest}
+                        className="w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border-4 border-blue-200 p-5 sm:p-8 text-left hover:shadow-lg hover:border-blue-300 transition-all group disabled:opacity-70 disabled:cursor-not-allowed">
                         <div className="flex items-center gap-3 sm:gap-4">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">📝</div>
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl sm:text-3xl shrink-0">
+                            {isRequestingTest ? <Loader2 className="w-8 h-8 animate-spin text-blue-500" /> : '📝'}
+                          </div>
                           <div className="min-w-0">
-                            <h3 className="text-base sm:text-xl font-black text-slate-800">📝 2단계: 시험 요청하기</h3>
-                            <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">학습을 마쳤어! 시험 승인을 요청해 봐!</p>
+                            <h3 className="text-base sm:text-xl font-black text-slate-800">
+                              {isRequestingTest ? '요청 보내는 중...' : '📝 2단계: 시험 요청하기'}
+                            </h3>
+                            <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">
+                              {isRequestingTest ? '잠시만 기다려 줘!' : '학습을 마쳤어! 시험 승인을 요청해 봐!'}
+                            </p>
                           </div>
                         </div>
                       </button>
