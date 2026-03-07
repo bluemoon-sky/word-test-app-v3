@@ -269,7 +269,7 @@ export default function ActivePractice({ words, onFinish, onBack }: Props) {
                         {phase === 'typing' ? (
                             /* ─── 앞면: 영단어 타이핑 ─── */
                             <div className="text-center w-full mt-4">
-                                <h2 className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 tracking-tight mb-3 sm:mb-4 break-all px-2 ${currentWord.word.length > 10 ? 'text-3xl sm:text-5xl' : currentWord.word.length > 7 ? 'text-4xl sm:text-6xl' : 'text-5xl sm:text-7xl'}`}>
+                                <h2 className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 tracking-tight mb-1 sm:mb-2 break-all px-2 pb-2 sm:pb-3 ${currentWord.word.length > 10 ? 'text-3xl sm:text-5xl' : currentWord.word.length > 7 ? 'text-4xl sm:text-6xl' : 'text-5xl sm:text-7xl'}`}>
                                     {currentWord.word}
                                 </h2>
 
@@ -312,7 +312,7 @@ export default function ActivePractice({ words, onFinish, onBack }: Props) {
                             /* ─── 뒷면: 뜻 3지선다 ─── */
                             <div className="text-center w-full mt-4">
                                 <p className="text-xs sm:text-sm font-bold text-slate-400 mb-2">이 단어의 뜻을 골라보세요!</p>
-                                <h2 className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 tracking-tight mb-6 sm:mb-8 break-all px-2 ${currentWord.word.length > 10 ? 'text-2xl sm:text-4xl' : currentWord.word.length > 7 ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-6xl'}`}>
+                                <h2 className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 tracking-tight mb-4 sm:mb-6 break-all px-2 pb-2 sm:pb-3 ${currentWord.word.length > 10 ? 'text-2xl sm:text-4xl' : currentWord.word.length > 7 ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-6xl'}`}>
                                     {currentWord.word}
                                 </h2>
 
