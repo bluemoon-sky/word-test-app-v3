@@ -87,71 +87,77 @@ function HamsterSVG({ level, bounce, blink }: { level: number; bounce: boolean; 
 
 
             {/* ═══════════════════════════════════════════════ */}
-            {/* ── 동글동글 모찌 햄스터 (참고 이미지 스타일) ── */}
+            {/* ── 동글동글 햄찌 (사용자 요청 참고 이미지 완벽 재현) ── */}
             {/* ═══════════════════════════════════════════════ */}
 
-            {/* ── 꼬리 (작고 동글) ── */}
-            <circle cx="92" cy="72" r="4" fill="#C8B89A" stroke="#A09070" strokeWidth="1">
-                <animateTransform attributeName="transform" type="rotate" values="-5,92,72;8,92,72;-5,92,72" dur="2s" repeatCount="indefinite" />
-            </circle>
-
-            {/* ── 귀 (왼쪽, 작은 반원) ── */}
+            {/* 전체 들숨날숨 (숨쉬기 애니메이션) */}
             <g>
-                <animateTransform attributeName="transform" type="rotate" values="-2,42,22;2,42,22;-2,42,22" dur="3s" repeatCount="indefinite" />
-                <ellipse cx="38" cy="20" rx="10" ry="11" fill="#C8B89A" stroke="#A09070" strokeWidth="1.2" />
-                <ellipse cx="38" cy="21" rx="6" ry="7" fill="#FFBCBC" opacity="0.6" />
+                <animateTransform attributeName="transform" type="translate" values="0,0; 0,-2; 0,0" dur="2s" repeatCount="indefinite" />
+
+                {/* ── 귀 (왼쪽) ── */}
+                <g transform="translate(32, 26)">
+                    <animateTransform attributeName="transform" type="rotate" values="-4;4;-4" dur="3s" repeatCount="indefinite" />
+                    <circle cx="0" cy="0" r="12" fill="#D3C3A8" stroke="#A08C70" strokeWidth="2.5" />
+                    <circle cx="0" cy="1" r="6" fill="#F8C8C8" />
+                </g>
+
+                {/* ── 귀 (오른쪽) ── */}
+                <g transform="translate(88, 26)">
+                    <animateTransform attributeName="transform" type="rotate" values="4;-4;4" dur="3s" repeatCount="indefinite" />
+                    <circle cx="0" cy="0" r="12" fill="#D3C3A8" stroke="#A08C70" strokeWidth="2.5" />
+                    <circle cx="0" cy="1" r="6" fill="#F8C8C8" />
+                </g>
+
+                {/* ── 메인 바디 (완벽한 거대한 공) ── */}
+                <circle cx="60" cy="62" r="45" fill="#FFFFFF" />
+
+                {/* ── 특유의 베이지색 얼룩 무늬 (클리핑) ── */}
+                <clipPath id="hamsterBodyClip">
+                    <circle cx="60" cy="62" r="44.8" />
+                </clipPath>
+                <g clipPath="url(#hamsterBodyClip)">
+                    <ellipse cx="60" cy="24" rx="36" ry="20" fill="#D3C3A8" /> {/* 이마 패치 */}
+                    <ellipse cx="12" cy="65" rx="22" ry="34" fill="#D3C3A8" /> {/* 왼쪽 패치 */}
+                    <ellipse cx="108" cy="65" rx="22" ry="34" fill="#D3C3A8" /> {/* 오른쪽 패치 */}
+                </g>
+
+                {/* 바디 테두리 (가장 위로 덮기) */}
+                <circle cx="60" cy="62" r="45" fill="none" stroke="#A08C70" strokeWidth="2.5" />
+
+                {/* ── 손 (작고 귀여운 하얀 앞발) ── */}
+                <ellipse cx="30" cy="72" rx="6" ry="10" fill="#FFFFFF" stroke="#A08C70" strokeWidth="2" transform="rotate(-40 30 72)" />
+                <ellipse cx="90" cy="72" rx="6" ry="10" fill="#FFFFFF" stroke="#A08C70" strokeWidth="2" transform="rotate(40 90 72)" />
+
+                {/* ── 발 (하단 모서리에 톡 튀어나온 둥근 두 발) ── */}
+                <path d="M 40 106 C 40 98, 52 98, 52 106 Z" fill="#FFFFFF" stroke="#A08C70" strokeWidth="2.5" strokeLinejoin="round" />
+                <path d="M 68 106 C 68 98, 80 98, 80 106 Z" fill="#FFFFFF" stroke="#A08C70" strokeWidth="2.5" strokeLinejoin="round" />
+
+                {/* ── 볼 터치 (가장 큰 핑크 원) ── */}
+                <circle cx="36" cy="68" r="14" fill="#FFADAD" opacity="0.65" />
+                <circle cx="84" cy="68" r="14" fill="#FFADAD" opacity="0.65" />
+
+                {/* ── 눈 (초롱초롱한 까만 콩) ── */}
+                {blink ? (
+                    <>
+                        <path d="M 42 56 Q 46 53 50 56" fill="none" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" />
+                        <path d="M 70 56 Q 74 53 78 56" fill="none" stroke="#2D3748" strokeWidth="2.5" strokeLinecap="round" />
+                    </>
+                ) : (
+                    <>
+                        <circle cx="46" cy="55" r="4.5" fill="#2D3748" />
+                        <circle cx="74" cy="55" r="4.5" fill="#2D3748" />
+                        <circle cx="47" cy="53.5" r="1.5" fill="#FFFFFF" />
+                        <circle cx="75" cy="53.5" r="1.5" fill="#FFFFFF" />
+                    </>
+                )}
+
+                {/* ── 코 (작은 까만 타원) ── */}
+                <ellipse cx="60" cy="63" rx="2.5" ry="1.8" fill="#2D3748" />
+
+                {/* ── 입 (작고 앙증맞은 ω) ── */}
+                <path d="M 55 66 Q 57.5 69 60 66 Q 62.5 69 65 66" fill="none" stroke="#2D3748" strokeWidth="1.8" strokeLinecap="round" />
+
             </g>
-
-            {/* ── 귀 (오른쪽, 작은 반원) ── */}
-            <g>
-                <animateTransform attributeName="transform" type="rotate" values="2,78,22;-2,78,22;2,78,22" dur="3s" repeatCount="indefinite" />
-                <ellipse cx="82" cy="20" rx="10" ry="11" fill="#C8B89A" stroke="#A09070" strokeWidth="1.2" />
-                <ellipse cx="82" cy="21" rx="6" ry="7" fill="#FFBCBC" opacity="0.6" />
-            </g>
-
-            {/* ── 메인 바디 (하나의 큰 공 모양) ── */}
-            <circle cx="60" cy="58" r="40" fill="white" stroke="#A09070" strokeWidth="1.5" />
-
-            {/* ── 등판 베이지 패치 (왼쪽) ── */}
-            <path d="M22 45 Q18 58 25 72 Q32 78 38 70 Q42 55 38 42 Q32 35 22 45 Z" fill="#C8B89A" opacity="0.85" />
-            {/* ── 등판 베이지 패치 (오른쪽) ── */}
-            <path d="M98 45 Q102 58 95 72 Q88 78 82 70 Q78 55 82 42 Q88 35 98 45 Z" fill="#C8B89A" opacity="0.85" />
-            {/* ── 머리 위 베이지 패치 ── */}
-            <path d="M42 22 Q50 16 60 15 Q70 16 78 22 Q72 28 60 30 Q48 28 42 22 Z" fill="#C8B89A" opacity="0.85" />
-
-            {/* ── 발 (짧고 통통) ── */}
-            <ellipse cx="42" cy="92" rx="10" ry="5" fill="white" stroke="#A09070" strokeWidth="1.2" />
-            <ellipse cx="78" cy="92" rx="10" ry="5" fill="white" stroke="#A09070" strokeWidth="1.2" />
-
-            {/* ── 손 (작고 짧은 앞발) ── */}
-            <ellipse cx="30" cy="65" rx="7" ry="5" fill="white" stroke="#A09070" strokeWidth="1.2" transform="rotate(-25, 30, 65)" />
-            <ellipse cx="90" cy="65" rx="7" ry="5" fill="white" stroke="#A09070" strokeWidth="1.2" transform="rotate(25, 90, 65)" />
-
-            {/* ── 볼 터치 (크고 빵빵한 핑크) ── */}
-            <circle cx="38" cy="62" r="9" fill="#FFB0B0" opacity="0.75" />
-            <circle cx="82" cy="62" r="9" fill="#FFB0B0" opacity="0.75" />
-
-            {/* ── 눈 (작고 심플한 검은 점) ── */}
-            {blink ? (
-                <>
-                    <path d="M46 52 Q50 49 54 52" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M66 52 Q70 49 74 52" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" />
-                </>
-            ) : (
-                <>
-                    <circle cx="48" cy="50" r="3.5" fill="#1A1A2E" />
-                    <circle cx="72" cy="50" r="3.5" fill="#1A1A2E" />
-                    {/* 하이라이트 */}
-                    <circle cx="49" cy="49" r="1.2" fill="white" />
-                    <circle cx="73" cy="49" r="1.2" fill="white" />
-                </>
-            )}
-
-            {/* ── 코 (아주 작은 삼각형) ── */}
-            <ellipse cx="60" cy="57" rx="2" ry="1.5" fill="#333" />
-
-            {/* ── 입 (작고 심플한 곡선) ── */}
-            <path d="M56 60 Q58 63 60 60 Q62 63 64 60" fill="none" stroke="#999" strokeWidth="1.2" strokeLinecap="round" />
 
 
             {/* ============================================================ */}
