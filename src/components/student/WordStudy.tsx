@@ -317,13 +317,15 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                     </div>
                 </div>
 
-                {/* TTS 재생 상태 표시 */}
-                {isPlaying && (
-                    <div className="flex items-center justify-center gap-2 mb-3 animate-pulse">
-                        <Headphones className="w-4 h-4 text-indigo-500" />
-                        <span className="text-xs font-bold text-indigo-500">🎧 음성 재생 중... 잘 들어보세요!</span>
-                    </div>
-                )}
+                {/* TTS 재생 상태 표시 - 고정 높이를 주어 카드 레이아웃 밀림 방지 */}
+                <div className="h-6 mb-3 flex items-center justify-center">
+                    {isPlaying && (
+                        <div className="flex items-center gap-2 animate-pulse">
+                            <Headphones className="w-4 h-4 text-indigo-500" />
+                            <span className="text-xs font-bold text-indigo-500">🎧 음성 재생 중... 잘 들어보세요!</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* 플래시카드 영역 (3D 효과 & 애니메이션 + 스와이프) */}
                 <div {...swipeHandlers} className="perspective-1000 relative mb-5 sm:mb-8">
@@ -405,10 +407,10 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                                                 cancelTtsRef.current = cancel;
                                             }}
                                             className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-600 px-4 py-1.5 sm:py-2 rounded-full font-bold text-sm sm:text-base border border-blue-200 shadow-sm transition-colors"
-                                            title="한국어 뜻/발음 반복 학습"
+                                            title="한국어 발음 반복 학습"
                                         >
-                                            <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            한국어 발음
+                                            <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                                            {currentWord.korean_pronunciation}
                                         </button>
                                     )}
                                 </div>
@@ -449,28 +451,49 @@ export default function WordStudy({ words, testQuestionCount, onFinishStudy, onB
                             <button
                                 onClick={handlePrev}
                                 disabled={currentIndex === 0 || isAnimating}
-                                className={`flex-1 flex items-center justify-center font-bold text-base sm:text-lg transition-colors
+                                className={`flex-1 flex flex-col sm:flex-row items-center justify-center font-bold text-xs sm:text-base transition-colors py-2 sm:py-0
                                 ${currentIndex === 0
                                         ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
                                         : 'text-slate-600 bg-white hover:bg-slate-50 active:bg-slate-100'}`}
                             >
-                                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-1" /> 이전 카드
+                                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1 mb-0.5 sm:mb-0" /> <span className="hidden sm:inline">이전 카드</span><span className="sm:hidden">이전</span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    // 뒷면이라면 앞면으로 뒤집기
+                                    if (showMeaning) setShowMeaning(false);
+
+                                    // 음성 다시 듣기 파트 수행
+                                    if (cancelTtsRef.current) cancelTtsRef.current();
+                                    const cancel = speakSequence(
+                                        currentWord,
+                                        () => setIsPlaying(true),
+                                        () => setIsPlaying(false)
+                                    );
+                                    cancelTtsRef.current = cancel;
+                                }}
+                                disabled={isAnimating}
+                                className="flex-1 flex flex-col sm:flex-row items-center justify-center font-black text-xs sm:text-base transition-colors py-2 sm:py-0 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border-x border-slate-100"
+                                title="카드 처음부터 다시 학습하기"
+                            >
+                                <span className="text-base sm:text-lg sm:mr-1 mb-0.5 sm:mb-0">🔄</span> 복습
                             </button>
 
                             {isLast ? (
                                 <button
                                     onClick={handleFinishStudy}
-                                    className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-base sm:text-lg flex items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)]"
+                                    className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)] py-2 sm:py-0"
                                 >
-                                    ✨ 학습 완료! ✨
+                                    <span className="hidden sm:inline">학습 완료!</span><span className="sm:hidden">완료!</span> <span className="hidden sm:inline ml-1">🎉</span>
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleNext}
                                     disabled={isAnimating}
-                                    className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-base sm:text-lg flex items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)]"
+                                    className="flex-1 bg-[rgb(88,101,242)] hover:bg-[rgb(71,82,196)] text-white font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center transition-colors shadow-[inset_1px_0_0_rgba(255,255,255,0.2)] py-2 sm:py-0"
                                 >
-                                    다음 카드 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1" />
+                                    <span className="hidden sm:inline">다음 카드</span><span className="sm:hidden">다음</span> <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 sm:ml-1 mt-0.5 sm:mt-0" />
                                 </button>
                             )}
                         </>
