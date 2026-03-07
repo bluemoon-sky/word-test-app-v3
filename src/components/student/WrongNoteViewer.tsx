@@ -245,7 +245,7 @@ export default function WrongNoteViewer({ userId, onBack, onTokensEarned }: Prop
                         <span className="inline-block px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mb-3">
                             이 단어의 뜻을 입력하세요
                         </span>
-                        <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">
+                        <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight break-all px-2">
                             {currentQ.words.word}
                         </h2>
                         <button type="button" onClick={() => speakWord(currentQ.words.word)}

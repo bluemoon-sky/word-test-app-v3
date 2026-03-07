@@ -229,7 +229,7 @@ export default function QuizViewer({ words, userId, questionCount = 30, isReview
                         <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold rounded-full mb-3 sm:mb-4">
                             {currentQ.type === 'en_to_ko' ? '다음 단어의 뜻은?' : '이 뜻을 가진 영어 단어는?'}
                         </span>
-                        <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">
+                        <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight break-all px-2">
                             {currentQ.type === 'en_to_ko' ? currentQ.word.word : (
                                 <span>
                                     {currentQ.word.meaning_1}
